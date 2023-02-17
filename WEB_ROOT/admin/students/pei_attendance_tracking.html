@@ -47,7 +47,7 @@
                     <tr>
                       <td class="grid-item stretchCell">
                           <button id="student_notification_btn" class="stretch" ng-click="actionResponse($event, 'student_notification')" ng-show="!record.student_notification">Discussion of Concern</button>
-                          <div id="student_notification_btn" class="successText stretch" ng-show="record.student_notification"><i class="fi-check"></i> Concern discussed</div>
+                          <div id="student_notification_btn" class="successText blue stretch" ng-show="record.student_notification"><i class="fi-check"></i> Concern discussed</div>
                         <input type="hidden" id="student_notification" ng-model="record.student_notification" data-step="student_notification"/>
                       </td>
                       <td class="grid-item">
@@ -63,13 +63,12 @@
                             <i class="fi-checkbox icon" title="Save this row" ></i>
                         </button>
                         <div id="student_notification_save" ng-if="student_notification_save=='saving'" data-pss-wait-spinner></div>
-                        <div id="student_notification_save" ng-if="student_notification_save=='saved'"><i class="fi-check green fade-in"> Saved</i></div>
+                        <div id="student_notification_save" ng-if="student_notification_save=='saved'"><i class="fi-check successtext green fade-in"> Saved</i></div>
                      </td>
                    </tr>
                   </tbody>
                </table>
-           </fieldset>
-           
+           </fieldset>3
            <fieldset>
             <legend><span class="qcicon">Initial Concern and Guardian Contact&nbsp;</span> 
                    <a class='dialogM qcclear' title='Quick Contacts' href="/admin/alerts/contacts_alert.html?frn=~(studentfrn)" style="visibility: visible;">
