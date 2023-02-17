@@ -1,0 +1,130 @@
+/*!
+ * @module angularjs-toast
+ * @description A Simple toast notification service for AngularJS pages
+ * @version v4.0.1
+ * @link https://github.com/sibiraj-s/angularjs-toast#readme
+ * @licence MIT License, https://opensource.org/licenses/MIT
+ */
+
+.toast-alert .alert, .angularjs-toast .alert {
+  padding: 15px;
+  margin-bottom: 20px;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  position: relative;
+}
+.toast-alert .alert h4, .angularjs-toast .alert h4 {
+  margin-top: 0;
+  color: inherit;
+}
+.toast-alert .alert .alert-link, .angularjs-toast .alert .alert-link {
+  font-weight: bold;
+}
+.toast-alert .alert > p, .angularjs-toast .alert > p,
+.toast-alert .alert > ul,
+.angularjs-toast .alert > ul {
+  margin-bottom: 0;
+}
+.toast-alert .alert > p + p, .angularjs-toast .alert > p + p {
+  margin-top: 5px;
+}
+.toast-alert .alert.alert-dismissible, .angularjs-toast .alert.alert-dismissible {
+  padding-right: 35px;
+}
+.toast-alert .alert.alert-dismissible .close, .angularjs-toast .alert.alert-dismissible .close {
+  position: absolute;
+  top: 0;
+  right: 0;
+  padding: 15px;
+  color: inherit;
+}
+.toast-alert .alert .close, .angularjs-toast .alert .close {
+  float: right;
+  font-size: 21px;
+  font-weight: bold;
+  line-height: 1;
+  color: #000;
+  text-shadow: 0 1px 0 #fff;
+  filter: alpha(opacity=20);
+  opacity: 0.2;
+  text-decoration: none;
+}
+.toast-alert .alert .close:focus, .angularjs-toast .alert .close:focus, .toast-alert .alert .close:hover, .angularjs-toast .alert .close:hover {
+  color: #000;
+  text-decoration: none;
+  cursor: pointer;
+  filter: alpha(opacity=50);
+  opacity: 0.5;
+}
+.toast-alert .alert.alert-success, .angularjs-toast .alert.alert-success {
+  color: #155724;
+  background-color: #d4edda;
+  border-color: #c3e6cb;
+}
+.toast-alert .alert.alert-info, .angularjs-toast .alert.alert-info {
+  color: #0c5460;
+  background-color: #d1ecf1;
+  border-color: #bee5eb;
+}
+.toast-alert .alert.alert-warning, .angularjs-toast .alert.alert-warning {
+  color: #856404;
+  background-color: #fff3cd;
+  border-color: #ffeeba;
+}
+.toast-alert .alert.alert-danger, .angularjs-toast .alert.alert-danger {
+  color: #721c24;
+  background-color: #f8d7da;
+  border-color: #f5c6cb;
+}
+
+.angularjs-toast {
+  position: fixed;
+  z-index: 10000;
+  width: 100%;
+  top: 0;
+}
+.angularjs-toast ul.toast-container {
+  padding: 0;
+  list-style: none;
+  position: absolute;
+  top: 20px;
+}
+.angularjs-toast ul.toast-container li {
+  transition: 1s ease;
+}
+.angularjs-toast ul.toast-container li .alert {
+  display: inline-block;
+}
+.angularjs-toast ul.toast-container li.ng-enter {
+  opacity: 0;
+  transition: 0.5s ease-in;
+}
+.angularjs-toast ul.toast-container li.ng-enter.ng-enter-active {
+  opacity: 1;
+}
+.angularjs-toast ul.toast-container li.ng-leave {
+  opacity: 1;
+  transition: 0.2s ease-in;
+}
+.angularjs-toast ul.toast-container li.ng-leave.ng-leave-active {
+  opacity: 0;
+}
+.angularjs-toast ul.toast-container.right {
+  right: 0;
+  margin-right: 20px;
+}
+.angularjs-toast ul.toast-container.right li {
+  text-align: right;
+}
+.angularjs-toast ul.toast-container.center {
+  left: 0;
+  left: 50%;
+  transform: translate(-50%, 0);
+}
+.angularjs-toast ul.toast-container.left {
+  left: 0;
+  margin-left: 20px;
+}
+.angularjs-toast ul.toast-container.left li {
+  text-align: left;
+}
