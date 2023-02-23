@@ -6,7 +6,7 @@
     <title>Attendance Tracking Checklist</title>
     <link rel="stylesheet" type="text/css" href="/admin/pei_reports/css/foundation-icons.css" />
     ~[wc:commonscripts]
-	<script src="/scripts/psQuery/psQuery.js"></script>
+	  <script src="/scripts/psQuery/psQuery.js"></script>
     <link href="/images/css/screen.css" rel="stylesheet" media="screen">
     <link href="/images/css/print.css" rel="stylesheet" media="print">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.0.0/dist/themes/light.css" />
@@ -38,16 +38,16 @@
               <legend>Student Contact</legend>
               <table class="checklistTable">
                   <colgroup>
-                      <col style="width:35%;" />
+                      <col style="width:33%;" />
                       <col style="width:37%;" />
                       <col style="width:18%;" />
-                      <col style="width:10%;" />
+                      <col style="width:12%;" />
                   </colgroup>
                   <tbody>
                     <tr>
                       <td class="grid-item stretchCell">
-                          <button id="student_notification_btn" class="stretch" ng-click="actionResponse($event, 'student_notification')" ng-show="!record.student_notification">Discussion of Concern</button>
-                          <div id="student_notification_btn" class="successText blue stretch" ng-show="record.student_notification"><i class="fi-check"></i> Concern discussed</div>
+                          <button id="student_notification_btn" class="stretch" ng-click="actionResponse($event, 'student')" ng-show="!record.student_notification">Discussion of Concern</button>
+                          <div id="student_notification_btn" class="successText stretch" ng-show="record.student_notification"><i class="fi-check"></i> Concern discussed</div>
                         <input type="hidden" id="student_notification" ng-model="record.student_notification" data-step="student_notification"/>
                       </td>
                       <td class="grid-item">
@@ -59,16 +59,18 @@
                         <input id="student_notification_date" ng-model="record.student_notification_date" type="text" pss-date-widget data-step="student_notification" ng-disabled="!record.student_notification"/>
                      </td>
                      <td class="grid-item center">
-                        <button id="student_notification_save" ng-if="student_notification_save=='unsaved' || !record.student_notification" ng-click="save($event, 'student_notification')" ng-disabled="!record.student_notification">
-                            <i class="fi-checkbox icon" title="Save this row" ></i>
-                        </button>
+                        <div class="buttonContainer">
+                          <i class="fi-checkbox green icon icon-big" id="student_notification_save" ng-if="student_notification_save=='unsaved' || student_notification_save=='saved' || !record.student_notification" ng-click="save($event, 'student_notification')" ng-disabled="!record.student_notification"></i>
+                          <i id="clearRow" class="red icon fi-x icon-big"></i>
+                        </div>
                         <div id="student_notification_save" ng-if="student_notification_save=='saving'" data-pss-wait-spinner></div>
-                        <div id="student_notification_save" ng-if="student_notification_save=='saved'"><i class="fi-check successtext green fade-in"> Saved</i></div>
+                       
                      </td>
                    </tr>
                   </tbody>
                </table>
-           </fieldset>3
+           </fieldset>
+           
            <fieldset>
             <legend><span class="qcicon">Initial Concern and Guardian Contact&nbsp;</span> 
                    <a class='dialogM qcclear' title='Quick Contacts' href="/admin/alerts/contacts_alert.html?frn=~(studentfrn)" style="visibility: visible;">
@@ -105,7 +107,7 @@
                             <i class="fi-checkbox icon" title="Save this row" ></i>
                         </button>
                         <div id="parent_call_1_save" ng-if="parent_call_1_save=='saving'" data-pss-wait-spinner></div>
-                        <div id="parent_call_1_save" ng-if="parent_call_1_save=='saved'"><i class="fi-check green fade-in"> Saved</i></div>
+                        <div id="parent_call_1_save" ng-if="parent_call_1_save=='saved'"><i class="fi-check green successText fade-in"> Saved</i></div>
                    </td>
                  </tr>
                  <tr class="alternateRow">
@@ -131,7 +133,7 @@
                       <i class="fi-checkbox icon" title="Save this row" ></i>
                       </button>
                       <div id="parent_call_2_save" ng-if="parent_call_2_save=='saving'" data-pss-wait-spinner></div>
-                      <div id="parent_call_2_save" ng-if="parent_call_2_save=='saved'"><i class="fi-check green fade-in"> Saved</i></div>
+                      <div id="parent_call_2_save" ng-if="parent_call_2_save=='saved'"><i class="fi-check successText green fade-in"> Saved</i></div>
                    </td>
                  </tr>
                  <tr>
@@ -177,7 +179,7 @@
              </table>
            </fieldset>
            <fieldset>
-             <legend>Continued Concern & Written Notification <a href='#' target="_blank"  id="interventions"><i class="fi-clipboard-notes icon-big"></i></a></legend>
+             <legend>Continued Concern & Written Notification <a href='#' target="_blank"  id="interventions"><i class="fi-clipboard-notes plum icon-big"></i></a></legend>
              <table class="checklistTable">
                 <colgroup>
                   <col style="width:35%;" />

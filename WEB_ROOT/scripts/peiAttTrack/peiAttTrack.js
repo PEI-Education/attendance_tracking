@@ -14,7 +14,6 @@ define(['angular', 'components/shared/index'], function(angular) {
             $scope.message = '';
         };
         
-  
         $scope.getRecord = function(datafile) {
             attTrackHttpService.getRecord(datafile).then(function(retData) {
                 if (typeof retData === "object") {
@@ -45,8 +44,8 @@ define(['angular', 'components/shared/index'], function(angular) {
                 } else {
                     alert('bad response to getGrade');
                 }
-              })
-          }
+            })
+        }
         
         // Checks if the termid is valid for the student's grade_level in the context of the termid
         $scope.validTerm = function() {
@@ -62,28 +61,28 @@ define(['angular', 'components/shared/index'], function(angular) {
         
         // Sums the three parent_call_# properties on the record. If sum >= 3 (3 calls with no contact or 1 call with contact, minimum), process can move on to letters
         $scope.radioSum = function() {
-            return ($scope.record.parent_call_1 + $scope.record.parent_call_2 + $scope.record.parent_call_3) < 3
+            return ($scope.record.parent_call_1 + $scope.record.parent_call_2 + $scope.record.parent_call_3) < 3;
         }
         
         // Returns the number of days passed between two dates
         $scope.daysPassed = function(earlyDate, laterDate) {
-            let date1 = new Date(earlyDate)
-            let date2 = new Date(laterDate)
-            return Math.ceil((date2 - date1)/(1000 * 3600 * 24))
+            let date1 = new Date(earlyDate);
+            let date2 = new Date(laterDate);
+            return Math.ceil((date2 - date1)/(1000 * 3600 * 24));
         }
         
         // Logic for disabling the buttons relating to written notifications
         // Previous letter must have been sent and at least 5 weekdays (1 week) must have passed
         $scope.disableConcern = function(prevConcern) {
             const DAYS = 7;
-            const PREVACTIONS = 2
+            const PREVACTIONS = 2;
             if ($scope.record[prevConcern] < PREVACTIONS) {
-                return true
+                return true;
             }
             if ($scope.daysPassed($scope.record[`${prevConcern}_sent_date`], document.getElementById('dateToday').value) < DAYS) {
-                return true
+                return true;
             }
-            return false
+            return false;
         }
         
         // Logic for disabling the referral section
@@ -94,23 +93,23 @@ define(['angular', 'components/shared/index'], function(angular) {
                     return true
                 }
                 if ($scope.record[`${concern}_notes`].length < 10) {
-                    return true
+                    return true;
                 }
             }
-            return false
+            return false;
         }
         
         // Auto-fills the staff and date for student notification and referral sections when appropriate
         $scope.actionResponse = function(e, step) {
-            e.preventDefault()
+            e.preventDefault();
             if (step === 'student_notification') {
               $scope.record.student_notification = true;
             }
             if (step === 'referral') {
-                $scope.record.referral = 1
+                $scope.record.referral = 1;
             }
-            $scope.record[`${step}_staff`] = $scope.record[`${step}_staff`] ? $scope.record[`${step}_staff`] : document.getElementById('staffName').value
-            $scope.record[`${step}_date`] = $scope.record[`${step}_date`] ? $scope.record[`${step}_date`] : document.getElementById('dateToday').value
+            $scope.record[`${step}_staff`] = $scope.record[`${step}_staff`] ? $scope.record[`${step}_staff`] : document.getElementById('staffName').value;
+            $scope.record[`${step}_date`] = $scope.record[`${step}_date`] ? $scope.record[`${step}_date`] : document.getElementById('dateToday').value;
         }
         
         // Auto-fills staff and date for parent call sections when appropriate
@@ -145,9 +144,10 @@ define(['angular', 'components/shared/index'], function(angular) {
         // Saves data to the u_pei_att_track table
         const SAVED = 'saved';
         const SAVING = 'saving';
+        const UNSAVED = 'unsaved';
 
         $scope.save = function(e, step) {
-            e.preventDefault()
+            e.preventDefault();
             loadingDialog();
             
             let list = document.querySelectorAll(`[data-step="${step}"]`);
@@ -161,7 +161,7 @@ define(['angular', 'components/shared/index'], function(angular) {
                 attTrackHttpService.insertRecord(document.getElementById('studentsdcid').value, elements, function(retID) {
                     if (retID === '-1') {
                        console.log(`${step} data saved successfully`);
-                       $scope[`${step}_save`] = SAVING
+                       $scope[`${step}_save`] = SAVING;
                        $timeout(function() {
                            $scope[`${step}_save`] = SAVED;
                            $scope.getRecord('attTrack.json');
@@ -192,21 +192,21 @@ define(['angular', 'components/shared/index'], function(angular) {
       $scope.$watchGroup(['record.student_notification', 'record.student_notification_staff','record.student_notification_date'], function(newVal, oldVal) { 
           
           if (newVal !== oldVal) {
-             $timeout(() => $scope.student_notification_save = 'unsaved', 1000);
+             $timeout(() => $scope.student_notification_save = UNSAVED, 1000);
           }
       });  
       
       $scope.$watchGroup(['record.parent_call_1', 'record.parent_call_1_staff','record.parent_call_1_date'], function(newVal, oldVal) { 
       
           if (newVal !== oldVal) {
-              $timeout(() => $scope.parent_call_1_save = 'unsaved', 1000);
+              $timeout(() => $scope.parent_call_1_save = UNSAVED, 1000);
           }
       }); 
       
       $scope.$watchGroup(['record.parent_call_2', 'record.parent_call_2_staff','record.parent_call_2_date'], function(newVal, oldVal) { 
       
           if (newVal !== oldVal) {
-              $scope.parent_call_2_save = 'unsaved';
+              $scope.parent_call_2_save = UNSAVED;
           }
       }); 
       
@@ -214,42 +214,42 @@ define(['angular', 'components/shared/index'], function(angular) {
       $scope.$watchGroup(['record.parent_call_3', 'record.parent_call_3_staff','record.parent_call_3_date'], function(newVal, oldVal) { 
       
           if (newVal !== oldVal) {
-              $timeout(() => $scope.parent_call_3_save = 'unsaved', 1000)
+              $timeout(() => $scope.parent_call_3_save = UNSAVED, 1000);
           }
       }); 
       
         $scope.$watch('record.parent_call_notes', function(newVal, oldVal) { 
       
           if (newVal !== oldVal) {
-              $timeout(() => $scope.parent_call_notes_save = 'unsaved', 1000)
+              $timeout(() => $scope.parent_call_notes_save = UNSAVED, 1000);
           }
       }); 
       
        $scope.$watchGroup(['record.concern_2', 'record.concern_2_req_staff','record.concern_2_req_date','record.concern_2_sent_staff','record.concern_2_sent_date','record.concern_2_notes'], function(newVal, oldVal) { 
       
             if (newVal !== oldVal) {
-                $timeout(() => $scope.concern_2_save = 'unsaved', 1000)
+                $timeout(() => $scope.concern_2_save = UNSAVED, 1000);
             }
         }); 
 
         $scope.$watchGroup(['record.concern_3', 'record.concern_3_req_staff','record.concern_3_req_date','record.concern_3_sent_staff','record.concern_3_sent_date','record.concern_3_notes'], function(newVal, oldVal) { 
       
             if (newVal !== oldVal) {
-                $timeout(() => $scope.concern_3_save = 'unsaved', 1000)
+                $timeout(() => $scope.concern_3_save = UNSAVED, 1000);
             }
         }); 
 
         $scope.$watchGroup(['record.concern_4', 'record.concern_4_req_staff','record.concern_4_req_date','record.concern_4_sent_staff','record.concern_4_sent_date','record.concern_4_notes'], function(newVal, oldVal) { 
       
             if (newVal !== oldVal) {
-                $timeout(() => $scope.concern_4_save = 'unsaved', 1000)
+                $timeout(() => $scope.concern_4_save = UNSAVED, 1000);
             }
         }); 
         
         $scope.$watchGroup(['record.referral', 'record.referral_staff','record.referral_date','record.referral_notes'], function(newVal, oldVal) { 
           
           if (newVal !== oldVal) {
-             $timeout(() => $scope.referral_save = 'unsaved', 1000);
+             $timeout(() => $scope.referral_save = UNSAVED, 1000);
           }
       }); 
       
@@ -266,12 +266,12 @@ define(['angular', 'components/shared/index'], function(angular) {
                     });
             },
             updateRecord: function(recordid, fields, callback) {
-                let table = $psq('u_pei_att_track')
-                table.update(recordid, fields, callback)
+                let table = $psq('u_pei_att_track');
+                table.update(recordid, fields, callback);
             },
             insertRecord: function(studentsdcid, fields, callback) {
-                let table = $psq('u_pei_att_track')
-                table.insertChild({table: 'students', id: studentsdcid}, fields, callback)
+                let table = $psq('u_pei_att_track');
+                table.insertChild({table: 'students', id: studentsdcid}, fields, callback);
             }
         }
     });

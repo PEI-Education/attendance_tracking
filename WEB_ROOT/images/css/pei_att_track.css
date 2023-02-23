@@ -39,12 +39,11 @@ fieldset input, textarea {
 }
 
 .icon {
-  font-size: 20px;
+  font-size: 40px;
 }
 
 .icon-big {
-  font-size: 24px;
-  color: #A9014B;
+  font-size: 40px;
   text-shadow: 0 1px 3px rgb(0 0 0 / 25%);
 }
 
@@ -72,9 +71,9 @@ sl-radio-button::part(base) {
 }
 
 .successText {
-  color: #0066a5;
   text-align: center;
-  line-height: 30px;    
+  line-height: 30px;   
+  font-size: 14px;
 }
 
 .alternateRow {
@@ -97,13 +96,22 @@ sl-radio-button::part(base) {
 .stretchCell {
   display: flex;
   flex-direction: row;
-  padding-right: 10px;
   align-items: center;
 }
 
 .stretch {
+  padding-right: 10px;
   flex-grow: 5;
   height: 30px;
+}
+
+.buttonContainer {
+  display: table-cell;
+  width: 100%;
+  border: 1px solid black;
+  height: 100%;
+  vertical-align: middle;
+  text-align: center;
 }
 
 .center {
@@ -112,23 +120,38 @@ sl-radio-button::part(base) {
 
 .fade-in { 
   animation: fadeIn 5s; 
-  
 }
 
 .green {
-  color: green;
+  color: #76B041;
 }
 
-.icon-text {
-  font-size: 14px;
+.blue {
+  color: #0066a5;
+}
+
+.red {
+  color: #B84A62;
+}
+
+.purple {
+  color: #A9014B;
+
+}
+
+.grey {
+  color: #A9A9A9;
 }
 
 .right {
-  display: inline-block;
   float: right;
 }
 
 .boldtext {
   font-weight: 700;
   font-size: 14px;
+}
+
+input.ng-dirty.ng-invalid {
+color: red
 }
