@@ -63,9 +63,11 @@
         "parent_call_3":~(16;l),
         "parent_call_3_date":"~(17)",
         "parent_call_notes": "~(parent_call_notes;json)",
-        "student_notification": "~(18;json)",
-        "student_notification_date":"~(19)",
-        "student_notification_staff":"~(20;json)",
+        "student": {
+            "student_notification": "~(18;json)",
+            "student_notification_date":"~(19)",
+            "student_notification_staff":"~(20;json)"
+        },
         "concern_2": ~(21;l),
         "concern_2_req_staff": "~(22;json)",
         "concern_2_req_date": "~(23)",
