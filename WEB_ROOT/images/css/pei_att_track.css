@@ -119,6 +119,15 @@ sl-radio-button::part(base) {
   height: 30px;
 }
 
+.buttonContainer {
+  display: table-cell;
+  width: 100%;
+  border: 1px solid black;
+  height: 100%;
+  vertical-align: middle;
+  text-align: center;
+}
+
 .center {
   text-align: center;
 }
