@@ -63,11 +63,11 @@
                                 </td>
                                 <td class="grid-item">
                                     <label for="student_notification_date">Date</label> 
-                                    <input id\="student_notification_date" name="date" ng-model="record.student.student_notification_date" type="text" pss-date-widget  ng-disabled="record.student.student_notification==0 || record.calls.parent_call_1>0" ng-required="record.student.student_notification==1" />
+                                    <input id="student_notification_date" name="date" ng-model="record.student.student_notification_date" type="text" pss-date-widget ng-disabled="record.student.student_notification==0 || record.calls.parent_call_1>0" ng-required="record.student.student_notification==1" />
                                 </td>
                                 <td class="grid-item center">
                                     <div id="student_save" ng-if="student_save=='saving'" data-pss-wait-spinner="small"></div>
-                                    <button type="submit" id="student_save" ng-if="student_save=='unsaved' || student_save=='saved' || !student_save"  ng-disabled="forms.stu.$invalid || forms.stu.$pristine"><i class="fi-checkbox icon"></i></button>
+                                    <button type="submit" id="student_save" ng-if="student_save=='unsaved' || student_save=='saved' || !student_save" ng-disabled="forms.stu.$invalid || forms.stu.$pristine"><i class="fi-checkbox icon"></i></button>
                                 </td>
                             </tr>
                         </tbody>
@@ -92,7 +92,7 @@
                             <tr>
                                 <td class="grid-item stretchCell">
                                     <span class="label">Call #1 &nbsp;</span>
-                                    <sl-radio-group label="" name="parent_call_1" value="{{record.calls.parent_call_1}}" >
+                                    <sl-radio-group label="" name="parent_call_1" value="{{record.calls.parent_call_1}}">
                                         <sl-radio-button class="call-na" size="small" ng-click="recordCall($event, 'parent_call_1',0)" value="0" ng-disabled="!record.student.student_notification || record.calls.parent_call_2>0 || concerns.concern_2_req==1">Not attempted</sl-radio-button>
                                         <sl-radio-button class="call-nc" size="small" value="1" ng-click="recordCall($event, 'parent_call_1',1)" ng-disabled="!record.student.student_notification || record.calls.parent_call_2>0 || concerns.concern_2_req==1">No Contact</sl-radio-button>
                                         <sl-radio-button class="call-co" size="small" value="3" ng-click="recordCall($event, 'parent_call_1',3)" ng-disabled="!record.student.student_notification || record.calls.parent_call_2>0 || concerns.concern_2_req==1">Contact Made</sl-radio-button>
@@ -115,11 +115,11 @@
                                 <td class="grid-item stretchCell">
                                     <span class="label">Call #2 &nbsp;</span>
                                     <sl-radio-group label="" name="parent_call_2" value="{{record.calls.parent_call_2}}" >
-                                        <sl-radio-button class="call-na" size="small" ng-click="recordCall($event, 'parent_call_2',0)" value="0" ng-disabled="record.calls.parent_call_1==0 || record.calls.parent_call_3>0 || concerns.concern_2_req==1">Not attempted</sl-radio-button>
-                                        <sl-radio-button class="call-nc" size="small" value="1" ng-click="recordCall($event, 'parent_call_2',1)" ng-disabled="record.calls.parent_call_1==0 || record.calls.parent_call_3>0  || concerns.concern_2_req==1">No Contact</sl-radio-button>
-                                        <sl-radio-button class="call-co" size="small" value="3" ng-click="recordCall($event, 'parent_call_2',3)" ng-disabled="record.calls.parent_call_1==0 || record.calls.parent_call_3>0  || concerns.concern_2_req==1">Contact Made</sl-radio-button>
+                                        <sl-radio-button class="call-na" size="small" ng-click="recordCall($event, 'parent_call_2',0)" value="0" ng-disabled="record.calls.parent_call_1==0 ||record.calls.parent_call_1==3 || record.calls.parent_call_3>0 || concerns.concern_2_req==1">Not attempted</sl-radio-button>
+                                        <sl-radio-button class="call-nc" size="small" value="1" ng-click="recordCall($event, 'parent_call_2',1)" ng-disabled="record.calls.parent_call_1==0 || record.calls.parent_call_1==3 || record.calls.parent_call_3>0  || concerns.concern_2_req==1">No Contact</sl-radio-button>
+                                        <sl-radio-button class="call-co" size="small" value="3" ng-click="recordCall($event, 'parent_call_2',3)" ng-disabled="record.calls.parent_call_1==0 || record.calls.parent_call_1==3 || record.calls.parent_call_3>0  || concerns.concern_2_req==1">Contact Made</sl-radio-button>
                                     </sl-radio-group>
-                                </td>
+                                </td>f
                                 <td class="grid-item">
                                     <label for="parent_call_2_staff">Contacted by</label> 
                                     <input size="40" id="parent_call_2_staff" name="staff" ng-model="record.calls.parent_call_2_staff" ng-disabled="record.calls.parent_call_2==0 || record.calls.parent_call_3>0  || concerns.concern_2_req==1" ng-required="record.calls.parent_call_2>0" />
@@ -185,7 +185,7 @@
                         <tr>
                             <td class="grid-item stretchCell">
                                 <label class="form-control" for="concern_2_req">
-                                <input type="checkbox" ng-model="concerns.concern_2_req" ng-click="handleConcern($event, 'concern_2','concern_2_req')" name="concern_2_req" id="concern_2_req" ng-disabled="countCalls() || concerns.concern_2_sent===true" value="1" /> Flag concern
+                                <input type="checkbox" ng-model="concerns.concern_2_req" ng-click="handleConcern($event, 'concern_2','concern_2_req')" name="concern_2_req" id="concern_2_req" ng-disabled="countCalls() < 3|| concerns.concern_2_sent===true" value="1" /> Flag concern
                                 </label>
                             </td>
                             <td class="grid-item">
@@ -356,6 +356,10 @@
                                     <label class="form-control" for="referral">
                                     <input type="checkbox" ng-model="record.referral.referral" ng-click="toggle($event, 'referral', 'referral')" name="referral" id="referral" ng-true-value="1" ng-false-value="0" ng-disabled="disableReferral()"> Notification to the Director
                                     </label>
+                                    <!--
+                                   <button id="referral_btn" class="stretch" ng-show="record.referral.referral==0" ng-click="handleReferral()" ng-disabled="disableReferral()">Notification to Director</button>
+                                   <div class="successText stretch" ng-show="record.referral.referral>0"><i class="fi-check"></i> Concern flagged</div>
+                                    <input type="hidden" id="referral" name="referral" ng-model="record.referral.referral" data-step="referral" />-->
                                 </td>
                                 <input type="hidden" ng-model="record.referral.referral" name="referral" id="referral">
                                 <td class="grid-item">
