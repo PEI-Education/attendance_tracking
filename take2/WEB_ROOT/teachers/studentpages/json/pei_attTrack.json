@@ -44,8 +44,8 @@
     	JOIN students s 
     	  ON u.studentsdcid = s.dcid
         WHERE
-    	    u.termid = ~(curtermid) AND
-    	        s.id = ~(curstudid)
+    	    u.termid = ~[x:getbase_termid]
+    	    and s.id = ~(curstudid)
     ) WHERE rn = 1;nonemessage=-1]
 	{
 	    "id":"~(1)",
