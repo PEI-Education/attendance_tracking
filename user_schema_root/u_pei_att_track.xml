@@ -11,6 +11,7 @@
         <field name="concern_3_sent_date" type="Date"/>
         <field name="concern_2_req_staff" type="String" length="80"/>
         <field name="parent_call_1_date" type="Date"/>
+        <field name="grade_in_term" type="Integer"/>
         <field name="concern_4_sent_staff" type="String" length="80"/>
         <field name="concern_3_req_staff" type="String" length="80"/>
         <field name="concern_2_notes" type="String" length="4000"/>
