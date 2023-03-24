@@ -1,6 +1,6 @@
 @media print {
    .no-print{
-       display : none !important;
+      display : none !important;
    }
 }
 
@@ -92,7 +92,7 @@ sl-radio-button::part(base) {
 
 .save-svg {
   margin: 5px;
-  padding: 0;
+  padding: 0px;
 }
 
 .notes {
@@ -207,16 +207,38 @@ input.ng-invalid, textarea.ng-invalid {
   color: #1E8449;
 }
 
-.emailed {
-  font-size: 0.8em;
-  color: #0066a5;
+.tooltip-wrap {
+ position: relative;
+}
+
+.tooltip-wrap .tooltip-content {
+ position:absolute;
+ 
+ /* vertically center */
+ top:50%;
+ transform:translateY(-50%);
+ 
+ /* move to right */
+ left:10%;
+ margin-left:20px; /* and add a small left margin */
+ 
+ /* basic styles */
+ width:400px;
+ padding:10px;
+ border-radius:10px;
+ background:#000;
+ color: #fff;
+ text-align:left;
+ z-index:99999;
+
+ display:none; /* hide by default */
+ 
+}
+
+.tooltip-wrap:hover .tooltip-content {
+ display: block;
 }
 
 .textareaCounter {
    font-size: 0.8rem !important;
 }
-
-.printable {
-   width: 8in;
-   display: none;
-}                                     
