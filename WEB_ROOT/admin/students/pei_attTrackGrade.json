@@ -1,0 +1,11 @@
+~[tlist_sql;
+select
+    e.grade_level
+from ps_schoolenrollment e
+where
+    e.studentid = ~(curstudid)
+    and e.yearid = ~(curyearid)
+order by 1;nonemessage=-9] 
+~(1)
+[/tlist_sql]
+

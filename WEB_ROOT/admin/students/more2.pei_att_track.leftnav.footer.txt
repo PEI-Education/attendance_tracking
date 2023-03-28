@@ -1,0 +1,24 @@
+    <!-- Add PEI Attendance Tracking Info -->
+    ~[if.~(studentscreenaccess;attendance.html)=1]
+    
+    <script>
+    
+    $j(document).ready(function() {
+        
+    
+    		$j('ul#std_academics').append(`<li><a href="pei_attendance_tracking.html?frn=~(studentfrn)">Attendance Tracking</a></li>`);
+         
+    
+    		$j('ul#std_academics li').sort(function(a, b)
+    			{
+    				if($j(a).text() < $j(b).text()) return -1;
+    				if($j(a).text() > $j(b).text()) return 1;
+    				return 0;
+    			}
+    		).appendTo('ul#std_academics');
+    	}
+    ); 
+    
+    </script>
+    [/if]
+    <!-- end PEI Attenance Tracking Info -->
