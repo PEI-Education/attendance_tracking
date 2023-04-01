@@ -1,0 +1,335 @@
+<!--
+TemplateName:Admin
+-->
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="Author" content="Luke Walker, PEI Dept of Education">
+    <meta name="Version" content="0.4">
+	<title>Mass Update Attendance Checklists</title>
+	<link rel="stylesheet" type="text/css" href="/admin/pei_reports/css/foundation-icons.css" />
+<!-- required scripts -->
+	~[wc:commonscripts] 
+	<script src="/scripts/psQuery/psQuery.js"></script>
+<!-- Required style sheets: screen.css, and print.css --> 
+	<link href="/images/css/screen.css" rel="stylesheet" media="screen">
+	<link href="/images/css/print.css" rel="stylesheet" media="print">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.0.0/dist/themes/light.css" />
+    <script type="module" src="https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.0.0/dist/shoelace.js"></script>
+    <link href="/images/css/pei_att_track.css" rel="stylesheet">
+	<style>
+	   #wait-spinner-div {
+            position: fixed;
+            top: 55%;
+            left: 55%;
+        }
+        .padding5 {
+            padding: 5px;
+        }
+        .half-container {
+            width: 49%;
+            display: inline-block;
+            vertical-align: top;
+        }
+	</style>
+</head> 
+<body> 
+	~[wc:admin_header_css] 
+        <!-- breadcrumb start --><a href="/admin/home.html" target="_top">~[text:psx.html.admin_students.previousgrades.start_page]</a> &gt; <a href="/admin/reports/home.html">~[text:psx.html.admin_reports.runreports.reports]</a> &gt; <a href="attendance_tracking.html">Attendance Tracking</a> &gt; Mass Update Attendance Checklists<!-- breadcrumb end --> 
+<!-- start of main menu and content --> 555
+	~[wc:admin_navigation_css]
+<!-- Start of Page --> 
+	<h1>Mass Update Attendance Checklists</h1> 
+<!-- start of content area --> 
+    <div class="box-round" data-require-path="components/attTrack/index" data-module-name="attApp" ng-cloak>
+        <div ng-controller="attUpdateCtrl">
+            <input type="hidden" id="staffName" value="~[x:username;firstlast]" />
+            <input type="hidden" id="dateToday" value="~[date]" />
+
+    	    <fieldset>
+    	        <legend>1. Select a Checklist Step</legend>
+                
+                <div class="padding5">                
+                    <label for="stepChoice">Modify step: 
+                        <select id="stepChoice" ng-model="stepChoice" ng-options="step.label for step in steps">
+                            <option value="">Select a step...</option>
+                        </select>
+                    </label>
+                    <button ng-click="verifySelection()">Continue</button>
+                    &nbsp; &nbsp; &nbsp;  Choose the checklist step you'd like to update for the {{ gridData.length }} selected students.
+                </div>
+                <div ng-show="showValidation">
+                    <div class="half-container green">
+                        <h3>Valid Users</h3>
+                        <p>The following students in your selection are eligible for changes to the selected checklist step and changes will be applied:</p>
+                        <ul>
+                            <li ng-repeat="student in validStudents">{{ student.firstName }} {{ student.lastName }}</li>
+                        </ul>
+                    </div>
+                    <div class="half-container red">
+                        <h3>Invalid Users</h3>
+                        <p>The following students in your selection are <strong>not</strong> eligible for changes to the selected checklist step and will not be modified:</p>
+                        <ul>
+                            <li ng-repeat="student in invalidStudents">{{ student.firstName }} {{ student.lastName }}</li>
+                        </ul>
+                    </div>
+                </div>
+            </fieldset>
+            <fieldset>
+                <legend>2. Modify Required Fields</legend>
+                <form ng-if="stepSelection.id === 2" name="forms.student_notification" id="stuForm"  ng-submit="save('student_notification')" novalidate class="validatedForm" data-pss-validation-form data-dirty-state-check="true">
+                    <table class="checklistTable">
+                        <colgroup>
+                            <col style="width:35%;" />
+                            <col style="width:38%;" />
+                            <col style="width:18%;" />
+                            <col style="width: 9%" />
+                        </colgroup>
+                        <tr>
+                           <td colspan="4">
+                               <h3>Student Notification</h3>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="grid-item stretchCell">
+                                <label class="form-control" for="student_notification">
+                                <input type="checkbox" ng-model="$parent.student_notification" ng-click="toggle('student_notification')" name="student_notification" id="student_notification"> Discussion of concern
+                                </label>
+                            </td>
+                            <td class="grid-item">
+                                <label for="student_notification_staff">Contacted by</label> 
+                                <input size="40" id="student_notification_staff" name="staff" length="40" ng-model="$parent.student_notification_staff"  />
+                            </td>
+                            <td class="grid-item">
+                                <label for="student_notification_date">Date</label> 
+                                <input id="student_notification_date" name="date" ng-model="$parent.student_notification_date" type="text" pss-date-widget />
+                            </td>
+                            <td class="grid-item center">
+                                <button type="submit" id="student_save" ng-disabled="forms.student_notification.$invalid || forms.student_notification.$pristine"><i class="fi-checkbox icon"></i></button>
+                            </td>
+                        </tr>
+                    </table>
+                </form>
+                <form ng-if="stepSelection.id===3" name="forms.parent_call_1" id="call2Form" ng-submit="save('parent_call_1')" novalidate class="validatedForm" data-pss-validation-form data-dirty-state-check="true">
+                    <table class="checklistTable" >
+                        <colgroup>
+                            <col style="width:35%;" />
+                            <col style="width:38%;" />
+                            <col style="width:18%;" />
+                            <col style="width:9%;" />
+                        </colgroup>
+                        <tbody>
+                            <tr>
+                                <td colspan="4">
+                                    <h3>Call #1</h3>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="grid-item stretchCell">
+                                    <sl-radio-group label="" name="parent_call_1" value="{{parent_call_1}}" >
+                                        <sl-radio-button class="call-na" size="small" value="0" ng-click="threeWayToggle('parent_call_1',0)">Not attempted</sl-radio-button>
+                                        <sl-radio-button class="call-nc" size="small" value="1" ng-click="threeWayToggle('parent_call_1',1)" >No Contact</sl-radio-button>
+                                        <sl-radio-button class="call-co" size="small" value="3" ng-click="threeWayToggle('parent_call_1',3)" >Contact Made</sl-radio-button>
+                                    </sl-radio-group>
+                                </td>
+                                <td class="grid-item">
+                                    <label for="parent_call_1_staff">Contacted by</label> 
+                                    <input size="40" id="parent_call_1_staff" name="staff" ng-model="$parent.parent_call_1_staff" ng-disabled="parent_call_1==0" ng-required="parent_call_1>0" />
+                                </td>
+                                <td class="grid-item">
+                                    <label for="parent_call_1_date">Date</label> 
+                                    <input id="parent_call_1_date" name="date" ng-model="$parent.parent_call_1_date" type="text" pss-date-widget ng-disabled="parent_call_1==0" ng-required="parent_call_1>0" />
+                                </td>
+                                <td class="grid-item center" rowspan="2">
+                                    <button type="submit" id="call_save"><i class="fi-checkbox icon no-print"></i></button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td colspan="3" class="grid-item">
+                                    <label for="parent_call_notes" class="notes-label">Notes</label>
+                                    <textarea class="notes" id="parent_call_notes" name="parent_call_notes" ng-model="$parent.parent_call_notes" ng-disabled="parent_call_1==0"  maxlength="4000"></textarea>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </form>
+                <form ng-if="stepSelection.id===4" name="forms.parent_call_2" id="call2Form" ng-submit="save('paren_call_2')" novalidate class="validatedForm" data-pss-validation-form data-dirty-state-check="true">
+                    <table class="checklistTable">
+                        <colgroup>
+                            <col style="width:35%;" />
+                            <col style="width:38%;" />
+                            <col style="width:18%;" />
+                            <col style="width:9%;" />
+                        </colgroup>
+                        <tbody>
+                            <tr>
+                                <td colspan="4">
+                                    <h3>Call #2</h3>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="grid-item stretchCell">
+                                    <sl-radio-group label="" name="parent_call_2" value="{{$parent.parent_call_2}}" >
+                                        <sl-radio-button class="call-na" size="small" value="0" ng-click="threeWayToggle('parent_call',2,0)">Not attempted</sl-radio-button>
+                                        <sl-radio-button class="call-nc" size="small" value="1" ng-click="threeWayToggle('parent_call',2,1)">No Contact</sl-radio-button>
+                                        <sl-radio-button class="call-co" size="small" value="3" ng-click="threeWayToggle('parent_call',2,3)">Contact Made</sl-radio-button>
+                                    </sl-radio-group>
+                                </td>
+                                <td class="grid-item">
+                                    <label for="parent_call_2_staff">Contacted by</label> 
+                                    <input size="40" id="parent_call_2_staff" name="staff" ng-model="$parent.parent_call_2_staff" />
+                                </td>
+                                <td class="grid-item">
+                                    <label for="parent_call_2_date">Date</label> 
+                                    <input id="parent_call_2_date" name="date" ng-model="$parent.3parent_call_2_date" type="text" pss-date-widget  />
+                                </td>
+                                <td class="grid-item center" rowspan="4">
+                                    <div id="calls_save" ng-if="calls_save=='saving'" data-pss-wait-spinner="small"></div>
+                                    <button type="submit" ng-click="save($event, 'calls')" id="calls_save" ng-if="calls_save=='unsaved' || calls_save=='saved' || !calls_save"  ng-disabled="forms.calls.$invalid || forms.calls.$pristine"><i class="fi-checkbox icon no-print"></i></button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td colspan="3" class="grid-item">
+                                    <label for="parent_call_notes" class="notes-label">Notes</label>
+                                    <textarea class="notes" id="parent_call_notes" name="parent_call_notes" ng-model="$parent.parent_call_notes" maxlength="4000"></textarea>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </form>
+                <form ng-if="stepSelection.id===5" name="forms.parent_call_3" id="call3Form" ng-submit="save('parent_call_3')" novalidate class="validatedForm" data-pss-validation-form data-dirty-state-check="true">
+                    <table class="checklistTable">
+                        <colgroup>
+                            <col style="width:35%;" />
+                            <col style="width:38%;" />
+                            <col style="width:18%;" />
+                            <col style="width:9%;" />
+                        </colgroup>
+                        <tbody>
+                            <tr>
+                                <td colspan="4">
+                                    <h3>Call #3</h3>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="grid-item stretchCell">
+                                    <sl-radio-group label="" name="parent_call_3" value="{{$parent.parent_call_3}}" >
+                                        <sl-radio-button class="call-na" size="small" ng-click="threeWayToggle('parent_call_3',0)" value="0">Not attempted</sl-radio-button>
+                                        <sl-radio-button class="call-nc" size="small" value="1" ng-click="threeWayToggle('parent_call_3',1)">No Contact</sl-radio-button>
+                                        <sl-radio-button class="call-co" size="small" value="3" ng-click="threeWayToggle('parent_call_3',3)">Contact Made</sl-radio-button>
+                                    </sl-radio-group>
+                                </td>
+                                <td class="grid-item">
+                                    <label for="parent_call_3_staff">Contacted by</label> 
+                                    <input size="40" id="parent_call_3_staff" name="staff" ng-model="$parent.parent_call_3_staff"  />
+                                </td>
+                                <td class="grid-item">
+                                    <label for="parent_call_3_date">Date</label> 
+                                    <input id="parent_call_3_date" name="date" ng-model="$parent.parent_call_3_date" type="text" pss-date-widget />
+                                </td>
+                                <td class="grid-item center" rowspan="4">te
+                                    <button type="submit" ng-click="save('parent_call_3')" id="calls_save" ><i class="fi-checkbox icon no-print"></i></button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td colspan="3" class="grid-item">
+                                    <label for="parent_call_notes" class="notes-label">Notes</label>
+                                    <textarea class="notes" id="parent_call_notes" name="parent_call_notes" ng-model="$parent.parent_call_notes" maxlength="4000"></textarea>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </form>                
+                <form ng-if="stepSelection.id===7" name="forms.concern_2" id="concern2Form" ng-submit="save($event,'concern2')" novalidate class="validatedForm" data-pss-validation-form data-dirty-state-check="true">
+                    <table class="checklistTable">
+                        <colgroup>
+                            <col style="width:35%;" />
+                            <col style="width:38%;" />
+                            <col style="width:18%;" />
+                            <col style="width:9%;" />
+                        </colgroup>  
+                        <tbody>
+                            <tr>
+                                <td colspan="4">
+                                    <h3>Written Notification #1</h3>
+                                </td>
+                            </tr>
+                        3    <tr>
+                                <td class="grid-item stretchCell">
+                                    <label class="form-control" for="concern_2_req">
+                                    <input type="checkbox" ng-model="concerns.concern_2_req" ng-click="threeWayToggle('concern_2','concern_2_req')" name="concern_2_req" id="concern_2_req" value="1" /> Flag concern to admin
+                                    </label>
+                                </td>
+                                <td class="grid-item">
+                                    <label for="concern_2_req_staff">Contacted by</label> 
+                                    <input size="40" id="concern_2_req_staff" name="req_staff" length="40" ng-model="record.concern_2.concern_2_req_staff" ng-disabled="!concerns.concern_2_req" ng-required="concerns.concern_2_req" />
+                                </td>
+                                <td class="grid-item">
+                                    <label for="concern_2_req_date">Date</label> 
+                                    <input id="concern_2_req_date" name="req_date" ng-model="record.concern_2.concern_2_req_date" type="text" pss-date-widget  ng-disabled="!concerns.concern_2_req" ng-required="concerns.concern_2_req"/>
+                                </td>
+                                <td class="save-notes" rowspan="2">
+                                    <div id="concern_2_save" ng-if="concern_2_save=='saving'" data-pss-wait-spinner="small"></div>
+                                    <button type="submit" ng-click="save($event,'concern_2')" id="concern_2_save" ng-if="concern_2_save=='unsaved' || concern_2_save=='saved' || !concern_2_save"  ng-disabled="forms.concerns.$invalid || forms.concerns.$pristine"><i class="fi-checkbox icon"></i></button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td colspan="3" class="grid-item">
+                                    <label class="notes-label" for="concern_2_notes">Notes (required)</label>
+                                    <textarea class="notes" id="concern_2_notes" name="notes" ng-model="record.concern_2.concern_2_notes" ng-disabled="!concerns.concern_2_req" ng-required="concerns.concern_2_req===true" ng-minlength="20" ng-maxlength="4000"></textarea>
+                                    
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </form>        
+                <form ng-if="stepSelection.id===8" name="forms.concerns" id="concern2Form" ng-submit="save($event,'concern2')" novalidate class="validatedForm" data-pss-validation-form data-dirty-state-check="true">
+                    <table class="checklistTable">
+                        <colgroup>
+                            <col style="width:35%;" />
+                            <col style="width:38%;" />
+                            <col style="width:18%;" />
+                            <col style="width:9%;" />
+                        </colgroup>  
+                        <tbody>
+                            <tr>
+                                <td colspan="4">
+                                    <h3>Written Notification #1</h3>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="grid-item stretchCell">
+                                    <label class="form-control" for="concern_2_sent">
+                                    <input type="checkbox" ng-model="concerns.concern_2_sent" ng-click="threeWayToggle('concern_2','concern_2_sent')" name="concern_2_sent" id="concern_2_sent" value="1" /> Notification sent
+                                    </label>
+                                </td>
+                                <td class="grid-item">
+                                    <label for="concern_2_sent_staff">Contacted by</label> 
+                                    <input size="40" id="concern_2_sent_staff" name="sent_staff" length="40" ng-model="record.concern_2.concern_2_sent_staff" ng-disabled="!concerns.concern_2_sent" ng-required="concerns.concern_2_sent" />
+                                </td>
+                                <td class="grid-item">
+                                    <label for="concern_2_sent_date">Date</label> 
+                                    <input id="concern_2_sent_date" name="sent_date" ng-model="record.concern_2.concern_2_sent_date" type="text" pss-date-widget ng-disabled="!concerns.concern_2_sent" ng-required="concerns.concern_2_sent===true" />
+                                </td>
+                                <td class="save-notes" rowspan="2">
+                                    <div id="concern_2_save" ng-if="concern_2_save=='saving'" data-pss-wait-spinner="small"></div>
+                                    <button type="submit" ng-click="save($event,'concern_2')" id="concern_2_save" ng-if="concern_2_save=='unsaved' || concern_2_save=='saved' || !concern_2_save"  ng-disabled="forms.concerns.$invalid || forms.concerns.$pristine"><i class="fi-checkbox icon"></i></button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td colspan="3" class="grid-item">
+                                    <label class="notes-label" for="concern_2_notes">Notes (required)</label>
+                                    <textarea class="notes" id="concern_2_notes" name="notes" ng-model="record.concern_2.concern_2_notes" ng-maxlength="4000"></textarea>
+                                    
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </form>                       
+            </fieldset>
+        </div>
+	</div> 
+<!-- end of content area --> 
+	~[wc:admin_footer_css] 
+</body> 
+</html>
