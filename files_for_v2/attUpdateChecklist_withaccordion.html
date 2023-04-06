@@ -1,0 +1,569 @@
+<!--
+TemplateName:Admin
+-->
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="Author" content="Luke Walker, PEI Dept of Education">
+    <meta name="Version" content="0.4">
+	<title>Mass Update Attendance Checklists</title>
+	<link rel="stylesheet" type="text/css" href="/admin/pei_reports/css/foundation-icons.css" />
+<!-- required scripts -->
+	~[wc:commonscripts] 
+	<script src="/scripts/psQuery/psQuery.js"></script>
+<!-- Required style sheets: screen.css, and print.css --> 
+	<link href="/images/css/screen.css" rel="stylesheet" media="screen">
+	<link href="/images/css/print.css" rel="stylesheet" media="print">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.0.0/dist/themes/light.css" />
+    <script type="module" src="https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.0.0/dist/shoelace.js"></script>
+    <link href="/images/css/pei_att_track.css" rel="stylesheet">
+	<style>
+	   #wait-spinner-div {
+            position: fixed;
+            top: 55%;
+            left: 55%;
+        }
+        .padding5 {
+            padding: 5px;
+        }
+        .half-container {
+            width: 49%;
+            display: inline-block;
+            vertical-align: top;
+        }
+	</style>
+</head> 
+<body> 
+	~[wc:admin_header_css] 
+        <!-- breadcrumb start --><a href="/admin/home.html" target="_top">~[text:psx.html.admin_students.previousgrades.start_page]</a> &gt; <a href="/admin/reports/home.html">~[text:psx.html.admin_reports.runreports.reports]</a> &gt; <a href="attendance_tracking.html">Attendance Tracking</a> &gt; Mass Update Attendance Checklists<!-- breadcrumb end --> 
+<!-- start of main menu and content --> 
+	~[wc:admin_navigation_css]
+<!-- Start of Page --> 
+	<h1>Mass Update Attendance Checklists</h1> 
+<!-- start of content area --> 
+    <div class="box-round" data-require-path="components/attTrack/index" data-module-name="attApp" ng-cloak>
+        <div ng-controller="attUpdateCtrl">
+            <div id="wait-spinner-div" ng-if="spinner.wait">
+                <div data-pss-wait-spinner="large"></div>
+            </div>
+            <input type="hidden" id="staffName" value="~[x:username;firstlast]" />
+            <input type="hidden" id="dateToday" value="~[date]" />
+         
+         <div class="accordion wizard" id="testWizardAccordion">
+    	      <h3>1. Select a Checklist Step</h3>
+            <div>    
+                <div class="padding5">                
+                    <label for="stepChoice">Modify step: 
+                        <select id="stepChoice" ng-model="stepChoice" ng-options="step.label for step in steps" ng-disabled="task.allDone">
+                            <option value="">Select a step...</option>
+                        </select>
+                    </label>
+                    <button ng-click="verifySelection()" ng-disabled="task.allDone">Continue</button>
+                    &nbsp; &nbsp; &nbsp;  Choose the checklist step you'd like to update for the {{ gridData.length }} selected students.
+                </div>
+                <div ng-show="showValidation">
+                    <div class="half-container green" ng-if="validStudents.length > 0">
+                        <h3>Valid Students</h3>
+                        <p>The following students in your selection are eligible for changes to the selected checklist step and changes will be applied:</p>
+                        <ul>
+                            <li ng-repeat="student in validStudents">{{ student.firstName }} {{ student.lastName }}</li>
+                        </ul>
+                    </div>
+                    <div class="half-container green" ng-if="!validStudents || validStudents.length===0">
+                        <h3>Valid Students</h3>
+                        <p>No students in your current selection are eligible for edits to the selected step. For any given student, you can only edit the most recently completed step or add the next step. <strong>Please select a different step above.</strong></p>
+                    </div>
+                    <div class="half-container red">
+                        <h3>Invalid Students</h3>
+                        <p>The following students in your selection are <strong>not</strong> eligible for changes to the selected checklist step and will not be modified:</p>
+                        <ul>
+                            <li ng-repeat="student in invalidStudents">{{ student.firstName }} {{ student.lastName }}</li>
+                        </ul>
+                    </div>
+                </div>
+            </div> 
+            <h3>2. Modify Info</h3>
+            <div>
+                <div>Any information entered in these fields will be copied to the appropriate step in each valid student's checklist.</div>
+                <form ng-if="stepSelection.id === 2" name="forms.student_notification" id="stuForm" novalidate class="validatedForm" data-pss-validation-form data-dirty-state-check="true">
+                    <table class="checklistTable">
+                        <colgroup>
+                            <col style="width:35%;" />
+                            <col style="width:38%;" />
+                            <col style="width:18%;" />
+                            <col style="width: 9%" />
+                        </colgroup>
+                        <tr>
+                           <td colspan="4">
+                               <h3>Student Notification</h3>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="grid-item stretchCell">
+                                <label class="form-control" for="student_notification">
+                                <input type="checkbox" ng-click="setStaffDate('sn','student_notification')" ng-model="sn.student_notification" name="student_notification" id="student_notification" ng-true-value="1" ng-false-value="0"> Discussion of concern
+                                </label>
+                            </td>
+                            <td class="grid-item">
+                                <label for="student_notification_staff">Contacted by</label> 
+                                <input size="40" id="student_notification_staff" name="staff" length="40" ng-model="sn.student_notification_staff"  />
+                            </td>
+                            <td class="grid-item">
+                                <label for="student_notification_date">Date</label> 
+                                <input id="student_notification_date" name="date" ng-model="sn.student_notification_date" type="text" pss-date-widget />
+                            </td>
+                            <td class="grid-item center">
+                                <button type="submit" id="student_save" ng-click="save('sn')"><i class="fi-checkbox icon"></i></button>
+                            </td>
+                        </tr>
+                    </table>
+                </form>
+                <form ng-if="stepSelection.id===3" name="forms.parent_call_1" id="call2Form" novalidate class="validatedForm" data-pss-validation-form data-dirty-state-check="true">
+                    <table class="checklistTable" >
+                        <colgroup>
+                            <col style="width:35%;" />
+                            <col style="width:38%;" />
+                            <col style="width:18%;" />
+                            <col style="width:9%;" />
+                        </colgroup>
+                        <tbody>
+                            <tr>
+                                <td colspan="4">
+                                    <h3>Call #1</h3>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="grid-item stretchCell">
+                                    <sl-radio-group label="" name="parent_call_1" value="{{pc1.parent_call_1}}" >
+                                        <sl-radio-button class="call-na" size="small" value="0" ng-click="setValues('pc1','parent_call_1',0)">Not attempted</sl-radio-button>
+                                        <sl-radio-button class="call-nc" size="small" value="1" ng-click="setValues('pc1','parent_call_1',1)" >No Contact</sl-radio-button>
+                                        <sl-radio-button class="call-co" size="small" value="3" ng-click="setValues('pc1','parent_call_1',3)" >Contact Made</sl-radio-button>
+                                    </sl-radio-group>
+                                </td>
+                                <td class="grid-item">
+                                    <label for="parent_call_1_staff">Contacted by</label> 
+                                    <input size="40" id="parent_call_1_staff" name="staff" ng-model="pc1.parent_call_1_staff" />
+                                </td>
+                                <td class="grid-item">
+                                    <label for="parent_call_1_date">Date</label> 
+                                    <input id="parent_call_1_date" name="date" ng-model="pc1.parent_call_1_date" type="text" pss-date-widget />
+                                </td>
+                                <td class="grid-item center" rowspan="2">
+                                    <button type="submit" id="call_save" ng-click="save('pc1')"><i class="fi-checkbox icon no-print"></i></button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td colspan="3" class="grid-item">
+                                    <label for="parent_call_notes" class="notes-label">Notes</label>
+                                    <p class="help-text">Any previously entered notes for this step will be overwritten.</p>
+                                    <textarea class="notes" id="parent_call_notes" name="parent_call_notes" ng-model="pc1.parent_call_notes" maxlength="4000"></textarea>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </form>
+                <form ng-if="stepSelection.id===4" name="forms.parent_call" id="call2Form" novalidate class="validatedForm" data-pss-validation-form data-dirty-state-check="true">
+                    <table class="checklistTable">
+                        <colgroup>
+                            <col style="width:35%;" />
+                            <col style="width:38%;" />
+                            <col style="width:18%;" />
+                            <col style="width:9%;" />
+                        </colgroup>
+                        <tbody>
+                            <tr>
+                                <td colspan="4">
+                                    <h3>Call #2</h3>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="grid-item stretchCell">
+                                    <sl-radio-group label="" name="parent_call_2" value="{{pc2.parent_call_2}}">
+                                        <sl-radio-button class="call-na" size="small" value="0" ng-click="setValues('pc2','parent_call_2',0)">Not attempted</sl-radio-button>
+                                        <sl-radio-button class="call-nc" size="small" value="1" ng-click="setValues('pc2','parent_call_2',1)">No Contact</sl-radio-button>
+                                        <sl-radio-button class="call-co" size="small" value="3" ng-click="setValues('pc2','parent_call_2',3)">Contact Made</sl-radio-button>
+                                    </sl-radio-group>
+                                </td>
+                                <td class="grid-item">
+                                    <label for="parent_call_2_staff">Contacted by:</label> 
+                                    <input size="40" id="parent_call_2_staff" name="staff" ng-model="pc2.parent_call_2_staff" ng-required="parent_call_2>0" />
+                                </td>
+                                <td class="grid-item">
+                                    <label for="parent_call_2_date">Date:</label> 
+                                    <input id="parent_call_2_date" name="date" ng-model="pc2.parent_call_2_date" type="text" pss-date-widget  ng-required="parent_call_2>0" />
+                                </td>
+                                <td class="grid-item center" rowspan="4">
+                                    <button type="submit" id="calls_save" ng-click="save('pc2')"><i class="fi-checkbox icon no-print"></i></button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td colspan="3" class="grid-item">
+                                    <label for="parent_call_notes" class="notes-label">Notes</label>
+                                    <p class="help-text">Any previously entered notes for this step will be overwritten.</p>
+                                    <textarea class="notes" id="parent_call_notes" name="pc2.parent_call_notes" ng-model="parent_call_notes" maxlength="4000"></textarea>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </form>
+                <form ng-if="stepSelection.id===5" name="forms.parent_call_3" id="call3Form" novalidate class="validatedForm" data-pss-validation-form data-dirty-state-check="true">
+                    <table class="checklistTable">
+                        <colgroup>
+                            <col style="width:35%;" />
+                            <col style="width:38%;" />
+                            <col style="width:18%;" />
+                            <col style="width:9%;" />
+                        </colgroup>
+                        <tbody>
+                            <tr>
+                                <td colspan="4">
+                                    <h3>Call #3</h3>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="grid-item stretchCell">
+                                    <sl-radio-group label="" name="parent_call_3" value="{{pc3.parent_call_3}}" >
+                                        <sl-radio-button class="call-na" size="small" value="0" ng-click="setValues('pc3','parent_call_3',0)">Not attempted</sl-radio-button> 
+                                        <sl-radio-button class="call-nc" size="small" value="1" ng-click="setValues('pc3','parent_call_3',1)">No Contact</sl-radio-button>
+                                        <sl-radio-button class="call-co" size="small" value="3" ng-click="setValues('pc3','parent_call_3',3)">Contact Made</sl-radio-button>
+                                    </sl-radio-group>
+                                </td>
+                                <td class="grid-item">
+                                    <label for="parent_call_3_staff">Contacted by:</label> 
+                                    <input size="40" id="parent_call_3_staff" name="staff" ng-model="pc3.parent_call_3_staff" ng-required="parent_call_3>0" />
+                                </td>
+                                <td class="grid-item">
+                                    <label for="parent_call_3_date">Date:</label> 
+                                    <input id="parent_call_3_date" name="date" ng-model="pc3.parent_call_3_date" type="text" pss-date-widget ng-required="parent_call_3>0" />
+                                </td>
+                                <td class="grid-item center" rowspan="4">
+                                    <button type="submit" id="calls_save" ng-click="save('pc3')"><i class="fi-checkbox icon no-print"></i></button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td colspan="3" class="grid-item">
+                                    <label for="parent_call_notes" class="notes-label">Notes</label>
+                                    <p class="help-text">Any previously entered notes for this step will be overwritten.</p>
+                                    <textarea class="notes" id="parent_call_notes" name="pc3.parent_call_notes" ng-model="$parent.parent_call_notes"  maxlength="4000"></textarea>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </form>                
+                <form ng-if="stepSelection.id===7" name="forms.concern_2" id="concern2Form" novalidate class="validatedForm" data-pss-validation-form data-dirty-state-check="true">
+                    <table class="checklistTable">
+                        <colgroup>
+                            <col style="width:35%;" />
+                            <col style="width:38%;" />
+                            <col style="width:18%;" />
+                            <col style="width:9%;" />
+                        </colgroup>  
+                        <tbody>
+                            <tr>
+                                <td colspan="4"> 
+                                    <h3>Written Notification #1 (requested) {{ c2req.concern_2 }}</h3>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="grid-item stretchCell">
+                                    <label class="form-control" for="concern_2_req">
+                                    <input type="checkbox" ng-model="c2req.concern_2" ng-true-value="1" ng-false-value="0" ng-click="setStaffDate('c2req','concern_2_req')" name="concern_2_req" id="concern_2_req" value="1" /> Flag concern to admin
+                                    </label>
+                                </td>
+                                <td class="grid-item">
+                                    <label for="concern_2_req_staff">Contacted by</label> 
+                                    <input size="40" id="concern_2_req_staff" name="req_staff" length="40" ng-model="c2req.concern_2_req_staff"  />
+                                </td>
+                                <td class="grid-item">
+                                    <label for="concern_2_req_date">Date</label> 
+                                    <input id="concern_2_req_date" name="req_date" ng-model="c2req.concern_2_req_date" type="text" pss-date-widget/>
+                                </td>
+                                <td class="save-notes" rowspan="2">
+                                    <button type="submit" ng-click="save('c2req')" id="concern_2_save"><i class="fi-checkbox icon"></i></button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td colspan="3" class="grid-item">
+                                    <label class="notes-label" for="concern_2_notes">Notes</label>
+                                    <p class="help-text">Any previously entered notes for this step will be overwritten.</p>
+                                    <textarea class="notes" id="concern_2_notes" name="notes" ng-model="c2req.concern_2_notes" maxlength="4000"></textarea>
+                                    
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </form>        
+                <form ng-if="stepSelection.id===8" name="forms.concerns" id="concern2Form" novalidate class="validatedForm" data-pss-validation-form data-dirty-state-check="true">
+                    <table class="checklistTable">
+                        <colgroup>
+                            <col style="width:35%;" />
+                            <col style="width:38%;" />
+                            <col style="width:18%;" />
+                            <col style="width:9%;" />
+                        </colgroup>  
+                        <tbody>
+                            <tr>
+                                <td colspan="4">
+                                    <h3>Written Notification #1 (sent)</h3>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="grid-item stretchCell">
+                                    <label class="form-control" for="concern_2_sent">
+                                    <input type="checkbox" ng-model="c2sent.concern_2" ng-true-value="2" ng-false-value="1" ng-click="setStaffDate('c2sent','concern_2_sent')" name="concern_2_sent" id="concern_2_sent" value="2" /> Notification sent
+                                    </label>
+                                </td>
+                                <td class="grid-item">
+                                    <label for="concern_2_sent_staff">Contacted by:</label> 
+                                    <input size="40" id="concern_2_sent_staff" name="sent_staff" length="40" ng-model="c2sent.concern_2_sent_staff" />
+                                </td>
+                                <td class="grid-item">
+                                    <label for="concern_2_sent_date">Date:</label> 
+                                    <input id="concern_2_sent_date" name="sent_date" ng-model="c2sent.concern_2_sent_date" type="text" pss-date-widget />
+                                </td>
+                                <td class="save-notes" rowspan="2">
+                                    <button type="submit" id="concern_2_save" ng-click="save('c2sent')"><i class="fi-checkbox icon"></i></button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td colspan="3" class="grid-item">
+                                    <label class="notes-label" for="concern_2_notes">Notes</label>
+                                    <p class="help-text">Any previously entered notes for this step will be overwritten.</p>
+                                    <textarea class="notes" id="concern_2_notes" name="notes" ng-model="c2sent.concern_2_notes" maxlength="4000"></textarea>
+                                    
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </form>
+                <form ng-if="stepSelection.id===10" name="forms.concern_3" id="concern3Form" novalidate class="validatedForm" data-pss-validation-form data-dirty-state-check="true">
+                    <table class="checklistTable">
+                        <colgroup>
+                            <col style="width:35%;" />
+                            <col style="width:38%;" />
+                            <col style="width:18%;" />
+                            <col style="width:9%;" />
+                        </colgroup>  
+                        <tbody>
+                            <tr>
+                                <td colspan="4"> 
+                                    <h3>Written Notification #2 (requested)</h3>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="grid-item stretchCell">
+                                    <label class="form-control" for="concern_3_req">
+                                    <input type="checkbox" ng-model="c3req.concern_3" ng-true-value="1" ng-false-value="0" ng-click="setValues('c3req','concern_3_req')" name="concern_3_req" id="concern_3_req" /> Flag concern to admin
+                                    </label>
+                                </td>
+                                <td class="grid-item">
+                                    <label for="concern_3_req_staff">Contacted by:</label> 
+                                    <input size="40" id="concern_3_req_staff" name="req_staff" length="40" ng-model="c3req.concern_3_req_staff"  />
+                                </td>
+                                <td class="grid-item">t
+                                    <label for="concern_3_req_date">Date:</label> 
+                                    <input id="concern_3_req_date" name="req_date" ng-model="c3req.concern_3_req_date" type="text" pss-date-widget/>
+                                </td>
+                                <td class="save-notes" rowspan="2">
+                                    <button type="submit" ng-click="save('c3req')" id="concern_3_save"><i class="fi-checkbox icon"></i></button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td colspan="3" class="grid-item">
+                                    <label class="notes-label" for="concern_3_notes">Notes</label>
+                                    <p class="help-text">Any previously entered notes for this step will be overwritten.</p>
+                                    <textarea class="notes" id="concern_3_notes" name="notes" ng-model="c3req.concern_3_notes" maxlength="4000"></textarea>
+                                    
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </form>        
+                <form ng-if="stepSelection.id===11" name="forms.concern_3" id="concern3Form" novalidate class="validatedForm" data-pss-validation-form data-dirty-state-check="true">
+                    <table class="checklistTable">
+                        <colgroup>
+                            <col style="width:35%;" />
+                            <col style="width:38%;" />
+                            <col style="width:18%;" />
+                            <col style="width:9%;" />
+                        </colgroup>  
+                        <tbody>
+                            <tr>
+                                <td colspan="4">
+                                    <h3>Written Notification #2 (sent)</h3>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="grid-item stretchCell">
+                                    <label class="form-control" for="concern_3_sent">
+                                    <input type="checkbox" ng-model="c3sent.concern_3" ng-true-value="2" ng-false-value="1" ng-click="setStaffDate('c3sent','concern_3_sent')" name="concern_3_sent" id="concern_3_sent" /> Notification sent
+                                    </label>
+                                </td>
+                                <td class="grid-item">
+                                    <label for="concern_3_sent_staff">Contacted by:</label> 
+                                    <input size="40" id="concern_3_sent_staff" name="sent_staff" length="40" ng-model="c3sent.concern_3_sent_staff" />
+                                </td>
+                                <td class="grid-item">
+                                    <label for="concern_3_sent_date">Date:</label> 
+                                    <input id="concern_3_sent_date" name="sent_date" ng-model="c3sent.concern_3_sent_date" type="text" pss-date-widget />
+                                </td>
+                                <td class="save-notes" rowspan="2">
+                                    <button type="submit"  id="concern_3_save" ng-click="save('c3sent')"><i class="fi-checkbox icon"></i></button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td colspan="3" class="grid-item">
+                                    <label class="notes-label" for="concern_3_notes">Notes (required)</label>
+                                    <p class="help-text">Any previously entered notes for this step will be overwritten.</p>
+                                    <textarea class="notes" id="concern_3_notes" name="notes" ng-model="c3sent.concern_3_notes" maxlength="4000"></textarea>
+                                    
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </form>  
+                <form ng-if="stepSelection.id===13" name="forms.concern_4" id="concern4Form" novalidate class="validatedForm" data-pss-validation-form data-dirty-state-check="true">
+                    <table class="checklistTable">
+                        <colgroup>
+                            <col style="width:35%;" />
+                            <col style="width:38%;" />
+                            <col style="width:18%;" />
+                            <col style="width:9%;" />
+                        </colgroup>  
+                        <tbody>
+                            <tr>
+                                <td colspan="4"> 
+                                    <h3>Written Notification #3 (requested)</h3>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="grid-item stretchCell">
+                                    <label class="form-control" for="concern_4_req">
+                                    <input type="checkbox" ng-model="c4req.concern_4_req" ng-true-value="1" ng-false-value="2" ng-click="setStaffDate('c4req','concern_4_req')" name="concern_4_req" id="concern_4_req" /> Flag concern to admin
+                                    </label>
+                                </td>
+                                <td class="grid-item">
+                                    <label for="concern_4_req_staff">Contacted by:</label> 
+                                    <input size="40" id="concern_4_req_staff" name="req_staff" length="40" ng-model="$parent.concern_4_req_staff"  />
+                                </td>
+                                <td class="grid-item">
+                                    <label for="concern_4_req_date">Date:</label> 
+                                    <input id="concern_4_req_date" name="req_date" ng-model="$parent.concern_4_req_date" type="text" pss-date-widget/>
+                                </td>
+                                <td class="save-notes" rowspan="2">
+                                    <div ng-if="taskComplete"><i class="fi fi-check green"> Saved</i></div>
+                                    <button type="submit" ng-click="save('c4req')" id="concern_4_save"><i class="fi-checkbox icon"></i></button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td colspan="3" class="grid-item">
+                                    <label class="notes-label" for="concern_4_notes">Notes</label>
+                                    <p class="help-text">Any previously entered notes for this step will be overwritten.</p>
+                                    <textarea class="notes" id="concern_4_notes" name="notes" ng-model="$parent.concern_4_notes" maxlength="4000"></textarea>
+                                    
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </form>        
+                <form ng-if="stepSelection.id===14" name="forms.concern_4" id="concern4Form" novalidate class="validatedForm" data-pss-validation-form data-dirty-state-check="true">
+                    <table class="checklistTable">
+                        <colgroup>
+                            <col style="width:35%;" />
+                            <col style="width:38%;" />
+                            <col style="width:18%;" />
+                            <col style="width:9%;" />
+                        </colgroup>  
+                        <tbody>
+                            <tr>
+                                <td colspan="4">
+                                    <h3>Written Notification #3</h3>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="grid-item stretchCell">
+                                    <label class="form-control" for="concern_4_sent">
+                                    <input type="checkbox" ng-model="concerns.concern_4_sent" ng-click="threeWayToggle('concern_4_sent',2)" name="concern_4_sent" id="concern_4_sent" value="2" /> Notification sent
+                                    </label>
+                                </td>
+                                <td class="grid-item">
+                                    <label for="concern_4_sent_staff">Contacted by</label> 
+                                    <input size="40" id="concern_4_sent_staff" name="sent_staff" length="40" ng-model="$parent.concern_4_sent_staff" />
+                                </td>
+                                <td class="grid-item">
+                                    <label for="concern_4_sent_date">Date</label> 
+                                    <input id="concern_4_sent_date" name="sent_date" ng-model="$parent.concern_4_sent_date" type="text" pss-date-widget />
+                                </td>
+                                <td class="save-notes" rowspan="2">
+                                    <button type="submit"  id="concern_4_save" ng-click="save('c4sent')"><i class="fi-checkbox icon"></i></button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td colspan="3" class="grid-item">
+                                    <labWEEEEEel class="notes-label" for="concern_4_notes">Notes</label>
+                                    <p class="help-text">Any previously entered notes for this step will be overwritten.</p>
+                                    <textarea class="notes" id="concern_4_notes" name="notes" ng-model="$parent.concern_3_notes" maxlength="4000"></textarea>
+                                    
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </form> 
+                <form ng-if="stepSelection.id === 15" name="forms.referral" id="stuForm"  ng-submit="save('referral')" novalidate class="validatedForm" data-pss-validation-form data-dirty-state-check="true">
+                    <table class="checklistTable">
+                        <colgroup>
+                            <col style="width:35%;" />
+                            <col style="width:38%;" />
+                            <col style="width:18%;" />
+                            <col style="width: 9%" />
+                        </colgroup>
+                        <tr>
+                           <td colspan="4">
+                               <h3>Referral to the Director</h3>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="grid-item stretchCell">
+                                <label class="form-control" for="referral">
+                                <input type="checkbox" ng-model="fields.referral" ng-click="toggle('referral')" name="referral" id="referral"> Referred to the director
+                                </label>
+                            </td>
+                            <td class="grid-item">
+                                <label for="referral_staff">Referred by:</label> 
+                                <input size="40" id="referral_staff" name="staff" length="40" ng-model="$parent.referral_staff"  />
+                            </td>
+                            <td class="grid-item">
+                                <label for="referral_date">Date:</label> 
+                                <input id="referral_date" name="date" ng-model="$parent.ereferral_date" type="text" pss-date-widget />
+                            </td>
+                            <td class="grid-item center">
+                                <div ng-if="taskComplete"><i class="fi fi-check green"> Saved</i></div>
+                                <button type="submit" id="student_save" ng-if="!taskComplete"><i class="fi-checkbox icon"></i></button>
+                            </td>
+                        </tr>
+                    </table>
+                </form>
+            </div>
+            <h3>3. Next Steps</h3>
+            <div>
+               <div class="feedback-confirm" ng-show="task.success">{{ task.success }} </div>
+               <div class="feedback-error" ng-show="task.errorMessage">{{ task.errorMessage }}</div>
+               <div>
+                  <ul>
+                     <li ng-if="task.success"> To review the changes you made, visit any/each student's checklist using these links: <span ng-repeat="student in validStudents"><a href="/admin/students/home.html?frn=001{{student.studentsdcid}}&lsp=pei_attendance_tracking.html" target="_blank">{{student.firstName}} {{student.lastName}}</a>{{$last ? '' : ', '}}</span></li>
+                     <li>To continue modifying checklists for the selected group of students, use the Update More button below.</li>
+                     <li>To download any form letters you generated, visit your Report Queue using the button below.</li>
+                     <li>To select a new group of students, return to the Attendance Tracking page.</li>
+                  </ul>
+                  <div class="button-row">
+                     <a href='attUpdateChecklist.html' class="button">Update More</a>&nbsp;<a href="/admin/reportqueue/home.html" class="button">Visit Report Queue</a>&nbsp;<a href="/admin/pei_reports/attendance_tracking.html" class="button">Return to Attendance Tracking</a>
+                  </div>
+               </div>
+            </div>
+        </div>
+	   </div> 
+   </div>
+<!-- end of content area --> 
+	~[wc:admin_footer_css] 
+</body> 
+</html>
