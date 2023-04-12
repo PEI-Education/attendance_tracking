@@ -5,7 +5,7 @@ TemplateName:Admin
 <html>
 <head>
     <meta name="Author" content="Luke Walker, PEI Dept of Education">
-    <meta name="Version" content="0.4">
+    <meta name="Version" content="0.5">
 	<title>Mass Update Attendance Checklists</title>
 	<link rel="stylesheet" type="text/css" href="/admin/pei_reports/css/foundation-icons.css" />
 <!-- required scripts -->
@@ -49,11 +49,11 @@ TemplateName:Admin
             <input type="hidden" id="staffName" value="~[x:username;firstlast]" />
             <input type="hidden" id="dateToday" value="~[date]" />
          
-         <div class="accordion wizard" id="testWizardAccordion">
-    	      <h3>1. Select a Checklist Step</h3>
-            <div>    
+    	      <fieldset>
+    	        <legend>1. Select a Checklist Step</legend>
+                
                 <div class="padding5">                
-                    <label for="stepChoice">Modify step: 
+                    <label for="stepChoice">Add/modify entry for: 
                         <select id="stepChoice" ng-model="stepChoice" ng-options="step.label for step in steps" ng-disabled="task.allDone">
                             <option value="">Select a step...</option>
                         </select>
@@ -81,9 +81,10 @@ TemplateName:Admin
                         </ul>
                     </div>
                 </div>
-            </div> 
-            <h3>2. Modify Info</h3>
-            <div>
+              
+            </fieldset>
+            <fieldset ng-if="stepSelection">
+                <legend>2. Modify Info</legend>
                 <div>Any information entered in these fields will be copied to the appropriate step in each valid student's checklist.</div>
                 <form ng-if="stepSelection.id === 2" name="forms.student_notification" id="stuForm" novalidate class="validatedForm" data-pss-validation-form data-dirty-state-check="true">
                     <table class="checklistTable">
@@ -500,7 +501,7 @@ TemplateName:Admin
                             </tr>
                             <tr>
                                 <td colspan="3" class="grid-item">
-                                    <labWEEEEEel class="notes-label" for="concern_4_notes">Notes</label>
+                                    <label class="notes-label" for="concern_4_notes">Notes</label>
                                     <p class="help-text">Any previously entered notes for this step will be overwritten.</p>
                                     <textarea class="notes" id="concern_4_notes" name="notes" ng-model="$parent.concern_3_notes" maxlength="4000"></textarea>
                                     
@@ -543,25 +544,24 @@ TemplateName:Admin
                         </tr>
                     </table>
                 </form>
-            </div>
-            <h3>3. Next Steps</h3>
-            <div>
-               <div class="feedback-confirm" ng-show="task.success">{{ task.success }} </div>
-               <div class="feedback-error" ng-show="task.errorMessage">{{ task.errorMessage }}</div>
-               <div>
-                  <ul>
-                     <li ng-if="task.success"> To review the changes you made, visit any/each student's checklist using these links: <span ng-repeat="student in validStudents"><a href="/admin/students/home.html?frn=001{{student.studentsdcid}}&lsp=pei_attendance_tracking.html" target="_blank">{{student.firstName}} {{student.lastName}}</a>{{$last ? '' : ', '}}</span></li>
-                     <li>To continue modifying checklists for the selected group of students, use the Update More button below.</li>
-                     <li>To download any form letters you generated, visit your Report Queue using the button below.</li>
-                     <li>To select a new group of students, return to the Attendance Tracking page.</li>
-                  </ul>
-                  <div class="button-row">
-                     <a href='attUpdateChecklist.html' class="button">Update More</a>&nbsp;<a href="/admin/reportqueue/home.html" class="button">Visit Report Queue</a>&nbsp;<a href="/admin/pei_reports/attendance_tracking.html" class="button">Return to Attendance Tracking</a>
-                  </div>
-               </div>
-            </div>
+            </fieldset>
+            <fieldset ng-if="task.allDone">
+                <legend>3. Next Steps</legend>
+                <div class="feedback-confirm" ng-show="task.success">{{ task.success }} </div>
+                <div class="feedback-error" ng-show="task.errorMessage">{{ task.errorMessage }}</div>
+                <div>
+                    <ul>
+                        <li ng-if="task.success"> To review the changes you made, visit any/each student's checklist using these links: <span ng-repeat="student in validStudents"><a href="/admin/students/home.html?frn=001{{student.studentsdcid}}&lsp=pei_attendance_tracking.html" target="_blank">{{student.firstName}} {{student.lastName}}</a>{{$last ? '' : ', '}}</span></li>
+                        <li>To continue modifying checklists for the selected group of students, use the Update More button below.</li>
+                        <li>To download any form letters you generated, visit your Report Queue using the button below.</li>
+                        <li>To select a new group of students, return to the Attendance Tracking page.</li>
+                    </ul>
+                    <div class="button-row">
+                        <a href='attUpdateChecklist.html' class="button">Update More</a>&nbsp;<a href="/admin/reportqueue/home.html" class="button">Visit Report Queue</a>&nbsp;<a href="/admin/pei_reports/attendance_tracking.html" class="button">Return to Attendance Tracking</a>
+                    </div>
+                </div>
+            </fieldset>
         </div>
-	   </div> 
    </div>
 <!-- end of content area --> 
 	~[wc:admin_footer_css] 

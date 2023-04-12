@@ -1,0 +1,10 @@
+<table class="linkDescList" id="peispecial">
+	<tr id="pei" class="~[evenoddrow]">
+    	<td><a href="/admin/pei_reports/attendance_tracking.html">Track Attendance Concerns</a></td>
+		<td>Select students with identified attendance concerns, generate notifications to send home, add bulk status updates and more.</td>
+	</tr>
+</table>
+<script>
+    $j('tr:contains("~[text:psx.html.admin_attendance_functions.attendancestatus.consecutive_absences]")').closest('table').append($j('#pei'))
+    $j('#peispecial').remove();
+</script> 

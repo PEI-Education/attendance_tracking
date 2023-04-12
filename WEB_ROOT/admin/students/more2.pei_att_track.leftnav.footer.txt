@@ -1,12 +1,12 @@
     <!-- Add PEI Attendance Tracking Info -->
-    ~[if.~(studentscreenaccess;termgrades.html)=1]
+    ~[if.~(studentscreenaccess;attendance.html)=1]
     
     <script>
     
     $j(document).ready(function() {
         
     
-    		$j('ul#std_academics').append(`<li><a href="pei_attendance_tracking.html?frn=~(studentfrn)">Attendance Tracking</a></li>`);
+    		$j('ul#std_academics').append(`<li><a href="pei_attendance_tracking.html?frn=~(studentfrn)">Attendance Concerns Checklist</a></li>`);
          
     
     		$j('ul#std_academics li').sort(function(a, b)
@@ -21,4 +21,4 @@
     
     </script>
     [/if]
-    <!-- end PEI Attendance Tracking Info -->
+    <!-- end PEI Attenance Tracking Info -->

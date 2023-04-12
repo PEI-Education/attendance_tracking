@@ -1,0 +1,167 @@
+<!--
+TemplateName:Admin
+-->
+<!DOCTYPE html>
+<html>
+<head>
+   <meta name="Author" content="Luke Walker, PEI Dept of Education">
+   <meta name="Version" content="0.5">
+	<title>Attendance Concerns Tracking</title>
+<!-- required scripts -->
+	~[wc:commonscripts] 
+<!-- Required style sheets: screen.css, and print.css --> 
+	<link href="/images/css/screen.css" rel="stylesheet" media="screen">
+	<link href="/images/css/print.css" rel="stylesheet" media="print">
+	<style>
+	    .tile-small-type-text {
+            font-size: 9pt !important;
+        }
+        
+        #wait-spinner-div {
+            position: fixed;
+            top: 55%;
+            left: 55%;
+        }
+        .center {
+            text-align: center;
+        }
+        #firstStep{
+            border: 1px solid gray;
+        }
+        .button-row {
+            padding: 5px;
+        }
+        #firstStep > button {
+            background-color: green;
+        }
+        #flex-container {
+            display: flex;
+            flex-direction: row;
+            justify-content: space-between;
+            align-items: stretch;
+        }
+        #flex-left {
+            order: 1;
+            flex-basis: 70%;
+        }
+        #flex-right {
+            order: 2;
+            flex-basis: 30%;
+        }
+	</style>
+	<script>
+	    var hs = ~(curtermid) % 100 === 0 ? false : true;
+	</script>
+</head> 
+<body> 
+	~[wc:admin_header_css] 
+    <!-- breadcrumb start --><a href="/admin/home.html" target="_top">~[text:psx.html.admin_students.previousgrades.start_page]</a> &gt; <a href="/admin/reports/home.html">~[text:psx.html.admin_reports.runreports.reports]</a> &gt; Attendance Concerns Tracking<!-- breadcrumb end --> 
+<!-- start of main menu and content --> 
+	~[wc:admin_navigation_css] 
+<!-- Start of Page --> 
+	<h1>Attendance Concerns Tracking</h1> 
+<!-- start of content area -->
+<div class="box-round" data-require-path="components/attTrack/index" data-module-name="attApp" ng-cloak>
+    <div ng-controller="attGridCtrl">
+        <input type="hidden" value="~(curtermid)" id="termid">
+        <div class="feedback-info">
+               <ul>
+                <li>Click a tile in the carousel below to filter the list by students <strong>at or beyond</strong> a step in the checklist.</li>
+                <li>Use the <strong>Current Step </strong>filter below the carousel to find all students at a specific step on the checklist.</li>
+                <li>To see high school students, the term picker dropdown must be set to a semester.</li>
+                <li>To see K-9 students, the term picker must be set to a full year.</li>
+            </ul>
+        </div>
+        <div id="wait-spinner-div" ng-if="spinner.wait">
+            <div data-pss-wait-spinner="large"></div>
+        </div>
+        <div data-ng-cloak>
+            <div class="kpi-container">
+                <div class="kpi-header">
+                    <h3>Students with Attendance Concern Checklists</h3>
+                </div>
+                <div class="kpi-content">
+                    <div class="kpi-container">
+                         <div class="kpi-content tiles">
+                             <div data-pss-vidget-wrapper>
+                                 <div id="tileCarousel"
+                                     data-pss-vidget
+                                     data-pss-carousel
+                                     data-vidget-source="vidget:tiles:raw"
+                                     data-vidget-model="model.tiles">
+                                     <div id="tiles"
+                                          data-pss-vidget
+                                          data-pss-tiles-vidget
+                                          data-pss-carousel-tiles-vidget
+                                          data-att-tiles>
+                                     </div>
+                                 </div>
+                             </div>
+                         </div>    
+                    </div>    
+                </div>
+            </div>
+            <div id="grid-widget-attendance" 
+                 data-pss-grid-widget 
+                 data-client-side-pagination="true"
+                 data-data="gridData" 
+                 data-filtered-data="gridDataFiltered"
+                 data-filter-constraint="advanced-only"
+    	         data-persist-rows-per-page="true"
+    	         data-item-type-text="Students">
+                <table class="grid">
+                    <thead>
+                    <tr>
+                        <th data-pss-sort-fields="studentNumber|number">Student Number</th>
+                        <th data-pss-sort-fields="lastName">Last Name</th>
+                        <th data-pss-sort-fields="firstName">First Name</th>
+                        <th data-pss-sort-fields="grade|number">Grade</th>
+                        <th data-pss-sort-fields="currentStep|select" data-default-filter="normal" data-filter-info="stepMap">Current Step</th>
+                        <th data-pss-sort-fields="stepDate|date">Last Action Date</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr data-ng-repeat="student in gridDataFiltered">
+                        <td class="center">
+                            <a href="/admin/students/home.html?frn=001{{student.studentsdcid}}&lsp=pei_attendance_tracking.html" target="_blank">{{student.studentNumber}}</a>
+                        </td>
+                        <td>{{student.lastName}}</td>
+                        <td>{{student.firstName}}</td>
+                        <td class="center">{{student.termGrade}}</td>
+                        <td>{{student.currentStep}}</td>
+                        <td class="center">{{student.stepDate | date:'MM/dd/yyyy'}}</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+            
+            <!-- mass functions linked to grid widget -->
+        	<fieldset>
+        	    <legend>Available Actions</legend>
+        	    <div class="button-row">
+        	        To work with the set of students above, first make them your selection: 
+        	        <button ng-click="makeCurrentSelection()">Make Current Student Selection</button>
+        	    </div>
+                <div ng-show="showActions">
+                    <div class="button-row">
+                        Once you have a student selection, you can:
+                        <a href="attPrintLetters.html?dothisfor=selected" class="button">Print Letters</a>
+                        <a href="attUpdateChecklist.html" class="button">Mass Checklist Update</a>
+                    </div>
+                    <div id="external-linka" class="button-row">
+            	        These buttons will open a new tab. Return to this page to update checklists.
+            	        <a href="/admin/messagesender/msgsndr.html" class="button" target="_blank">Email via Message Sender</a>
+            	        <a href="/admin/studentlist/functions.html" class="button" target="_blank">Other Group Functions</a>
+            	        <button id="exportData" ng-click="exportData(gridData)">Export Data</button>
+            	    </div>
+        	    </div>
+        	</fieldset>
+
+    	<!-- end of mass functions -->
+        </div>
+   </div>     
+  </div>
+<!-- end of content area --> 
+	~[wc:admin_footer_css] 
+</body> 
+</html>

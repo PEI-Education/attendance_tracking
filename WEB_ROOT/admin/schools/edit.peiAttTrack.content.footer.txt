@@ -1,0 +1,9 @@
+	<div id="tempContainer" style="display: none;">
+        <table class="grid"><tr><th colspan="100%" class="left">Email Notice for Attendance Tracking Interface</th></tr><tr><td class="bold">For multiple email addresses, comma separated with space between:<br />&nbsp;&nbsp;&nbsp;me@123.com, you@123.com<br />&nbsp;&nbsp;&nbsp;Do not use any line breaks.</td><td><textarea id="mytext" name="[pref]emailnewenrollment-S~([39]school_number)" value="" rows="10" cols="70"></textarea></td></tr></table>
+    </div>
+    
+    <script>
+    $j(function(){
+        $j('table:first tr:last').html($j('#tempContainer').contents());
+    });
+</script>

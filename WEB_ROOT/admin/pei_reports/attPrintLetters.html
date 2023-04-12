@@ -1,0 +1,68 @@
+<!--
+TemplateName:Admin
+-->
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Print Form Letters</title>
+<!-- required scripts -->
+	~[wc:commonscripts] 
+<!-- Required style sheets: screen.css, and print.css --> 
+	<link href="/images/css/screen.css" rel="stylesheet" media="screen">
+	<link href="/images/css/print.css" rel="stylesheet" media="print">
+</head> 
+<body> 
+	~[wc:admin_header_css] 
+    <!-- breadcrumb start -->Print Form Letters<!-- breadcrumb end --> 
+<!-- start of main menu and content --> 
+	~[wc:admin_navigation_css] 
+<!-- Start of Page --> 
+	<h1>Print Form Letters</h1> 
+<!-- start of content area --> 
+	<div class="box-round"> 
+<div class="container">
+    <h2 id="printFormLetters">Print Form Letters</h2>
+    <div>
+        <form action="/admin/pei_reports/attUpdateChecklist.html" method="POST">
+        <table border="0" cellspacing="0" cellpadding="4">
+        <tr bgcolor="#f6f6f6">
+        <td class="bold">~[text:psx.html.admin_studentlist.printformletters.option]</td>
+        <td class="bold">~[text:psx.html.admin_studentlist.printformletters.value]</td>
+        </tr>
+        <tr bgcolor="#edf3fe">
+        <td class="bold">~[text:psx.html.admin_studentlist.printformletters.which_report_would_you_like_to_print]</td>
+        <td>~[x:reportlist;type=100]</td>
+        </tr>
+        <tr>
+        <td class="bold">~[text:psx.html.admin_studentlist.printformletters.for_which_students]</td>
+        <td>~[x:dothisfor]<br>
+        	<input type="radio" name="printwhat" value="allrecords" checked>~[text:psx.html.admin_studentlist.printformletters.all_records_in_a_single_batch]<br>
+        	<input type="radio" name="printwhat" value="onlythefirstfew">~[text:psx.html.admin_studentlist.printformletters.print_only_the_first]<input type="text" name="howmanytoprint" value="2" size="2">~[text:psx.html.admin_studentlist.printformletters.records]<br>
+        	<input type="radio" name="printwhat" value="inbatches">~[text:psx.html.admin_studentlist.printformletters.all_records_in_batches_of]<input type="text" name="batchsize" value="" size="4">~[text:psx.html.admin_studentlist.printformletters.records1]</td>
+        </tr>
+        <tr bgcolor="#edf3fe">
+        <td class="bold">~[text:psx.html.admin_studentlist.printformletters.in_what_order]</td>
+        <td><input type="radio" name="sortorder" value="alpha" checked>~[text:psx.html.admin_studentlist.printformletters.alphabetical]<br><input type="radio" name="sortorder" value="bygrade">~[text:psx.html.admin_studentlist.printformletters.by_grade_then_alphabetical]<br><input type="radio" name="sortorder" value="byperiod">~[text:psx.html.admin_studentlist.printformletters.by_period__class_as_of_this,param:~[custompopup;name=period;list=sched_periods]]<br>~[text:psx.html.admin_studentlist.printformletters.nbspnbspdate]<input type="text" class="psDateWidget" name="period-date" value="~[short.date]" size="11">~[text:psx.html.admin_studentlist.printformletters.takes_extra_time]</td>
+        </tr>
+        <tr>
+        <td class="bold">~[text:psx.html.admin_studentlist.printformletters.when_to_print]</td>
+        <td><select name="printwhen"><option value="2">~[text:psx.html.admin_studentlist.printformletters.asap]<option value="3">~[text:psx.html.admin_studentlist.printformletters.at_night]<option value="4">~[text:psx.html.admin_studentlist.printformletters.on_weekend]<option value="5">~[text:psx.html.admin_studentlist.printformletters.on_specific_datetime]</select><br><input type="text" class="psDateWidget" name="printdate" value="" size=10> &nbsp;/&nbsp; <input name="printtime" type="text" class="timeEntry5" size="10"/></td>
+        </tr>
+        <tr>
+        <td class="bold">~[text:psx.html.admin_studentlist.printformletters.report_output_locale]</td>
+        <td>~[wc:select_report_request_locale]</td>
+        </tr>
+        </table>
+        <br>
+        
+        <div class="button-row"><a href="attendance_tracking.html" class="button">Cancel</a><input type="hidden" name="ac" value="printformletter">~[submitbutton]</div>
+        </form>
+    </div>
+
+
+</div>
+	</div> 
+<!-- end of content area --> 
+	~[wc:admin_footer_css] 
+</body> 
+</html>

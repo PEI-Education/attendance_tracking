@@ -1,0 +1,9 @@
+~[tlist_sql;
+select
+    max(grade_level)
+from students
+where 
+enroll_status = 0
+~[if.is.a.school]and schoolid = ~(curschoolid)[/if]]
+ {"max": ~(1)}
+[/tlist_sql]

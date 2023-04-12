@@ -1,7 +1,7 @@
 define(['angular', 'components/shared/index'], function(angular) {
     
     var attTrackApp = angular.module('attTrackMod', ['powerSchoolModule']);
-
+ 
     attTrackApp.controller('attTrackCtrl', ['$scope', 'dbConnect', '$timeout', function($scope, dbConnect, $timeout) {
         
         let init = function() {
@@ -13,7 +13,7 @@ define(['angular', 'components/shared/index'], function(angular) {
             $scope.getRecord('pei_attTrack.json');
             $scope.concerns = {}
         }
-
+        
         $scope.getRecord = function(datafile) {
             dbConnect.getRecord(datafile).then(function(retData) {
                 if (typeof retData === "object") {
@@ -32,29 +32,38 @@ define(['angular', 'components/shared/index'], function(angular) {
                         }
                     }
                     $scope.referral = $scope.record.referral.referral===1 ? true : false;
-
+ 
                 } else {
                     $scope.record = {
                         studentsdcid: document.getElementById('studentsdcid').value,
                         termid: $scope.termid,
-                        student: {},
+                        student: {
+                            student_notification: 0
+                        },
                         calls: {
                             parent_call_1: 0,
                             parent_call_2: 0,
                             parent_call_3: 0
                         },
-                        concern_2: {},
-                        concern_3: {},
-                        concern_4: {},
-                        referral: {}
+                        concern_2: {
+                            concern_2: 0
+                        },
+                        concern_3: {
+                            concern_3: 0
+                        },
+                        concern_4: {
+                            concern_4: 0
+                        },
+                        referral: {
+                            referral: 0
+                        }
                     }
                 }
                 for (const prop in $scope.forms) {
                     $scope.forms[prop].$setPristine();
                 }
-                console.log($scope.record)
             });
-
+ 
         }
         
         // Adds the student's grade_level in the context of the termid, and sets the student_notification property to 'na' if that level is less than Grade 10
@@ -83,7 +92,6 @@ define(['angular', 'components/shared/index'], function(angular) {
             return true;
         }
         
-
         // Function to toggle student notification, calls (after recordCalls), and referrals on/off
         $scope.toggle = function(e, phase, step) {
             if (parseInt($scope.record[phase][step])===0) {
@@ -106,13 +114,14 @@ define(['angular', 'components/shared/index'], function(angular) {
             $scope.toggle(e, 'calls', step);
         }
         
-        // Determines whether or not written notification can begin, based on whether all three calls have been attempted, or one call succeeded.
+        // Determines whether or not written notification can begin, based on whether all three calls have been attempted, or one call succeeded
         $scope.countCalls = function() {
             if (!$scope.record.calls) {
-                return false
+                return true;
             }
-            return $scope.record.calls.parent_call_1 + $scope.record.calls.parent_call_2 + $scope.record.calls.parent_call_3r
+            return ($scope.record.calls.parent_call_1 + $scope.record.calls.parent_call_2 + $scope.record.calls.parent_call_3) <3
         }
+        
         // Returns the number of days between two dates, for use in calculating whether or not student is eligibe for next stepss
         $scope.daysPassed = function(earlyDate, laterDate) {
             let date1 = new Date(earlyDate);
@@ -191,14 +200,15 @@ define(['angular', 'components/shared/index'], function(angular) {
         const SAVED = 'saved';
         const SAVING = 'saving';
         const UNSAVED = 'unsaved';
-
+ 
         $scope.save = function(e, phase) {
             $scope[`${phase}_save`] = SAVING
             let list = $scope.record[phase]
             if (!$scope.record.id) {
                 list.termid = $scope.record.termid;
                 dbConnect.insertRecord($scope.record.studentsdcid, list, function(retID) {
-                    if (retID === '-1') {
+                    console.log(retID)
+                    if (retID === '-1' || retID > 0) {
                        $timeout(function() {
                            $scope[`${phase}_save`] = SAVED;
                            $scope.getRecord('pei_attTrack.json');
@@ -229,6 +239,7 @@ define(['angular', 'components/shared/index'], function(angular) {
     // Service to interact with PowerSchool database via PSQuery
     attTrackApp.factory('dbConnect', ['$http', function($http) {
         return {
+            
             getRecord: function(datafile) {
                 return $http.get(datafile)
                 .then(function(result) {
@@ -246,4 +257,4 @@ define(['angular', 'components/shared/index'], function(angular) {
         };
     }]);
     
-});
+ });

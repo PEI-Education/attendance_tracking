@@ -157,9 +157,12 @@ define(function(require) {
                 $scope[group][`${step}_date`] = null;
                 console.log('null - no action')
             } else {
-                $scope[group][`${step}_staff`] = $scope.currentUser;
-                $scope[group][`${step}_date`] = $scope.currentDate;
-                $scope.$apply;
+                if (!$scope[group][`${step}_staff`]) {
+                    $scope[group][`${step}_staff`] = $scope.currentUser;
+                }        
+                if (!$scope[group][`${step}_date`]) {
+                    $scope[group][`${step}_date`] = $scope.currentDate;
+                }
             }
         };
         
