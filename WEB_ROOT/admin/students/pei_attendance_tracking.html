@@ -51,7 +51,7 @@
                     <li>For a printable version of this checklist, click the <i class="fi-print"></i> <strong>Print View</strong> button above. A popup wil open with a version of this checklist that is formatted to fit either 8.5" x 11" or 8.5" 14" paper.</li>
                 </ul>
             </div>
-            <fieldset ng-if="gradeInYear > 9">
+  <fieldset ng-if="gradeInYear > 9">
                 <legend>Student Contact</legend>
                 <form name="forms.stu" id="stuForm"  ng-submit="save($event,'student')" novalidate class="validatedForm noSubmitLoading" data-pss-validation-form data-dirty-state-check="true">
                     <table class="checklistTable">
@@ -341,7 +341,7 @@
                             </td>
                         </tr>
                         <tr>
-                            <td class="grid-item stretchCell">
+                            <td class="grid-item stretchCell">vs
                                 <label class="form-control" for="concern_4_sent">
                                 <input type="checkbox" ng-model="concerns.concern_4_sent" ng-click="handleConcern($event, 'concern_4','concern_4_sent')" name="concern_4_sent" id="concern_4_sent" ng-disabled="!concerns.concern_4_req || record.referral.referral===1" value="1" /> Notification sent
                                 </label>
