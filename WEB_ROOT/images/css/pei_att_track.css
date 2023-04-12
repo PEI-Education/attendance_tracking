@@ -1,6 +1,6 @@
 @media print {
    .no-print{
-      display : none !important;
+       display : none !important;
    }
 }
 
@@ -92,7 +92,7 @@ sl-radio-button::part(base) {
 
 .save-svg {
   margin: 5px;
-  padding: 0px;
+  padding: 0;
 }
 
 .notes {
@@ -117,15 +117,6 @@ sl-radio-button::part(base) {
   padding-right: 10px;
   flex-grow: 5;
   height: 30px;
-}
-
-.buttonContainer {
-  display: table-cell;
-  width: 100%;
-  border: 1px solid black;
-  height: 100%;
-  vertical-align: middle;
-  text-align: center;
 }
 
 .center {
@@ -216,38 +207,11 @@ input.ng-invalid, textarea.ng-invalid {
   color: #1E8449;
 }
 
-.tooltip-wrap {
- position: relative;
-}
-
-.tooltip-wrap .tooltip-content {
- position:absolute;
- 
- /* vertically center */
- top:50%;
- transform:translateY(-50%);
- 
- /* move to right */
- left:10%;
- margin-left:20px; /* and add a small left margin */
- 
- /* basic styles */
- width:400px;
- padding:10px;
- border-radius:10px;
- background:#000;
- color: #fff;
- text-align:left;
- z-index:99999;
-
- display:none; /* hide by default */
- 
-}
-
-.tooltip-wrap:hover .tooltip-content {
- display: block;
-}
-
 .textareaCounter {
    font-size: 0.8rem !important;
 }
+
+.printable {
+   width: 8in;
+   display: none;
+}                                     

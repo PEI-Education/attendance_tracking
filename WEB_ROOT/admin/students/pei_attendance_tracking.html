@@ -51,7 +51,7 @@
                     <li>For a printable version of this checklist, click the <i class="fi-print"></i> <strong>Print View</strong> button above. A popup wil open with a version of this checklist that is formatted to fit either 8.5" x 11" or 8.5" 14" paper.</li>
                 </ul>
             </div>
-            <fieldset ng-if="gradeInYear > 9">
+  <fieldset ng-if="gradeInYear > 9">
                 <legend>Student Contact</legend>
                 <form name="forms.stu" id="stuForm"  ng-submit="save($event,'student')" novalidate class="validatedForm noSubmitLoading" data-pss-validation-form data-dirty-state-check="true">
                     <table class="checklistTable">
@@ -166,6 +166,7 @@
                                     <label for="parent_call_notes" class="notes-label">Notes</label>
                                     <p class="help-text">Note any relevant details regarding phone calls with guardians.</p>
                                     <textarea class="notes" id="parent_call_notes" name="parent_call_notes" ng-model="record.calls.parent_call_notes" ng-disabled="record.calls.parent_call_1==0 || concerns.concern_2_req==1" ng-maxlength="4000"></textarea>
+                                    <textarea class="notes" id="parent_call_notes" name="parent_call_notes" ng-model="record.calls.parent_call_notes" ng-disabled="record.calls.parent_call_1==0 || concerns.concern_2_req==1" ng-maxlength="4000"></textarea>
                                 </td>
                             </tr>
                         </tbody>
@@ -237,6 +238,7 @@
                             <td colspan="3" class="grid-item">
                                 <label class="notes-label" for="concern_2_notes">Notes (required)</label>
                                 <p class="help-text">Note any concerns, dates and outcome of any parent/guardian contact or meetings after first notification letter. Note any supports or interventions that have been advised or put in place at this time. For example, referral to school-based student services team, youth worker, school counsellor, student well-being team, etc.</p>
+                                <textarea class="notes" id="concern_2_notes" name="notes" ng-model="record.concern_2.concern_2_notes" ng-disabled="!concerns.concern_2_req || concerns.concern_3_sent===true" ng-required="concerns.concern_2_req===true" ng-minlength="20" ng-maxlength="4000"></textarea>
                                 <textarea class="notes" id="concern_2_notes" name="notes" ng-model="record.concern_2.concern_2_notes" ng-disabled="!concerns.concern_2_req || concerns.concern_3_sent===true" ng-required="concerns.concern_2_req===true" ng-minlength="20" ng-maxlength="4000"></textarea>
                                 
                             </td>
@@ -339,7 +341,7 @@
                             </td>
                         </tr>
                         <tr>
-                            <td class="grid-item stretchCell">
+                            <td class="grid-item stretchCell">vs
                                 <label class="form-control" for="concern_4_sent">
                                 <input type="checkbox" ng-model="concerns.concern_4_sent" ng-click="handleConcern($event, 'concern_4','concern_4_sent')" name="concern_4_sent" id="concern_4_sent" ng-disabled="!concerns.concern_4_req || record.referral.referral===1" value="1" /> Notification sent
                                 </label>
@@ -383,7 +385,12 @@
                                    <button id="referral_btn" class="stretch" ng-show="record.referral.referral==0" ng-click="handleReferral()" ng-disabled="disableReferral()">Notification to Director</button>
                                    <div class="successText stretch" ng-show="record.referral.referral>0"><i class="fi-check"></i> Concern flagged</div>
                                     <input type="hidden" id="referral" name="referral" ng-model="record.referral.referral" data-step="referral" />-->
+                                    <!--
+                                   <button id="referral_btn" class="stretch" ng-show="record.referral.referral==0" ng-click="handleReferral()" ng-disabled="disableReferral()">Notification to Director</button>
+                                   <div class="successText stretch" ng-show="record.referral.referral>0"><i class="fi-check"></i> Concern flagged</div>
+                                    <input type="hidden" id="referral" name="referral" ng-model="record.referral.referral" data-step="referral" />-->
                                 </td>
+                                <input type="hidden" ng-model="record.referral.referral" name="referral" id="referral">
                                 <input type="hidden" ng-model="record.referral.referral" name="referral" id="referral">
                                 <td class="grid-item">
                                     <label for="referral_staff">Contacted by</label> 
