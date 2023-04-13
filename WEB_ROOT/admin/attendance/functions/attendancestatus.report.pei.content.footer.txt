@@ -7,4 +7,4 @@
 <script>
     $j('tr:contains("~[text:psx.html.admin_attendance_functions.attendancestatus.consecutive_absences]")').closest('table').append($j('#pei'))
     $j('#peispecial').remove();
-</script> 
+</script>

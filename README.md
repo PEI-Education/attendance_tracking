@@ -2,6 +2,10 @@
 Interface for tracking concerns and interventions relating to student attendance. Includes:
 1. Individual student tracking interface for admin users
 2. Individual student tracking interface for teacher users
+3. Admin/bulk tracking interface:
+   a. List of students with checklists
+   b. Form letter generator
+   c. Bulk checklist updater
 
 ## Dependencies
 - psQuery by Jim Parsons (https://support.powerschool.com/exchange/view.action?download.id=846&fromSearchResults=true)
