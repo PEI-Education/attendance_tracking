@@ -11,7 +11,7 @@
     <link href="/images/css/print.css" rel="stylesheet" media="print">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.0.0/dist/themes/light.css" />
     <script type="module" src="https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.0.0/dist/shoelace.js"></script>
-    <link href="/images/css/pei_att_track.css" rel="stylesheet" />
+    <link href="/images/css/pei_att_track.css" rel="stylesheet">
     <script>
     function printDiv() {
         var popupWin = window.open('', '_blank', 'width=1000,height=600');
@@ -46,14 +46,14 @@
                 <ul>
                     <li>This checklist must be completed sequentially. Each step must have a date later than the step before. In the case of written notifications, 5 school days have to pass between a notification being sent and the next concern being flagged.</li>
                     <li>Each section of this checklist has a separate save button (with the <i class="fi-checkbox"></i> icon) that submits the data for that section <strong>only</strong>.</li>
-                    <li>A red borercder around a field indicates that you must fill in the field before saving and proceeding to the next step.</li>
+                    <li>A red border around a field indicates that you must fill in the field before saving and proceeding to the next step.</li>
                     <li>You can reset your most recent step by unchecking a checkbox or setting a call to "Not attempted" <strong>and pressing the save button</strong> for that section. Once your reset that step, you will have the option of resetting the step before that.</li>
                     <li>For a printable version of this checklist, click the <i class="fi-print"></i> <strong>Print View</strong> button above. A popup wil open with a version of this checklist that is formatted to fit either 8.5" x 11" or 8.5" 14" paper.</li>
                 </ul>
             </div>
   <fieldset ng-if="gradeInYear > 9">
                 <legend>Student Contact</legend>
-                <form name      42  ="forms.stu" id="stuForm"  ng-submit="save($event,'student')" novalidate class="validatedForm noSubmitLoading" data-pss-validation-form data-dirty-state-check="true">
+                <form name="forms.stu" id="stuForm"  ng-submit="save($event,'student')" novalidate class="validatedForm noSubmitLoading" data-pss-validation-form data-dirty-state-check="true">
                     <table class="checklistTable">
                         <colgroup>
                             <col style="width:35%;" />
@@ -61,7 +61,7 @@
                             <col style="width:18%;" />
                             <col style="width:9%;" />
                         </colgroup>
-                        <t  body>
+                        <tbody>
                             <tr>
                                 <td class="grid-item stretchCell">
                                     <label class="form-control" for="student_notification">
