@@ -60,8 +60,13 @@ TemplateName:Teacher Backpack
                     <li>Each section of this checklist has a separate save button (with the <i class="fi-checkbox"></i> icon) that submits the data for that section <strong>only</strong>.</li>
                     <li>In the event you need to clear data from a section, you must press the save button to confirm your change before editing any earlier sections.</li>
                     <li>A red border around a field indicates that you must fill in the field before saving and proceeding to the next step.</li>
+<<<<<<< HEAD
                     <li>Office staff will see your requests for written notifications in their attendance dashboard. ~[if.prefschool.attendancetracking=]Your school administrators have not set up email notifications at this time.[else]A notification email will also be sent to: ~[displayprefschool:attendancetracking].[/if]</li>
                     <li>For a printable version of this checklist, click the <i class="fi-print"></i> <strong>Print View</strong> button above. A popup wil open with a version ovf this checklist that is formatted to fit either 8.5" x 11" or 8.5" 14" paper.</li>
+=======
+                    <li>Office staff will see your requests for written notifications in their attendance dashboard. If your school has a designated contact, you can use the <i class="fi-mail"></i> icon to create an email reminder.</li>
+                    <li>For a printable version of this checklist, click the <i class="fi-print"></i> <strong>Print View</strong> button above. A popup wil open with a version of this checklist that is formatted to fit either 8.5" x 11" or 8.5" 14" paper.</li>
+>>>>>>> 8ff56b3 (Email notification + homepage alert)
                 </ul>
             </div>
             <fieldset ng-if="gradeInYear > 9">
@@ -87,7 +92,11 @@ TemplateName:Teacher Backpack
                                 </td>
                                 <td class="grid-item"> 
                                     <label for="student_notification_date">Date</label> 
+<<<<<<< HEAD
                                     <input id="student_notification_date" name="date" ng-model="record.student.student_notification_date" type="text" pss-date-widget data-minDate="~[x:termbegdate]" ng-disabled="record.student.student_notification==0" ng-required="record.student.student_notification==1" />
+=======
+                                    <input id="student_notification_date" name="date" ng-model="record.student.student_notification_date" type="text" pss-date-widget data-minDate="~[x:termbegdate]" ng-disabled="record.student.student_notification==0 || record.calls.parent_call_1>0" ng-required="record.student.student_notification==1" />
+>>>>>>> 8ff56b3 (Email notification + homepage alert)
                                 </td>
                                 <td class="grid-item center">
                                     <div id="student_save" ng-if="student_save=='saving'" data-pss-wait-spinner="small"></div>
@@ -222,7 +231,7 @@ TemplateName:Teacher Backpack
                         <tr>
                             <td class="grid-item stretchCell">
                                 <label class="form-control" for="concern_2_req">
-                                <input type="checkbox" ng-model="concerns.concern_2_req" ng-click="handleConcern($event, 'concern_2','concern_2_req')" name="concern_2_req" id="concern_2_req" ng-disabled="countCalls() || concerns.concern_2_sent===true" value="1" /> Flag concern to admin
+                                <input type="checkbox" ng-model="concerns.concern_2_req" ng-click="handleConcern($event, 'concern_2','concern_2_req')" name="concern_2_req" id="concern_2_req" ng-disabled="countCalls() || concerns.concern_2_sent===true" value="1" /> <span>Flag concern to admin &nbsp;<a type="button" class="button-icon" href="mailto:~[displaypref:attendancetracking-S~(curschoolid)]?subject=Request for 1st Attendance Letter for ~(first_name) ~(last_name)&body=I am requesting that a first attendance letter be sent to the parents/guardians of ~(first_name) ~(last_name). Student Number: ~(student_number). Homeroom: ~(home_room)." target="_blank" rel="noopener noreferrer" title="Send email to office" ng-show="'~[displaypref:attendancetracking-S~(curschoolid)]'"><i class="fi-mail icon"></i></a></span> 
                                 </label>
                             </td>
                             <td class="grid-item">
@@ -282,7 +291,7 @@ TemplateName:Teacher Backpack
                         <tr class="alternateRow">
                             <td class="grid-item stretchCell">
                                 <label class="form-control" for="concern_3_req">
-                                <input type="checkbox" ng-model="concerns.concern_3_req" ng-click="handleConcern($event, 'concern_3','concern_3_req')" name="concern_3_req" id="concern_3_req" ng-disabled="disableConcern('concern_2') || concerns.concern_3_sent===true" value="1" /> Flag concern to admin
+                                <input type="checkbox" ng-model="concerns.concern_3_req" ng-click="handleConcern($event, 'concern_3','concern_3_req')" name="concern_3_req" id="concern_3_req" ng-disabled="disableConcern('concern_2') || concerns.concern_3_sent===true" value="1" /> <span>Flag concern to admin &nbsp;<a type="button" class="button-icon" href="mailto:~[displaypref:attendancetracking-S~(curschoolid)]?subject=Request for 2nd Attendance Letter for ~(first_name) ~(last_name)&body=I am requesting that a second attendance letter be sent to the parents/guardians of ~(first_name) ~(last_name). Student Number: ~(student_number). Homeroom: ~(home_room)." target="_blank" rel="noopener noreferrer" title="Send email to office" ng-show="'~[displaypref:attendancetracking-S~(curschoolid)]'"><i class="fi-mail icon"></i></a></span> 
                                 </label>
                             </td>
                             <td class="grid-item">
@@ -343,7 +352,7 @@ TemplateName:Teacher Backpack
                         <tr>
                             <td class="grid-item stretchCell">
                                 <label class="form-control" for="concern_4_req">
-                                <input type="checkbox" ng-model="concerns.concern_4_req" ng-click="handleConcern($event, 'concern_4','concern_4_req')" name="concern_4_req" id="concern_4_req" ng-disabled="disableConcern('concern_3') || concerns.concern_4_sent===true" value="1" /> Flag concern to admin
+                                <input type="checkbox" ng-model="concerns.concern_4_req" ng-click="handleConcern($event, 'concern_4','concern_4_req')" name="concern_4_req" id="concern_4_req" ng-disabled="disableConcern('concern_3') || concerns.concern_4_sent===true" value="1" /> <span>Flag concern to admin &nbsp;<a type="button" class="button-icon" href="mailto:~[displaypref:attendancetracking-S~(curschoolid)]?subject=Request for 3rd Attendance Letter for ~(first_name) ~(last_name)&body=I am requesting that a third attendance letter be sent to the parents/guardians of ~(first_name) ~(last_name). Student Number: ~(student_number). Homeroom: ~(home_room)." target="_blank" rel="noopener noreferrer" title="Send email to office" ng-show="'~[displaypref:attendancetracking-S~(curschoolid)]'"><i class="fi-mail icon"></i></a></span> 
                                 </label>
                             </td>
                             <td class="grid-item">
