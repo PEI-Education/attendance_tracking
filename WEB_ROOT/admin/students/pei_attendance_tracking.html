@@ -2,7 +2,7 @@
 <html>
 <head>
     <meta name="Author" content="Luke Walker, PEI Dept of Education">
-    <meta name="Version" content="0.5">
+    <meta name="Version" content="0.7">
     <title>Attendance Concerns Checklist</title>
     <link rel="stylesheet" type="text/css" href="/admin/pei_reports/css/foundation-icons.css" />
     ~[wc:commonscripts]
@@ -73,7 +73,7 @@
                                 </td>
                                 <td class="grid-item">
                                     <label for="student_notification_date">Date</label> 
-                                    <input id="student_notification_date" name="date" ng-model="record.student.student_notification_date" type="text" pss-date-widget  ng-disabled="record.studddd34ent.student_notification==0 || record.calls.parent_call_1>0" ng-required="record.student.student_notification==1" />
+                                    <input id="student_notification_date" name="date" ng-model="record.student.student_notification_date" type="text" pss-date-widget data-minDate="~[x:termbegdate]" ng-disabled="record.studddd34ent.student_notification==0 || record.calls.parent_call_1>0" ng-required="record.student.student_notification==1" />
                                 </td>
                                 <td class="grid-item center">
                                     <div id="student_save" ng-if="student_save=='saving'" data-pss-wait-spinner="small"></div>
@@ -198,7 +198,8 @@
                         <tr>
                             <td class="grid-item stretchCell">
                                 <label class="form-control" for="concern_2_req">
-                                <input type="checkbox" ng-model="concerns.concern_2_req" ng-click="handleConcern($event, 'concern_2','concern_2_req')" name="concern_2_req" id="concern_2_req" ng-disabled="countCalls() || concerns.concern_2_sent===true" value="1" /> Flag concern to admin
+                                <input type="checkbox" ng-model="concerns.concern_2_req" ng-click="handleConcern($event, 'concern_2','concern_2_req')" name="concern_2_req" id="concern_2_req" ng-disabled="countCalls() || concerns.concern_2_sent===true" value="1" /> 
+                                    <span>Flag concern to admin &nbsp;<a type="button" class="button-icon" href="mailto:~[displaypref:attendancetracking-S~(curschoolid)]?subject=Request for 1st Attendance Letter for ~(first_name) ~(last_name)&body=I am requesting that a first attendance letter be sent to the parents/guardians of ~(first_name) ~(last_name). Student Number: ~(student_number). Homeroom: ~(home_room)." target="_blank" rel="noopener noreferrer" title="Send email to office" ng-show="'~[displaypref:attendancetracking-S~(curschoolid)]'"><i class="fi-mail icon"></i></a></span> 
                                 </label>
                             </td>
                             <td class="grid-item">
@@ -258,7 +259,7 @@
                         <tr class="alternateRow">
                             <td class="grid-item stretchCell">
                                 <label class="form-control" for="concern_3_req">
-                                <input type="checkbox" ng-model="concerns.concern_3_req" ng-click="handleConcern($event, 'concern_3','concern_3_req')" name="concern_3_req" id="concern_3_req" ng-disabled="disableConcern('concern_2') || concerns.concern_3_sent===true" value="1" /> Flag concern to admin
+                                <input type="checkbox" ng-model="concerns.concern_3_req" ng-click="handleConcern($event, 'concern_3','concern_3_req')" name="concern_3_req" id="concern_3_req" ng-disabled="disableConcern('concern_2') || concerns.concern_3_sent===true" value="1" /> <span>Flag concern to admin &nbsp;<a type="button" class="button-icon" disabled href="mailto:~[displaypref:attendancetracking-S~(curschoolid)]?subject=Request for 2nd Attendance Letter for ~(first_name) ~(last_name)&body=I am requesting that a second attendance letter be sent to the parents/guardians of ~(first_name) ~(last_name). Student Number: ~(student_number). Homeroom: ~(home_room)." target="_blank" rel="noopener noreferrer" title="Send email to office" ng-show="'~[displaypref:attendancetracking-S~(curschoolid)]'"><i class="fi-mail icon"></i></a></span> 
                                 </label>
                             </td>
                             <td class="grid-item">
@@ -318,7 +319,7 @@
                         <tr>
                             <td class="grid-item stretchCell">
                                 <label class="form-control" for="concern_4_req">
-                                <input type="checkbox" ng-model="concerns.concern_4_req" ng-click="handleConcern($event, 'concern_4','concern_4_req')" name="concern_4_req" id="concern_4_req" ng-disabled="disableConcern('concern_3') || concerns.concern_4_sent===true" value="1" /> Flag concern to admin
+                                <input type="checkbox" ng-model="concerns.concern_4_req" ng-click="handleConcern($event, 'concern_4','concern_4_req')" name="concern_4_req" id="concern_4_req" ng-disabled="disableConcern('concern_3') || concerns.concern_4_sent===true" value="1" /> <span>Flag concern to admin &nbsp;<a type="button" class="button-icon" href="mailto:~[displaypref:attendancetracking-S~(curschoolid)]?subject=Request for 3rd Attendance Letter for ~(first_name) ~(last_name)&body=I am requesting that a third attendance letter be sent to the parents/guardians of ~(first_name) ~(last_name). Student Number: ~(student_number). Homeroom: ~(home_room)." target="_blank" rel="noopener noreferrer" title="Send email to office" ng-show="'~[displaypref:attendancetracking-S~(curschoolid)]'"><i class="fi-mail icon"></i></a></span> 
                                 </label>
                             </td>
                             <td class="grid-item">
