@@ -6,6 +6,7 @@ Interface for tracking concerns and interventions relating to student attendance
    a. List of students with checklists
    b. Form letter generator
    c. Bulk checklist updater
+   d. Links to admin interface on various pages including the homepage and the attendance page
 
 ## Dependencies
 - psQuery by Jim Parsons (https://support.powerschool.com/exchange/view.action?download.id=846&fromSearchResults=true)

@@ -1,9 +1,31 @@
 <link rel="stylesheet" type="text/css" href="/admin/pei_reports/css/foundation-icons.css" />
 
-<button id="bulkChecklists" class="btn btn-primary" onclick="window.location.assign('/admin/pei_reports/attendance_tracking.html')" style="position: absolute; right: 20px; top: 85px;"><i class="fi-torsos-all"></i> Track Attendance Concerns</button>
-
 <script>
     $j(function() {
-        $j('#content-main').append($j('#bulkChecklists'));
+        let requests = { ~[tlist_sql;
+            select
+                count(case when u.concern_2 = 1 then 1 else null end) as letter1,
+                count(case when u.concern_3 = 1 then 1 else null end) as letter2,
+                count(case when u.concern_4 = 1 then 1 else null end) as letter3
+            from u_pei_att_track u
+            join students s
+                on s.dcid = u.studentsdcid
+            where
+                substr(termid,0,2) = ~(curyearid)
+                and s.schoolid = ~(curschoolid)
+            order by 1;
+            ]
+                letter1: ~(1),
+                letter2: ~(2),
+                letter3: ~(3)
+            [/tlist_sql]
+            }
+        
+        let sum = Object.values(requests).reduce((a, b) => a + b, 0);
+        if (sum > 0) {
+           $j('#content-main').append(`<button id="bulkChecklists" class="btn btn-primary" onclick="window.location.assign('/admin/pei_reports/attendance_tracking.html')" style="position: absolute; right: 20px; top: 85px; background-color: red;"><i class="fi-flag"></i> Attendance Concerns - Action required</button>`) 
+        } else {
+           $j('#content-main').append(`<button id="bulkChecklists" class="btn btn-primary" onclick="window.location.assign('/admin/pei_reports/attendance_tracking.html')" style="position: absolute; right: 20px; top: 85px;"><i class="fi-torsos-all"></i> Track Attendance Concerns</button>`) 
+        }
     });
 </script>
