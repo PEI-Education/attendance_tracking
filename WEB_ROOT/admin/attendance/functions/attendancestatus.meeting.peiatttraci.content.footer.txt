@@ -1,9 +1,0 @@
-<link rel="stylesheet" type="text/css" href="/admin/pei_reports/css/foundation-icons.css" />
-
-<button id="bulkChecklists" class="btn btn-primary" onclick="window.location.assign('/admin/pei_reports/attendance_tracking.html')" style="position: absolute; right: 20px; top: 85px;"><i class="fi-torsos-all"></i> Track Attendance Concerns</button>
-
-<script>
-    $j(function() {
-        $j('#content-main').append($j('#bulkChecklists'));
-    });
-</script>
