@@ -26,56 +26,47 @@ define(function(require) {
         $scope.pc1  = {
             parent_call_1: 0, 
             parent_call_1_staff: '', 
-            parent_call_1_date: '', 
-            parent_call_notes: ''
+            parent_call_1_date: ''
         };
         $scope.pc2  = {
             parent_call_2: 0, 
             parent_call_2_staff: '', 
-            parent_call_2_date: '', 
-            parent_call_notes: ''            
+            parent_call_2_date: ''
         };
         $scope.pc3  = {
             parent_call_3: 0, 
             parent_call_3_staff: '', 
-            parent_call_3_date: '', 
-            parent_call_notes: ''            
+            parent_call_3_date: '' 
         };
         $scope.c2req = {
             concern_2: 0, 
             concern_2_req_staff: '', 
-            concern_2_req_date: '', 
-            concern_2_notes: ''
+            concern_2_req_date: ''
         };
         $scope.c2sent = {
             concern_2: 1,
             concern_2_sent_staff: '', 
-            concern_2_sent_date: '', 
-            concern_2_notes: ''
+            concern_2_sent_date: ''
         };
         $scope.c3req = {
             concern_3: 0, 
             concern_3_req_staff: '', 
-            concern_3_req_date: '', 
-            concern_3_notes: ''
+            concern_3_req_date: ''
         };
         $scope.c3sent = {
             concern_3: 1,
             concern_3_sent_staff: '', 
-            concern_3_sent_date: '', 
-            concern_3_notes: ''
+            concern_3_sent_date: ''
         };
         $scope.c4req = {
             concern_4: 0, 
             concern_4_req_staff: '', 
-            concern_4_req_date: '', 
-            concern_4_notes: ''
+            concern_4_req_date: ''
         };
         $scope.c4sent = {
             concern_4: 1,
             concern_4_sent_staff: '', 
-            concern_4_sent_date: '', 
-            concern_4_notes: ''
+            concern_4_sent_date: ''
         };
         $scope.referral = {
             referral: 0,
@@ -96,7 +87,6 @@ define(function(require) {
                     }
                 });
                 $scope.gridData = retData;
-                console.log(retData);
                 state.spinner.wait = false;
             });
         };
@@ -151,11 +141,9 @@ define(function(require) {
         }
         
         $scope.setStaffDate = function(group,step) {
-            console.log('setStaffDate triggered')
             if (parseInt($scope[group][step])===0) {
                 $scope[group][`${step}_staff`] = null;
                 $scope[group][`${step}_date`] = null;
-                console.log('null - no action')
             } else {
                 if (!$scope[group][`${step}_staff`]) {
                     $scope[group][`${step}_staff`] = $scope.currentUser;
