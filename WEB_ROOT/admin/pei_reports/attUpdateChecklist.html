@@ -153,6 +153,7 @@ TemplateName:Admin
                                     <button type="submit" id="call_save" ng-click="save('pc1')"><i class="fi-checkbox icon no-print"></i></button>
                                 </td>
                             </tr>
+                        <!--
                             <tr>
                                 <td colspan="3" class="grid-item">
                                     <label for="parent_call_notes" class="notes-label">Notes</label>
@@ -160,6 +161,7 @@ TemplateName:Admin
                                     <textarea class="notes" id="parent_call_notes" name="parent_call_notes" ng-model="pc1.parent_call_notes" maxlength="4000"></textarea>
                                 </td>
                             </tr>
+                        -->
                         </tbody>
                     </table>
                 </form>
@@ -241,6 +243,7 @@ TemplateName:Admin
                                     <button type="submit" id="calls_save" ng-click="save('pc3')"><i class="fi-checkbox icon no-print"></i></button>
                                 </td>
                             </tr>
+                        <!--
                             <tr>
                                 <td colspan="3" class="grid-item">
                                     <label for="parent_call_notes" class="notes-label">Notes</label>
@@ -248,6 +251,7 @@ TemplateName:Admin
                                     <textarea class="notes" id="parent_call_notes" name="pc3.parent_call_notes" ng-model="$parent.parent_call_notes"  maxlength="4000"></textarea>
                                 </td>
                             </tr>
+                        -->
                         </tbody>
                     </table>
                 </form>                
@@ -283,6 +287,7 @@ TemplateName:Admin
                                     <button type="submit" ng-click="save('c2req')" id="concern_2_save"><i class="fi-checkbox icon"></i></button>
                                 </td>
                             </tr>
+                        <!--
                             <tr>
                                 <td colspan="3" class="grid-item">
                                     <label class="notes-label" for="concern_2_notes">Notes</label>
@@ -291,6 +296,7 @@ TemplateName:Admin
                                     
                                 </td>
                             </tr>
+                        -->
                         </tbody>
                     </table>
                 </form>        
@@ -326,6 +332,7 @@ TemplateName:Admin
                                     <button type="submit" id="concern_2_save" ng-click="save('c2sent')"><i class="fi-checkbox icon"></i></button>
                                 </td>
                             </tr>
+                        <!--
                             <tr>
                                 <td colspan="3" class="grid-item">
                                     <label class="notes-label" for="concern_2_notes">Notes</label>
@@ -334,6 +341,7 @@ TemplateName:Admin
                                     
                                 </td>
                             </tr>
+                        -->
                         </tbody>
                     </table>
                 </form>
@@ -369,6 +377,7 @@ TemplateName:Admin
                                     <button type="submit" ng-click="save('c3req')" id="concern_3_save"><i class="fi-checkbox icon"></i></button>
                                 </td>
                             </tr>
+                        <!--
                             <tr>
                                 <td colspan="3" class="grid-item">
                                     <label class="notes-label" for="concern_3_notes">Notes</label>
@@ -377,6 +386,7 @@ TemplateName:Admin
                                     
                                 </td>
                             </tr>
+                        -->
                         </tbody>
                     </table>
                 </form>        
@@ -412,6 +422,7 @@ TemplateName:Admin
                                     <button type="submit"  id="concern_3_save" ng-click="save('c3sent')"><i class="fi-checkbox icon"></i></button>
                                 </td>
                             </tr>
+                        <!--
                             <tr>
                                 <td colspan="3" class="grid-item">
                                     <label class="notes-label" for="concern_3_notes">Notes (required)</label>
@@ -420,6 +431,7 @@ TemplateName:Admin
                                     
                                 </td>
                             </tr>
+                        -->
                         </tbody>
                     </table>
                 </form>  
@@ -456,6 +468,7 @@ TemplateName:Admin
                                     <button type="submit" ng-click="save('c4req')" id="concern_4_save"><i class="fi-checkbox icon"></i></button>
                                 </td>
                             </tr>
+                        <!--
                             <tr>
                                 <td colspan="3" class="grid-item">
                                     <label class="notes-label" for="concern_4_notes">Notes</label>
@@ -464,6 +477,7 @@ TemplateName:Admin
                                     
                                 </td>
                             </tr>
+                        -->
                         </tbody>
                     </table>
                 </form>        
@@ -499,6 +513,7 @@ TemplateName:Admin
                                     <button type="submit"  id="concern_4_save" ng-click="save('c4sent')"><i class="fi-checkbox icon"></i></button>
                                 </td>
                             </tr>
+                        <!--
                             <tr>
                                 <td colspan="3" class="grid-item">
                                     <label class="notes-label" for="concern_4_notes">Notes</label>
@@ -507,6 +522,7 @@ TemplateName:Admin
                                     
                                 </td>
                             </tr>
+                        -->
                         </tbody>
                     </table>
                 </form> 
@@ -539,7 +555,7 @@ TemplateName:Admin
                             </td>
                             <td class="grid-item center">
                                 <div ng-if="taskComplete"><i class="fi fi-check green"> Saved</i></div>
-                                <button type="submit" id="student_save" ng-if="!taskComplete"><i class="fi-checkbox icon"></i></button>
+                                <button type="submit" id="referral_save" ng-if="!taskComplete"><i class="fi-checkbox icon"></i></button>
                             </td>
                         </tr>
                     </table>
