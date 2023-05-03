@@ -9,55 +9,34 @@ TemplateName:Admin
 	<title>Attendance Concerns Tracking</title>
 <!-- required scripts -->
 	~[wc:commonscripts] 
+	<script src="/scripts/psQuery/psQuery.js"></script>
 <!-- Required style sheets: screen.css, and print.css --> 
 	<link href="/images/css/screen.css" rel="stylesheet" media="screen">
 	<link href="/images/css/print.css" rel="stylesheet" media="print">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.0.0/dist/themes/light.css" />
+    <script type="module" src="https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.0.0/dist/shoelace.js"></script>
+    <link href="/images/css/pei_att_track.css" rel="stylesheet">
 	<style>
-	    .tile-small-type-text {
-            font-size: 9pt !important;
-        }
-        
-        #wait-spinner-div {
+	   #wait-spinner-div {
             position: fixed;
             top: 55%;
             left: 55%;
         }
-        .center {
-            text-align: center;
-        }
-        #firstStep{
-            border: 1px solid gray;
-        }
-        .button-row {
+        .padding5 {
             padding: 5px;
         }
-        #firstStep > button {
-            background-color: green;
-        }
-        #flex-container {
-            display: flex;
-            flex-direction: row;
-            justify-content: space-between;
-            align-items: stretch;
-        }
-        #flex-left {
-            order: 1;
-            flex-basis: 70%;
-        }
-        #flex-right {
-            order: 2;
-            flex-basis: 30%;
+        .half-container {
+            width: 49%;
+            display: inline-block;
+            vertical-align: top;
         }
 	</style>
-	<script>
-	    var hs = ~(curtermid) % 100 === 0 ? false : true;
-	</script>
 </head> 
 <body> 
 	~[wc:admin_header_css] 
-    <!-- breadcrumb start --><a href="/admin/home.html" target="_top">~[text:psx.html.admin_students.previousgrades.start_page]</a> &gt; <a href="/admin/reports/home.html">~[text:psx.html.admin_reports.runreports.reports]</a> &gt; Attendance Concerns Tracking<!-- breadcrumb end --> 
+        <!-- breadcrumb start --><a href="/admin/home.html" target="_top">~[text:psx.html.admin_students.previousgrades.start_page]</a> &gt; <a href="/admin/reports/home.html">~[text:psx.html.admin_reports.runreports.reports]</a> &gt; <a href="attendance_tracking.html">Attendance Tracking</a> &gt; Mass Update Attendance Checklists<!-- breadcrumb end --> 
 <!-- start of main menu and content --> 
-	~[wc:admin_navigation_css] 
+	~[wc:admin_navigation_css]
 <!-- Start of Page --> 
 	<h1>Attendance Concerns Tracking</h1> 
 <!-- start of content area -->
@@ -86,25 +65,25 @@ TemplateName:Admin
                 <div class="kpi-header">
                     <h3>Students with Attendance Concern Checklists</h3>
                 </div>
-                <div class="kpi-content">
-                    <div class="kpi-container">
-                         <div class="kpi-content tiles">
-                             <div data-pss-vidget-wrapper>
-                                 <div id="tileCarousel"
-                                     data-pss-vidget
-                                     data-pss-carousel
-                                     data-vidget-source="vidget:tiles:raw"
-                                     data-vidget-model="model.tiles">
-                                     <div id="tiles"
-                                          data-pss-vidget
-                                          data-pss-tiles-vidget
-                                          data-pss-carousel-tiles-vidget
-                                          data-att-tiles>
-                                     </div>
-                                 </div>
-                             </div>
-                         </div>    
-                    </div>    
+                <div ng-show="showValidation">
+                    <div class="half-container green" ng-if="validStudents.length > 0">
+                        <h3>Valid Students</h3>
+                        <p>The following students in your selection are eligible for changes to the selected checklist step and changes will be applied:</p>
+                        <ul>
+                            <li ng-repeat="student in validStudents">{{ student.firstName }} {{ student.lastName }}</li>
+                        </ul>
+                    </div>
+                    <div class="half-container green" ng-if="!validStudents || validStudents.length===0">
+                        <h3>Valid Students</h3>
+                        <p>No students in your current selection are eligible for edits to the selected step. For any given student, you can only edit the most recently completed step or add the next step. <strong>Please select a different step above.</strong></p>
+                    </div>
+                    <div class="half-container red">
+                        <h3>Invalid Students</h3>
+                        <p>The following students in your selection are <strong>not</strong> eligible for changes to the selected checklist step and will not be modified:</p>
+                        <ul>
+                            <li ng-repeat="student in invalidStudents">{{ student.firstName }} {{ student.lastName }}</li>
+                        </ul>
+                    </div>
                 </div>
             </div>
             <div id="grid-widget-attendance" 
@@ -152,23 +131,12 @@ TemplateName:Admin
         	    </div>
                 <div ng-show="showActions">
                     <div class="button-row">
-                        Once you have a student selection, you can:
-                        <a href="attPrintLetters.html?dothisfor=selected" class="button">Print Letters</a>
-                        <a href="attUpdateChecklist.html" class="button">Mass Checklist Update</a>
+                        <a href='attUpdateChecklist.html' class="button">Update More</a>&nbsp;<a href="/admin/reportqueue/home.html" class="button">Visit Report Queue</a>&nbsp;<a href="/admin/pei_reports/attendance_tracking.html" class="button">Return to Attendance Tracking</a>
                     </div>
-                    <div id="external-linka" class="button-row">
-            	        These buttons will open a new tab. Return to this page to update checklists.
-            	        <a href="/admin/messagesender/msgsndr.html" class="button" target="_blank">Email via Message Sender</a>
-            	        <a href="/admin/studentlist/functions.html" class="button" target="_blank">Other Group Functions</a>
-            	        <button id="exportData" ng-click="exportData(gridData)">Export Data</button>
-            	    </div>
-        	    </div>
-        	</fieldset>
-
-    	<!-- end of mass functions -->
+                </div>
+            </fieldset>
         </div>
-   </div>     
-  </div>
+   </div>
 <!-- end of content area --> 
 	~[wc:admin_footer_css] 
 </body> 
