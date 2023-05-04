@@ -22,9 +22,9 @@
             
             let sum = Object.values(requests).reduce((a, b) => a + b, 0);
             if (sum === 1) {
-                $j('h1').after(`<div id="attAlert" class="feedback-alert">Staff have requested 1 written attendance notification. See the list of students on the <a href="/admin/pei_reports/attendance_tracking.html">Attendance Concerns Dashboard</a>.</div>`);
+                $j('h1:contains(~[text:psx.html.admin.home.start_page])').after(`<div id="attAlert" class="feedback-alert">Staff have requested 1 written attendance notification. See the list of students on the <a href="/admin/pei_reports/attendance_tracking.html">Attendance Concerns Dashboard</a>.</div>`);
             } else if (sum > 1) {     
-                $j('h1').a  fter(`<div id="attAlert" class="feedback-alert">Staff have requested ${sum} written attendance notifications. See the list of students on the <a href="/admin/pei_reports/attendance_tracking.html">Attendance Concerns Dashboard</a>.</div>`);
+                $j('h1:contains(~[text:psx.html.admin.home.start_page])').after(`<div id="attAlert" class="feedback-alert">Staff have requested ${sum} written attendance notifications. See the list of students on the <a href="/admin/pei_reports/attendance_tracking.html">Attendance Concerns Dashboard</a>.</div>`);
             }
         });
     </script>
