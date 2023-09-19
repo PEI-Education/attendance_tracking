@@ -49,9 +49,10 @@ TemplateName:Teacher Backpack
         <input type="hidden" id="staffName" value="~[x:username;firstlast]" />
         <input type="hidden" id="studentsdcid" value="~(studentrn)" />
         <input type="hidden" id="dateToday" value="~[date]" />
-        <input type="hidden" id="termid" value="~[x:getbase_termid]" />
-        <div ng-if="validTerm()">
-            <h2>Checklist for ~[x:getbase_termname] <span class="right boldtext">Grade level this term: {{gradeInYear}}&nbsp; &nbsp; <button class="btn btn-primary" onclick="printDiv()"><i class="fi-print"></i> Print View</button></span></h2>
+        <input type="hidden" id="gradeInYear" value="~(grade_level)" />
+        <input type="hidden" id="termid" value="~[tlist_sql;select id from terms where schoolid = ~(curschoolid) and yearid = ~(curyearid) and lastday >= to_date('~[date]','mm/dd/yyyy') and firstday <= to_date('~[date]','mm/dd/yyyy') and isYearRec = ~[if.~(grade_level)>9]0[else]1[/if];nonemessage="No results"]~(term;json)[/tlist_sql]" />
+        <div>
+            <h2>Checklist for ~[tlist_sql;select name from terms where schoolid = ~(curschoolid) and yearid = ~(curyearid) and lastday >= to_date('~[date]','mm/dd/yyyy') and firstday <= to_date('~[date]','mm/dd/yyyy') and isYearRec = ~[if.~(grade_level)>9]0[else]1[/if];nonemessage="No results"]~(term;json)[/tlist_sql]<span class="right boldtext">Grade level this term: {{gradeInYear}}&nbsp; &nbsp; <button class="btn btn-primary" onclick="printDiv()"><i class="fi-print"></i> Print View</button></span></h2>
             <div class="feedback-info no-print">
                 <ul>
                     <li>This checklist must be completed sequentially. Each step must have a date later than the step before. In the case of written notifications, 5 school days have to pass between a notification being sent and the next concern being flagged.</li>
@@ -421,7 +422,7 @@ TemplateName:Teacher Backpack
         <div id="printarea" class="printable">
             <div class="no-print warning">Print this document by selecting Print (in the ellipses menu in the upper right) or pressing Ctrl + P. Close this window one you have completed printing. This instructional text will not print.</div>
             <h1>~(first_name) ~(last_name)</h1>
-            <h2>Checklist for ~(termname) <span class="right boldtext">Grade level this term: {{gradeInYear}}</span></h2>
+            <h2>Checklist for ~[tlist_sql;select name from terms where schoolid = ~(curschoolid) and yearid = ~(curyearid) and lastday >= to_date('~[date]','mm/dd/yyyy') and firstday <= to_date('~[date]','mm/dd/yyyy') and isYearRec = ~[if.~(grade_level)>9]0[else]1[/if];nonemessage="No results"]~(term;json)[/tlist_sq]<span class="right boldtext">Grade level this term: {{gradeInYear}}</span></h2>
             <fieldset ng-if="gradeInYear > 9">
                 <legend>Student Contact</legend>
                 <table class="checklistTable">

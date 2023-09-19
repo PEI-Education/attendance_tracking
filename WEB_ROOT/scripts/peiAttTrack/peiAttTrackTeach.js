@@ -7,7 +7,7 @@ define(['angular', 'components/shared/index'], function(angular) {
         let init = function() {
             $scope.termid = document.getElementById('termid').value;
             $scope.record = {};
-            $scope.getGrade('json/pei_attTrackGrade.json');
+            $scope.gradeInYear = document.getElementById('gradeInYear').value;
             $scope.validTerm();
             $scope.forms = {};
             $scope.getRecord('json/pei_attTrack.json');
@@ -16,7 +16,7 @@ define(['angular', 'components/shared/index'], function(angular) {
         
  
         $scope.getRecord = function(datafile) {
-            dbConnect.getRecord(datafile).then(function(retData) {
+            dbConnect.getRecord(`${datafile}?term=${$scope.termid}`).then(function(retData) {
                 if (typeof retData === "object") {
                     $scope.record = retData;
                     // set the value of flag concern and letter sent indicators based on value of concern_2, concern_3 and concern_4
@@ -54,6 +54,9 @@ define(['angular', 'components/shared/index'], function(angular) {
                         },
                         referral: {}
                     };
+                    if ($scope.gradeInYear < 10) {
+                        $scope.record.student.student_notification = '-1';
+                    }
                 }
                 for (const prop in $scope.forms) {
                     $scope.forms[prop].$setPristine();
@@ -62,7 +65,7 @@ define(['angular', 'components/shared/index'], function(angular) {
  
         };
         
-        // Adds the student's grade_level in the context of the termid, and sets the student_notification property to 'na' if that level is less than Grade 10
+        /* Adds the student's grade_level in the context of the termid, and sets the student_notification property to 'na' if that level is less than Grade 10 - NOT NECESSARY ON TEACHER SIDE.
         $scope.getGrade = function(datafile) {
             dbConnect.getRecord(datafile).then(function(retData) {
                 if (typeof(retData) === 'number') {
@@ -76,11 +79,11 @@ define(['angular', 'components/shared/index'], function(angular) {
             }).catch(function(error) {
                 console.error(error);
             });
-        };
+        };*/
         
         // Checks if the termid is valid for the student's grade_level in the context of the termid
         $scope.validTerm = function() {
-            let remainder = parseInt(document.getElementById('termid').value) % 100;
+            let remainder = $scope.termid % 100;
             if (remainder !== 0 && $scope.gradeInYear < 10) { 
                 return false;
             } 

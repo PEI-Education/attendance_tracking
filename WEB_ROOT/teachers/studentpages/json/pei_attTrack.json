@@ -44,7 +44,7 @@
     	JOIN students s 
     	  ON u.studentsdcid = s.dcid
         WHERE
-    	    u.termid = ~[x:getbase_termid]
+    	    u.termid = ~(gpv.term)
     	    and s.id = ~(curstudid)
     ) WHERE rn = 1;nonemessage=-1]
 	{
