@@ -231,7 +231,7 @@ TemplateName:Teacher Backpack
                         <tr>
                             <td class="grid-item stretchCell">
                                 <label class="form-control" for="concern_2_req">
-                                <input type="checkbox" ng-model="concerns.concern_2_req" ng-click="handleConcern($event, 'concern_2','concern_2_req')" name="concern_2_req" id="concern_2_req" ng-disabled="countCalls() || concerns.concern_2_sent===true" value="1" /> <span>Flag concern to admin &nbsp;<a type="button" class="button-icon" href="mailto:~[displaypref:attendancetracking-S~(curschoolid)]?subject=Request for 1st Attendance Letter for ~(first_name) ~(last_name)&body=I am requesting that a first attendance letter be sent to the parents/guardians of ~(first_name) ~(last_name). Student Number: ~(student_number). Homeroom: ~(home_room)." target="_blank" rel="noopener noreferrer" title="Send email to office" ng-show="'~[displaypref:attendancetracking-S~(curschoolid)]'"><i class="fi-mail icon"></i></a></span> 
+                                <input type="checkbox" ng-model="concerns.concern_2_req" ng-click="handleConcern($event, 'concern_2','concern_2_req')" name="concern_2_req" id="concern_2_req" ng-disabled="countCalls() || concerns.concern_2_sent===true" value="1" /> Flag concern to admin
                                 </label>
                             </td>
                             <td class="grid-item">
@@ -291,7 +291,7 @@ TemplateName:Teacher Backpack
                         <tr class="alternateRow">
                             <td class="grid-item stretchCell">
                                 <label class="form-control" for="concern_3_req">
-                                <input type="checkbox" ng-model="concerns.concern_3_req" ng-click="handleConcern($event, 'concern_3','concern_3_req')" name="concern_3_req" id="concern_3_req" ng-disabled="disableConcern('concern_2') || concerns.concern_3_sent===true" value="1" /> <span>Flag concern to admin &nbsp;<a type="button" class="button-icon" href="mailto:~[displaypref:attendancetracking-S~(curschoolid)]?subject=Request for 2nd Attendance Letter for ~(first_name) ~(last_name)&body=I am requesting that a second attendance letter be sent to the parents/guardians of ~(first_name) ~(last_name). Student Number: ~(student_number). Homeroom: ~(home_room)." target="_blank" rel="noopener noreferrer" title="Send email to office" ng-show="'~[displaypref:attendancetracking-S~(curschoolid)]'"><i class="fi-mail icon"></i></a></span> 
+                                <input type="checkbox" ng-model="concerns.concern_3_req" ng-click="handleConcern($event, 'concern_3','concern_3_req')" name="concern_3_req" id="concern_3_req" ng-disabled="disableConcern('concern_2') || concerns.concern_3_sent===true" value="1" /> Flag concern to admin
                                 </label>
                             </td>
                             <td class="grid-item">
@@ -352,7 +352,7 @@ TemplateName:Teacher Backpack
                         <tr>
                             <td class="grid-item stretchCell">
                                 <label class="form-control" for="concern_4_req">
-                                <input type="checkbox" ng-model="concerns.concern_4_req" ng-click="handleConcern($event, 'concern_4','concern_4_req')" name="concern_4_req" id="concern_4_req" ng-disabled="disableConcern('concern_3') || concerns.concern_4_sent===true" value="1" /> <span>Flag concern to admin &nbsp;<a type="button" class="button-icon" href="mailto:~[displaypref:attendancetracking-S~(curschoolid)]?subject=Request for 3rd Attendance Letter for ~(first_name) ~(last_name)&body=I am requesting that a third attendance letter be sent to the parents/guardians of ~(first_name) ~(last_name). Student Number: ~(student_number). Homeroom: ~(home_room)." target="_blank" rel="noopener noreferrer" title="Send email to office" ng-show="'~[displaypref:attendancetracking-S~(curschoolid)]'"><i class="fi-mail icon"></i></a></span> 
+                                <input type="checkbox" ng-model="concerns.concern_4_req" ng-click="handleConcern($event, 'concern_4','concern_4_req')" name="concern_4_req" id="concern_4_req" ng-disabled="disableConcern('concern_3') || concerns.concern_4_sent===true" value="1" /> Flag concern to admin
                                 </label>
                             </td>
                             <td class="grid-item">
