@@ -2,8 +2,8 @@
 <html>
 <head>
     <meta name="Author" content="Luke Walker, PEI Dept of Education">
-    <meta name="Version" content="0.3">
-    <title>Attendance Tracking Checklist</title>
+    <meta name="Version" content="0.9">
+    <title>Attendance Concerns Checklist</title>
     <link rel="stylesheet" type="text/css" href="/admin/pei_reports/css/foundation-icons.css" />
     ~[wc:commonscripts]
 	<script src="/scripts/psQuery/psQuery.js"></script>
@@ -13,36 +13,47 @@
     <script type="module" src="https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.0.0/dist/shoelace.js"></script>
     <link href="/images/css/pei_att_track.css" rel="stylesheet">
     <script>
-        loadingDialog();
+    function printDiv() {
+        var popupWin = window.open('', '_blank', 'width=1000,height=600');
+    
+        popupWin.document.write('<html><head>'+
+                                '<link rel="stylesheet" type="text/css" href="/admin/pei_reports/css/foundation-icons.css" />'+
+                                '<link href="/images/css/print.css" rel="stylesheet" media="print">'+
+                                '<link href="/images/css/pei_att_track.css" rel="stylesheet">'+
+                                '<link href="/images/css/pei_att_track_print.css" rel="stylesheet">'+
+                                '</head><body>' + document.querySelector('#printarea').innerHTML + '</body></html>');
+        popupWin.print();  
+    }
     </script>
 </head>
-
 <body>
 
-~[wc:admin_header_frame_css]<!-- breadcrumb start --><a href="/admin/home.html" target="_top">Start</a> &gt; <a href="home.html?selectstudent=nosearch" target="_top">Student Selection</a> &gt; Attendance Tracking Checklist<!-- breadcrumb end -->~[wc:admin_navigation_frame_css]
+~[wc:admin_header_frame_css]<!-- breadcrumb start --><a href="/admin/home.html" target="_top">Start</a> &gt; <a href="home.html?selectstudent=nosearch" target="_top">Student Selection</a> &gt; Attendance Concerns Checklist<!-- breadcrumb end -->~[wc:admin_navigation_frame_css]
 
-~[wc:title_student_begin_css]Attendance Tracking Checklist~[wc:title_student_end_css]
+~[wc:title_student_begin_css]Attendance Concerns Checklist~[wc:title_student_end_css]
 
 <!-- start of content and bounding box -->
-<div data-require-path="peiAttTrack/peiAttTrack" data-module-name="attTrackMod"> 
-    <div class="box-round" ng-controller="attTrackCtrl" ng-cloak>
+<div data-require-path="peiAttTrack/peiAttTrack" data-module-name="attTrackMod" ng-controller="attTrackCtrl" ng-cloak> 
+    <div class="box-round no-print">
         <input type="hidden" id="staffName" value="~[x:username;firstlast]" />
         <input type="hidden" id="studentsdcid" value="~(studentrn)" />
         <input type="hidden" id="dateToday" value="~[date]" />
         <input type="hidden" id="termid" value="~(curtermid)" />
+        <input type="hidden" id="gradeInYear" value="~[tlist_sql;select * from (select e.grade_level from ps_schoolenrollment e where e.studentid = ~(curstudid) and e.yearid = ~(curyearid) order by 1 desc) where ROWNUM=1;nonemessage=-9]~(1)[/tlist_sql]" />        
         <div ng-if="validTerm()">
-            <h2>Checklist for ~(termname) <span class="right boldtext">Grade level this term: {{gradeInYear}}</span></h2>
+            <h2>Checklist for ~(termname) <span class="right boldtext">Grade level this term: {{gradeInYear}} &nbsp; &nbsp; <button class="btn btn-primary" onclick="printDiv()"><i class="fi-print"></i> Print View</button></span></h2>
             <div class="feedback-info no-print">
                 <ul>
-                    <li>This checklist must be completed sequentially. Each step must have a date later than the step before. In the case of written notifications, 5 school days have to pass between a notification being sent and the next concern being flagged.</li>
-                    <li>Each section of this checklist has a separate save button (with the <i class="fi-checkbox"></i> icon) that submits the data for that section <strong>only</strong>.</li>
-                    <li>A red border around a field indicates that you must fill in the field before saving and proceeding to the next step.</li>
+                    <li>This checklist must be completed sequentially. Most steps must have a date later than the step before. In the case of written notifications, 5 school days have to pass between a notification being sent and the next concern being flagged. The one exception is the first parent call for high school students, which can come before or after student notification.</li>
+                <li>A red border around a field indicates that you must fill in the field before saving and proceeding to the next step.</li>
                     <li>You can reset your most recent step by unchecking a checkbox or setting a call to "Not attempted" <strong>and pressing the save button</strong> for that section. Once your reset that step, you will have the option of resetting the step before that.</li>
+                    <li>Notification emails ~[if#lt.prefschool.attendancetracking#]are sent to ~[displayprefschool:attendancetracking][else#lt]are not set up[/if#lt]. To update the list of staff who are notified about attendance letter requests, send the list of email addresses to <a href="mailto:powerschoolhelp@cloud.edu.pe.ca">PowerSchoolHelp@cloud.edu.pe.ca</a>.</li>
+                    <li>For a printable version of this checklist, click the <i class="fi-print"></i> <strong>Print View</strong> button above. A popup wil open with a version of this checklist that is formatted to fit either 8.5" x 11" or 8.5" 14" paper.</li>
                 </ul>
             </div>
             <fieldset ng-if="gradeInYear > 9">
                 <legend>Student Contact</legend>
-                <form name="forms.stu" id="stuForm"  ng-submit="save($event,'student')" novalidate class="validatedForm" data-pss-validation-form data-dirty-state-check="true">
+                <form name="forms.stu" id="stuForm"  ng-submit="save($event,'student')" novalidate class="validatedForm noSubmitLoading" data-pss-validation-form data-dirty-state-check="true">
                     <table class="checklistTable">
                         <colgroup>
                             <col style="width:35%;" />
@@ -54,20 +65,21 @@
                             <tr>
                                 <td class="grid-item stretchCell">
                                     <label class="form-control" for="student_notification">
-                                    <input type="checkbox" ng-model="record.student.student_notification" ng-click="toggle($event, 'student', 'student_notification')" name="student_notification" id="student_notification" ng-true-value="1" ng-false-value="0" ng-disabled="record.calls.parent_call_1>0"> Discussion of concern
+                                    <input type="checkbox" ng-model="record.student.student_notification" ng-click="toggle($event, 'student', 'student_notification')" name="student_notification" id="student_notification" ng-true-value="1" ng-false-value="0" ng-disabled="record.calls.parent_call_2>0"> Discussion of concern
                                     </label>
                                 </td>
                                 <td class="grid-item">
                                     <label for="student_notification_staff">Contacted by</label> 
-                                    <input size="40" id="student_notification_staff" name="staff" length="40" ng-model="record.student.student_notification_staff" ng-disabled="record.student.student_notification==0|| record.calls.parent_call_1>0" ng-required="record.student.student_notification==1" />
+                                    <input size="40" id="student_notification_staff" name="staff" length="40" ng-model="record.student.student_notification_staff" ng-disabled="record.student.student_notification==0" ng-required="record.student.student_notification==1" />
                                 </td>
                                 <td class="grid-item">
                                     <label for="student_notification_date">Date</label> 
-                                    <input id="student_notification_date" name="date" ng-model="record.student.student_notification_date" type="text" pss-date-widget  ng-disabled="record.studddd34ent.student_notification==0 || record.calls.parent_call_1>0" ng-required="record.student.student_notification==1" />
+                                    <input id="student_notification_date" name="date" ng-model="record.student.student_notification_date" type="text" pss-date-widget data-minDate="~[x:termbegdate]" ng-disabled="record.student.student_notification==0" ng-required="record.student.student_notification==1" />
                                 </td>
                                 <td class="grid-item center">
                                     <div id="student_save" ng-if="student_save=='saving'" data-pss-wait-spinner="small"></div>
                                     <button type="submit" id="student_save" ng-if="student_save=='unsaved' || student_save=='saved' || !student_save"  ng-disabled="forms.stu.$invalid || forms.stu.$pristine"><i class="fi-checkbox icon"></i></button>
+                                    <div id="saved" class="saved" ng-if="student_save=='saved' && !forms.stu.$dirty">Saved</div>
                                 </td>
                             </tr>
                         </tbody>
@@ -76,11 +88,11 @@
             </fieldset>
              <fieldset>
                 <legend><span class="qcicon">Initial Concern and Guardian Contact&nbsp;</span> 
-                    <a class='dialogM qcclear' title='Quick Contacts' href="/admin/alerts/contacts_alert.html?frn=~(studentfrn)" style="visibility: visible;">
-                        <img src="/images/iconContacts1.png" height="20" width="24" border="2" class="qcicon">
+                    <a class='dialogM' title='Quick Contacts' href="/admin/alerts/pscb_contacts_alert.html?frn=~(studentfrn)" style="visibility: visible;">
+                      <img src="/images/iconContacts1.png" height="24" width="24" border="2">
                     </a>
                 </legend>
-                <form name="forms.calls" id="callsForm"  ng-submit="save($event,'calls')" novalidate class="validatedForm" data-pss-validation-form data-dirty-state-check="true">
+                <form name="forms.calls" id="callsForm"  ng-submit="save($event,'calls')" novalidate class="validatedForm noSubmitLoading" data-pss-validation-form data-dirty-state-check="true">
                     <table class="checklistTable">
                         <colgroup>
                             <col style="width:35%;" />
@@ -93,9 +105,9 @@
                                 <td class="grid-item stretchCell">
                                     <span class="label">Call #1 &nbsp;</span>
                                     <sl-radio-group label="" name="parent_call_1" value="{{record.calls.parent_call_1}}" >
-                                        <sl-radio-button class="call-na" size="small" ng-click="recordCall($event, 'parent_call_1',0)" value="0" ng-disabled="!record.student.student_notification || record.calls.parent_call_2>0 || concerns.concern_2_req==1">Not attempted</sl-radio-button>
-                                        <sl-radio-button class="call-nc" size="small" value="1" ng-click="recordCall($event, 'parent_call_1',1)" ng-disabled="!record.student.student_notification || record.calls.parent_call_2>0 || concerns.concern_2_req==1">No Contact</sl-radio-button>
-                                        <sl-radio-button class="call-co" size="small" value="3" ng-click="recordCall($event, 'parent_call_1',3)" ng-disabled="!record.student.student_notification || record.calls.parent_call_2>0 || concerns.concern_2_req==1">Contact Made</sl-radio-button>
+                                        <sl-radio-button class="call-na" size="small" ng-click="recordCall($event, 'parent_call_1',0)" value="0" ng-disabled="record.calls.parent_call_2>0 || concerns.concern_2_req==1">Not attempted</sl-radio-button>
+                                        <sl-radio-button class="call-nc" size="small" value="1" ng-click="recordCall($event, 'parent_call_1',1)" ng-disabled="record.calls.parent_call_2>0 || concerns.concern_2_req==1">No Contact</sl-radio-button>
+                                        <sl-radio-button class="call-co" size="small" value="3" ng-click="recordCall($event, 'parent_call_1',3)" ng-disabled="record.calls.parent_call_2>0 || concerns.concern_2_req==1">Contact Made</sl-radio-button>
                                     </sl-radio-group>
                                 </td>
                                 <td class="grid-item">
@@ -109,6 +121,8 @@
                                 <td class="grid-item center" rowspan="4">
                                     <div id="calls_save" ng-if="calls_save=='saving'" data-pss-wait-spinner="small"></div>
                                     <button type="submit" ng-click="save($event, 'calls')" id="calls_save" ng-if="calls_save=='unsaved' || calls_save=='saved' || !calls_save"  ng-disabled="forms.calls.$invalid || forms.calls.$pristine || forms.stu.$dirty"><i class="fi-checkbox icon no-print"></i></button>
+
+                                    <div id="saved" class="saved" ng-if="calls_save=='saved' && !forms.calls.$dirty">Saved</div>
                                 </td>
                             </tr>
                             <tr class="alternateRow">
@@ -150,8 +164,8 @@
                             <tr class="alternateRow">
                                 <td colspan="3" class="grid-item">
                                     <label for="parent_call_notes" class="notes-label">Notes</label>
-                                    <p class="help-text">Note any relevant details regarding phone calls with guardians.</p>
-                                    <textarea class="notes" id="parent_call_notes" name="parent_call_notes" ng-model="record.calls.parent_call_notes" ng-disabled="record.calls.parent_call_1==0 || concerns.concern_2_req==1" ng-maxlength="4000"></textarea>
+                                    <p class="help-text">Note any relevant details regarding phone calls with guardians. Ampersands ("&amp;") are not supported in notes.</p>
+                                    <textarea class="notes" id="parent_call_notes" name="parent_call_notes" ng-model="record.calls.parent_call_notes" ng-disabled="record.calls.parent_call_1==0 || concerns.concern_2_req==1" ng-maxlength="4000">{{ parent_call_notes }}</textarea>
                                 </td>
                             </tr>
                         </tbody>
@@ -159,7 +173,7 @@
                 </form>
             </fieldset>
             <fieldset>
-                <legend>Continued Concern & Written Notification <a href='#' target="_blank"  id="interventions"><i class="fi-clipboard-notes purple icon-big"></i></a></legend>
+                <legend>Continued Concern & Written Notification</legend>
                 <table class="checklistTable">
                     <colgroup>
                         <col style="width:35%;" />
@@ -167,7 +181,7 @@
                         <col style="width:18%;" />
                         <col style="width:9%;" />
                     </colgroup>  
-                    <tbody ng-form name="forms.concern_2" id="concern_2Form" novalidate class="validatedForm" data-pss-validation-form data-dirty-state-check="true">
+                    <tbody ng-form name="forms.concern_2" id="concern_2Form" novalidate class="validatedForm noSubmitLoading" data-pss-validation-form data-dirty-state-check="true">
                         <tr>
                             <td colspan="4">
                                 <h3 class="concern-head">Written Notification #1</h3>
@@ -186,7 +200,8 @@
                         <tr>
                             <td class="grid-item stretchCell">
                                 <label class="form-control" for="concern_2_req">
-                                <input type="checkbox" ng-model="concerns.concern_2_req" ng-click="handleConcern($event, 'concern_2','concern_2_req')" name="concern_2_req" id="concern_2_req" ng-disabled="countCalls() || concerns.concern_2_sent===true" value="1" /> Flag concern to admin
+                                <input type="checkbox" ng-model="concerns.concern_2_req" ng-click="handleConcern($event, 'concern_2','concern_2_req')" name="concern_2_req" id="concern_2_req" ng-disabled="countCalls() || concerns.concern_2_sent===true" value="1" /> 
+                                    <span>Flag concern to admin</span> 
                                 </label>
                             </td>
                             <td class="grid-item">
@@ -200,6 +215,7 @@
                             <td class="save-notes" rowspan="3">
                                 <div id="concern_2_save" ng-if="concern_2_save=='saving'" data-pss-wait-spinner="small"></div>
                                 <button type="submit" ng-click="save($event,'concern_2')" id="concern_2_save" ng-if="concern_2_save=='unsaved' || concern_2_save=='saved' || !concern_2_save"  ng-disabled="forms.concern_2.$invalid || forms.concern_2.$pristine || forms.calls.$dirty"><i class="fi-checkbox icon"></i></button>
+                                <div id="saved" class="saved" ng-if="concern_2_save=='saved' && !forms.concern_2.$dirty">Saved</div>
                             </td>
                         </tr>
                         <tr>
@@ -226,7 +242,7 @@
                             </td>
                         </tr>
                     </tbody>
-                    <tbody ng-form name="forms.concern_3" id="concern_3Form" novalidate class="validatedForm" data-pss-validation-form data-dirty-state-check="true">
+                    <tbody ng-form name="forms.concern_3" id="concern_3Form" novalidate class="validatedForm noSubmitLoading" data-pss-validation-form data-dirty-state-check="true">
                         <tr class="alternateRow">
                             <td colspan="4">
                                 <h3 class="concern-head">Written Notification #2</h3>
@@ -245,7 +261,7 @@
                         <tr class="alternateRow">
                             <td class="grid-item stretchCell">
                                 <label class="form-control" for="concern_3_req">
-                                <input type="checkbox" ng-model="concerns.concern_3_req" ng-click="handleConcern($event, 'concern_3','concern_3_req')" name="concern_3_req" id="concern_3_req" ng-disabled="disableConcern('concern_2') || concerns.concern_3_sent===true" value="1" /> Flag concern to admin
+                                <input type="checkbox" ng-model="concerns.concern_3_req" ng-click="handleConcern($event, 'concern_3','concern_3_req')" name="concern_3_req" id="concern_3_req" ng-disabled="disableConcern('concern_2') || concerns.concern_3_sent===true" value="1" /> <span>Flag concern to admin</span> 
                                 </label>
                             </td>
                             <td class="grid-item">
@@ -259,6 +275,7 @@
                             <td class="save-notes" rowspan="3">
                                 <div id="concern_3_save" ng-if="concern_3_save=='saving'" data-pss-wait-spinner="small"></div>
                                 <button type="submit" ng-click="save($event,'concern_3')" id="concern_3_save" ng-if="concern_3_save=='unsaved' || concern_3_save=='saved' || !concern_3_save"  ng-disabled="forms.concern_3.$invalid || forms.concern_3.$pristine"><i class="fi-checkbox icon"></i></button>
+                                <div id="saved" class="saved" ng-if="concern_3_save=='saved' && !forms.concern_3.$dirty">Saved</div>
                             </td>
                         </tr>
                         <tr class="alternateRow">
@@ -285,7 +302,7 @@
                             </td>
                         </tr>
                     </tbody>
-                     <tbody ng-form name="forms.concern_4" id="concern_4Form" novalidate class="validatedForm" data-pss-validation-form data-dirty-state-check="true">
+                     <tbody ng-form name="forms.concern_4" id="concern_4Form" novalidate class="validatedForm noSubmitLoading" data-pss-validation-form data-dirty-state-check="true">
                         <tr>
                             <td colspan="4">
                                 <h3 class="concern-head">Written Notification #3</h3>
@@ -304,7 +321,7 @@
                         <tr>
                             <td class="grid-item stretchCell">
                                 <label class="form-control" for="concern_4_req">
-                                <input type="checkbox" ng-model="concerns.concern_4_req" ng-click="handleConcern($event, 'concern_4','concern_4_req')" name="concern_4_req" id="concern_4_req" ng-disabled="disableConcern('concern_3') || concerns.concern_4_sent===true" value="1" /> Flag concern to admin
+                                <input type="checkbox" ng-model="concerns.concern_4_req" ng-click="handleConcern($event, 'concern_4','concern_4_req')" name="concern_4_req" id="concern_4_req" ng-disabled="disableConcern('concern_3') || concerns.concern_4_sent===true" value="1" /> <span>Flag concern to admin</span> 
                                 </label>
                             </td>
                             <td class="grid-item">
@@ -318,6 +335,7 @@
                             <td class="save-notes" rowspan="3">
                                 <div id="concern_4_save" ng-if="concern_4_save=='saving'" data-pss-wair="small"></div>
                                 <button type="submit" ng-click="save($event,'concern_4')" id="concern_4_save" ng-if="concern_4_save=='unsaved' || concern_4_save=='saved' || !concern_4_save"  ng-disabled="forms.concern_4.$invalid || forms.concern_4.$pristine"><i class="fi-checkbox icon"></i></button>
+                                <div id="saved" class="saved" ng-if="concern_4_save=='saved' && !forms.concern_4.$dirty">Saved</div>
                             </td>
                         </tr>
                         <tr>
@@ -339,7 +357,7 @@
                             <td colspan="3" class="grid-item">
                                 <label class="notes-label" for="concern_4_notes">Notes (required)</label>
                                 <p class="help-text">Note dates of parent/guardian contact and outcome of any discussions or meetings after third notification letter. Note any further supports or interventions that have been advised or put in place at this time. For example, documented support plan, referral to youth worker, school counsellor, student well-being team, outside agencies etc.</p>
-                                <textarea class="notes" id="concern_4_notes" name="notes" ng-model="record.concern_4.concern_4_notes" ng-disabled="!concerns.concern_4_req || record.referral.referral===1" ng-required="concerns.concern_4_req===true" ng-minlength="20" ng-maxlength="4000"></textarea>
+                                <textarea class="notes" id="concern_4_notes" name="notes" ng-model="record.concern_4.concern_4_notes" ng-disabled="!concerns.concern_4_req || record.referral.referral===1" ng-required="concerns.concern_4_req===true" ng-minlength="20" maxlength="4000"></textarea>
                             </td>
                         </tr>
                     </tbody>
@@ -347,7 +365,7 @@
             </fieldset>
              <fieldset>
                 <legend>Referral</legend>
-                <form name="forms.ref" id="refForm" ng-submit="save($event,'referral')" novalidate class="validatedForm" data-pss-validation-form data-dirty-state-check="true">
+                <form name="forms.ref" id="refForm" ng-submit="save($event,'referral')" novalidate class="validatedForm noSubmitLoading" data-pss-validation-form data-dirty-state-check="true">
                     <table class="checklistTable">
                         <colgroup>
                             <col style="width:35%;" />
@@ -378,6 +396,7 @@
                                 <td row-span="2" class="save-notes">
                                     <div id="referral_save" ng-if="referral_save=='saving'" data-pss-wait-spinner="small"></div>
                                     <button type="submit" id="referral_save" ng-if="referral_save=='unsaved' || referral_save=='saved' || !referral_save" ng-disabled="forms.ref.$invalid || forms.ref.$pristine"><i class="fi-checkbox icon"></i></button>
+                                    <div id="saved" class="saved" ng-if="referral_save=='saved' && !forms.ref.$dirty">Saved</div>
                                 </td>
                             </tr>
                              <tr>
@@ -391,16 +410,234 @@
                 </form>
             </fieldset>
         </div>
-        <div id="alertMsgs">
-            <div class="feedback-alert" ng-if="gradeInYear > 9 && gradeInYear > -2 && termid % 100 === 0"><p>Switch to 1st or 2nd semester using the term selectf for dropdown to view records for high school students.</p></div>
+        <div id="alertMsgs" style="margin-top: 10px;">
+            <div class="feedback-alert" ng-if="gradeInYear > 9 && gradeInYear > -2 && termid % 100 === 0"><p>Switch to 1st or 2nd semester using the term selector dropdown to view records for high school students.</p></div>
             <div class="feedback-alert" ng-if="gradeInYear < 10 && gradeInYear > -2 && termid % 100 !== 0"><p>Switch to the full-year term using the term selector dropdown to view records for K-9 students.</p></div>
             <div class="feedback-alert" ng-if="gradeInYear==-9"><p>No enrollment record for this student in the current school year.</p></div>
         </div>
     </div>
-
+<!-- Printable -->
+    <div id="printarea" class="printable" style="display: none;">
+        <div class="no-print warning">Print this document by selecting Print (in the ellipses menu in the upper right) or pressing Ctrl + P. Close this window one you have completed printing. This instructional text will not print.</div>
+        <h1>~(first_name) ~(last_name)</h1>
+        <h2>Checklist for ~(termname) <span class="right boldtext">Grade level this term: {{gradeInYear}}</span></h2>
+        <fieldset ng-if="gradeInYear > 9">
+            <legend>Student Contact</legend>
+            <table class="checklistTable">
+                <colgroup>
+                    <col style="width:38%;" />
+                    <col style="width:41%;" />
+                    <col style="width:21%;" />
+                </colgroup>
+                <tbody>
+                    <tr>
+                        <td class="grid-item stretchCell">
+                            <span ng-if="record.student.student_notification==1"><i class="fi-check"></i></span><span ng-if="record.student.student_notification != 1"><i class="fi-x"></i></span> &nbsp; Discussion of concern
+                        </td>
+                        <td class="grid-item">
+                            <strong>Contacted by:</strong> {{ record.student.student_notification_staff }}
+                        </td>
+                        <td class="grid-item">
+                            <strong>Date:</strong> {{ record.student.student_notification_date }}
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </fieldset>
+         <fieldset>
+            <legend>Initial Concern and Guardian Contact</legend>
+            <table class="checklistTable">
+                <colgroup>
+                    <col style="width:38%;" />
+                    <col style="width:41%;" />
+                    <col style="width:21%;" />
+                </colgroup>
+                <tbody>
+                    <tr>
+                        <td class="grid-item stretchCell">
+                            <strong>Call #1 &nbsp;</strong><span ng-if="record.calls.parent_call_1 === 0">Not attempted</span><span ng-if="record.calls.parent_call_1 === 1">No contact made</span><span ng-if="record.calls.parent_call_1 === 3">Contact made</span>
+                        </td>
+                        <td class="grid-item">
+                            <strong>Contacted by</strong> {{record.calls.parent_call_1_staff }}
+                        </td>
+                        <td class="grid-item">
+                            <strong>Date: </strong> {{ record.calls.parent_call_1_date }}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="grid-item stretchCell">
+                            <strong>Call #2 &nbsp;</strong><span ng-if="record.calls.parent_call_2 === 0">Not attempted</span><span ng-if="record.calls.parent_call_2 === 1">No contact made</span><span ng-if="record.calls.parent_call_2 === 3">Contact made</span>
+                        </td>
+                        <td class="grid-item">
+                            <strong>Contacted by</strong> {{record.calls.parent_call_2_staff }}
+                        </td>
+                        <td class="grid-item">
+                            <strong>Date: </strong> {{ record.calls.parent_call_2_date }}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="grid-item stretchCell">
+                            <strong>Call #3 &nbsp;</strong><span ng-if="record.calls.parent_call_3 === 0">Not attempted</span><span ng-if="record.calls.parent_call_3 === 1">No contact made</span><span ng-if="record.calls.parent_call_3 === 3">Contact made</span>
+                        </td>
+                        <td class="grid-item">
+                            <strong>Contacted by</strong> {{record.calls.parent_call_3_staff }}
+                        </td>
+                        <td class="grid-item">
+                            <strong>Date: </strong> {{ record.calls.parent_call_3_date }}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td colspan="3" class="grid-item">
+                            <p><strong>Notes:</strong> {{record.calls.parent_call_notes}}</p>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </fieldset>
+        <fieldset>
+            <legend>Continued Concern & Written Notification</legend>
+            <table class="checklistTable">
+                <colgroup>
+                    <col style="width:38%;" />
+                    <col style="width:41%;" />
+                    <col style="width:21%;" />
+                </colgroup>  
+                <tbody>
+                    <tr>
+                        <td colspan="4">
+                            <h3 class="concern-head">Written Notification #1</h3>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="grid-item stretchCell">
+                            <span ng-if="concerns.concern_2_req==true"><i class="fi-check"></i></span><span ng-if="concerns.concern_2_req != true"><i class="fi-x"></i></span>&nbsp; <strong>Flag concern to admin</strong>
+                        </td>
+                        <td class="grid-item">
+                            <strong>Contacted by:</strong> {{record.concern_2.concern_2_req_staff }}
+                        </td>
+                        <td class="grid-item">
+                            <strong>Date:</strong> {{ record.concern_2.concern_2_req_date }}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="grid-item stretchCell">
+                            <span ng-if="concerns.concern_2_sent==true"><i class="fi-check"></i></span><span ng-if="concerns.concern_2_sent != true"><i class="fi-x"></i></span>&nbsp; <strong>Notification sent</strong>
+                        </td>
+                        <td class="grid-item">
+                            <strong>Contacted by:</strong> {{record.concern_2.concern_2_sent_staff }}
+                        </td>
+                        <td class="grid-item">
+                            <strong>Date:</strong> {{ record.concern_2.concern_2_sent_date }}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td colspan="3" class="grid-item">
+                            <p><strong>Notes:</strong> {{record.concern_2.concern_2_notes}}</p>
+                        </td>
+                    </tr>
+                </tbody>
+                <tbody>
+                    <tr>
+                        <td colspan="4">
+                            <h3 class="concern-head">Written Notification #2</h3>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="grid-item stretchCell">
+                            <span ng-if="concerns.concern_3_req==true"><i class="fi-check"></i></span><span ng-if="concerns.concern_3_req != true"><i class="fi-x"></i></span>&nbsp; <strong>Flag concern to admin</strong>
+                        </td>
+                        <td class="grid-item">
+                            <strong>Contacted by:</strong> {{record.concern_3.concern_3_req_staff }}
+                        </td>
+                        <td class="grid-item">
+                            <strong>Date:</strong> {{ record.concern_3.concern_3_req_date }}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="grid-item stretchCell">
+                            <span ng-if="concerns.concern_3_sent==true"><i class="fi-check"></i></span><span ng-if="concerns.concern_3_sent != true"><i class="fi-x"></i></span>&nbsp; <strong>Notification sent</strong>
+                        </td>
+                        <td class="grid-item">
+                            <strong>Contacted by:</strong> {{record.concern_3.concern_3_sent_staff }}
+                        </td>
+                        <td class="grid-item">
+                            <strong>Date:</strong> {{ record.concern_3.concern_3_sent_date }}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td colspan="3" class="grid-item">
+                            <p><strong>Notes:</strong> {{record.concern_3.concern_3_notes}}</p>
+                        </td>
+                    </tr>
+                </tbody>
+                <tbody>
+                    <tr>
+                        <td colspan="4">
+                            <h3 class="concern-head">Written Notification #3</h3>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="grid-item stretchCell">
+                            <span ng-if="concerns.concern_4_req==true"><i class="fi-check"></i></span><span ng-if="concerns.concern_4_req != true"><i class="fi-x"></i></span>&nbsp; <strong>Flag concern to admin</strong>
+                        </td>
+                        <td class="grid-item">
+                            <strong>Contacted by:</strong> {{record.concern_4.concern_4_req_staff }}
+                        </td>
+                        <td class="grid-item">
+                            <strong>Date:</strong> {{ record.concern_4.concern_4_req_date }}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="grid-item stretchCell">
+                            <span ng-if="concerns.concern_4_sent==true"><i class="fi-check"></i></span><span ng-if="concerns.concern_4_sent != true"><i class="fi-x"></i></span>&nbsp; <strong>Notification sent</strong>
+                        </td>
+                        <td class="grid-item">
+                            <strong>Contacted by:</strong> {{record.concern_4.concern_4_sent_staff }}
+                        </td>
+                        <td class="grid-item">
+                            <strong>Date:</strong> {{ record.concern_4.concern_4_sent_date }}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td colspan="3" class="grid-item">
+                            <p><strong>Notes:</strong> {{record.concern_4.concern_4_notes}}</p>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </fieldset>
+         <fieldset>
+            <legend>Referral</legend>
+            <table class="checklistTable">
+                <colgroup>
+                    <col style="width:38%;" />
+                    <col style="width:41%;" />
+                    <col style="width:21%;" />
+                </colgroup>
+                <tbody>
+                    <tr>
+                        <td class="grid-item stretchCell">
+                             <span ng-if="record.referral.referral==1"><i class="fi-check"></i></span><span ng-if="record.referral.referral != 1"><i class="fi-x"></i></span> &nbsp; Notification to the Director
+                        </td>
+                        <td class="grid-item">
+                            <strong>Contacted by:</strong> {{ record.referral.referral_staff }}
+                        </td>
+                        <td class="grid-item">
+                            <strong>Date:</strong> {{ record.referral.referral_date }}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td colspan="3" class="grid-item">
+                            <p><strong>Notes:</strong> {{record.referral.referral_notes}}</p>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </fieldset>
+    </div>
 <!-- end of content of bounding box -->
 </div>
 ~[wc:admin_footer_frame_css]
-
+    
 </body>
 </html><!-- end right frame -->

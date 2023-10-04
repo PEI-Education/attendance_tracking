@@ -1,16 +1,24 @@
-# attendance_tracking
-Attendance Tracking Interface for PSB schools.
-
-## v1 components
-- **DB Extention Schema** - Adds a new one-to-many table that extends students, allowing each student to have a checklist for each FY term (K-9) or semester (10-12) that starts fresh each term but is maintained for the historical record.
-- **Student Checklist** - Currently admin-only, with a teacher interface to follow shortly. The interface is not currently printer-friendly - a fix for this is in progress.
-
-## Future components
-- **Teacher interface** - Similar to the admin, but further restricted to only the steps that teachers can take action on. Everything else is displaye in read-only
-- **Admin Reporting & Bulk Actions** - Find batches of students at the same step in the process and performing actions on them as a group, including printing form letters and updating checklists.
+# Attendance Concerns Checklist
+Interface for tracking concerns and interventions relating to student attendance. Includes:
+1. Individual student tracking interface for admin users
+2. Individual student tracking interface for teacher users
+3. Admin/bulk tracking interface:
+   a. List of students with checklists
+   b. Form letter generator
+   c. Bulk checklist updater
+   d. Links to admin interface on various pages including the homepage and the attendance page
 
 ## Dependencies
-- **psQuery** - psQuery must be installed on the PowerSchool server for this plugin to work. You can download it from [PowerSource](https://support.powerschool.com/exchange/view.action?download.id=846)
+- psQuery by Jim Parsons (https://support.powerschool.com/exchange/view.action?download.id=846&fromSearchResults=true)
+- Shoelace 2.0 (https://shoelace.style/)
+- Foundations Icon Fonts 3 (https://zurb.com/playground/foundation-icon-fonts-3)
 
-## Change History
-- 2023-03-24 - v1 installed on production
+Shoelace, you can do without with some minor mods to the HTML and CSS of the section for the 3 parent calls. Foundations Icons were the cleanest set I could find for the various little graphics we needed (better than Bootstrap in this case), but you could swap in anything else that had a few key icon (X, check, save, file). alternateRow
+
+psQuery, however, is pretty integral to the functioning of the plugin. Without it, you would need to either replicate its functionakity with a hidden form or find some way to include the right ID for a DirectTable.Select on U_PEI_ATT_TRACK. psQuery really shines with the bulk updates - a single call lets you iterate through an array of students and their related updates, so fast that I actually added a slight delay so that you actually see the loading timer.
+
+## Version History
+- 0.9 - Added automatic email notifications to teacher interface
+- 0.8 - Fixed bug for K-12 schools not showing anything on teacher input page
+- 0.7 - Full suite ready for pilot use in production
+- 0.5.2 - Admin-side checklist available for pilot use in production

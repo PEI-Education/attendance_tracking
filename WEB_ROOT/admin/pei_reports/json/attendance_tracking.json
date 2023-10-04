@@ -1,0 +1,104 @@
+[
+   ~[tlist_sql;
+select recid, termid, studentsdcid, student_number, last_name, first_name, current_grade, term_grade, current_school, term_school, term_schoolname, current_step, current_step_idx, to_char(action_date, 'mm/dd/yyyy') action_date, student_notification, parent_call_1, parent_call_2, parent_call_3, concern_2, concern_3, concern_4, referral, call_points from (
+   select 
+     u.id recid,
+     nvl(u.termid,0) termid,
+     u.studentsdcid,
+     s.student_number,
+     s.last_name,
+     s.first_name,
+     s.grade_level current_grade,
+     pss.grade_level term_grade,
+     s.schoolid current_school,
+     pss.schoolid term_school,
+     pss.schoolname term_schoolname,
+     case
+         when u.referral = 1 then 'Referred to Director'
+         when u.concern_4 = 2 then 'Letter 3 sent'
+         when u.concern_4 = 1 then 'Letter 3 requested'
+         when u.concern_3 = 2 then 'Letter 2 sent'
+         when u.concern_3 = 1 then 'Letter 2 requested'
+         when u.concern_2 = 2 then 'Letter 1 sent'
+         when u.concern_2 = 1 then 'Letter 1 requested'
+         when u.parent_call_3 = 3 then 'Call 3 - contact made'
+         when u.parent_call_3 = 1 then 'Call 3 - no contact'
+         when u.parent_call_2 = 3 then 'Call 2 - contact made'
+         when u.parent_call_2 = 1 then 'Call 2 - no contact'
+         when u.parent_call_1 = 3 then 'Call 1 - contact made'
+         when u.parent_call_1 = 1 then 'Call 1 - no contact'
+         when u.student_notification = 1 then 'Student notified'
+     else
+        'No steps taken'
+     end as current_step,
+     case
+     when u.referral = 1 then 15
+         when u.concern_4 = 2 then 14
+         when u.concern_4 = 1 then 13
+         when u.concern_3 = 2 then 11
+         when u.concern_3 = 1 then 10
+         when u.concern_2 = 2 then 8
+         when u.concern_2 = 1 then 7
+         when u.parent_call_3 = 3 then 5
+         when u.parent_call_3 = 1 then 5
+         when u.parent_call_2 = 3 then 4
+         when u.parent_call_2 = 1 then 4
+         when u.parent_call_1 = 3 then 3
+         when u.parent_call_1 = 1 then 3
+         when u.student_notification = 1 then 2
+     else
+        1
+     end as current_step_idx,
+     coalesce(u.referral_date, u.concern_4_sent_date, u.concern_4_req_date, u.concern_3_sent_date, u.concern_3_req_date, u.concern_2_sent_date, u.concern_2_req_date, u.parent_call_3_date, u.parent_call_2_date, u.parent_call_1_date, u.student_notification_date) action_date,
+     u.student_notification,
+     u.parent_call_1,
+     u.parent_call_2,
+     u.parent_call_3,
+     u.concern_2,
+     u.concern_3,
+     u.concern_4,
+     u.referral,
+     (u.parent_call_1 + u.parent_call_2 + u.parent_call_3) call_points,
+     ROW_NUMBER() OVER (PARTITION BY u.studentsdcid ORDER BY u.whencreated asc) rn
+  from u_pei_att_track u																											
+  join students s
+     on s.dcid = u.studentsdcid
+  join ps_schoolenrollment pss
+     on pss.studentid = s.id and pss.exitdate >= (select lastday from terms where id=~(curtermid) and schoolid=~(curschoolid))
+  where
+      u.termid = ~(curtermid)
+      ~[if.~(gpv.update)=1]and s.dcid in (select dcid from ~[temp.table.current.selection:students])[/if]
+       ~[if.is.a.school]and pss.schoolid = ~(curschoolid)[/if])
+  where rn = 1
+  ~[if.~(gpv.step)>0]and ~(gpv.step) <= current_step_idx[/if]
+  ~[if.~(gpv.exact=true]and ~(gpv.step) = current_step_idx[/if]
+  order by term_grade, last_name]
+  {
+      "recid": ~(1),
+      "termid":~(100),
+      "studentsdcid": ~(2),
+      "studentNumber": ~(200),
+      "lastName":"~(3;json)", 
+      "firstName":"~(4;json)", 
+      "currentGrade":~(5), 
+      "termGrade":~(6), 
+      "currentSchool":~(7), 
+      "termSchool":~(8), 
+      "termSchoolName":"~(8a;json)",
+      "currentStep":"~(9;json)", 
+      "currentStepIdx": ~(current_step_idx),
+      "stepDate":"~(10)",
+      "studentNotification":~(11), 
+      "parentCall1":~(12), 
+      "parentCall2":~(13), 
+      "parentCall3":~(14), 
+      "concern2":~(15), 
+      "concern3":~(16), 
+      "concern4":~(17), 
+      "referral":~(18),
+      "callPoints":~(19)
+  },
+  [/tlist_sql]
+  {}
+]
+  

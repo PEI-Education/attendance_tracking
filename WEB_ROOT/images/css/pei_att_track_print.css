@@ -1,0 +1,41 @@
+body { 
+  font-family: Arial, sans-serif; 
+  line-height: 1.5em;    
+}
+                              
+fieldset legend {
+  font-weight: bold;
+  font-size: 128%;
+  margin-left: 10px;
+  margin-bottom: 5px;
+  padding: 5px 10px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+legend {
+  display: block;
+  padding-inline-start: 2px;
+  padding-inline-end: 2px;
+}
+
+fieldset {
+  margin: 0 10px 10px 10px;
+}
+
+
+@media screen {
+  .warning {
+      color: red;
+      font-weight: 700;
+      text-align: center;
+      width: 90%;
+      margin: 10px;
+      padding: 20px;
+      border: 1px solid red;
+  }
+}
+
+#printarea {
+  display: block !important;
+}

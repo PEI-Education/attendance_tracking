@@ -1,0 +1,102 @@
+~[tlist_sql;
+    SELECT * FROM (
+    	SELECT
+    	    u.id,
+            u.studentsdcid,
+            u.termid,
+            u.parent_call_1_staff,
+            u.parent_call_1,
+            to_char(u.parent_call_1_date,'mm/dd/yyyy') parent_call_1_date,
+            u.parent_call_2_staff,
+            u.parent_call_2,
+            to_char(u.parent_call_2_date,'mm/dd/yyyy') parent_call_2_date,
+            u.parent_call_3_staff,
+            u.parent_call_3,
+            to_char(u.parent_call_3_date,'mm/dd/yyyy') parent_call_3_date,
+            u.parent_call_notes,
+            nvl(u.student_notification,0) student_notification,
+            to_char(u.student_notification_date,'mm/dd/yyyy') student_notification_date,
+            u.student_notification_staff,
+            u.concern_2,
+            u.concern_2_req_staff,
+            to_char(u.concern_2_req_date,'mm/dd/yyyy') concern_2_req_date,
+            u.concern_2_sent_staff,
+            to_char(u.concern_2_sent_date, 'mm/dd/yyyy') concern_2_sent_date,
+            u.concern_2_notes,
+            u.concern_3,
+            u.concern_3_req_staff,
+            to_char(u.concern_3_req_date,'mm/dd/yyyy') concern_3_req_date,
+            u.concern_3_sent_staff,
+            to_char(u.concern_3_sent_date, 'mm/dd/yyyy') concern_3_sent_date,
+            u.concern_3_notes,           
+            u.concern_4,
+            u.concern_4_req_staff,
+            to_char(u.concern_4_req_date,'mm/dd/yyyy') concern_4_req_date,
+            u.concern_4_sent_staff,
+            to_char(u.concern_4_sent_date, 'mm/dd/yyyy') concern_4_sent_date,
+            u.concern_4_notes,
+            u.referral,
+            u.referral_staff,
+            to_char(u.referral_date,'mm/dd/yyyy') referral_date,
+            u.referral_notes,            
+            ROW_NUMBER() OVER (PARTITION BY u.studentsdcid ORDER BY u.whencreated asc) rn
+    	FROM u_pei_att_track u
+    	JOIN students s 
+    	  ON u.studentsdcid = s.dcid
+        WHERE
+    	    u.termid = ~(gpv.term)
+    	    and s.id = ~(curstudid)
+    ) WHERE rn = 1;nonemessage=-1]
+	{
+	    "id":"~(1)",
+        "studentsdcid":"~(2)",
+        "termid":"~(3)",
+        "calls": {
+            "parent_call_1_staff":"~(9;json)",
+            "parent_call_1": ~(10;l),
+            "parent_call_1_date":"~(11)",
+            "parent_call_2_staff":"~(12;json)",
+            "parent_call_2":~(13;l),
+            "parent_call_2_date":"~(14)",
+            "parent_call_3_staff":"~(15;json)",
+            "parent_call_3":~(16;l),
+            "parent_call_3_date":"~(17)",
+            "parent_call_notes": "~(parent_call_notes;json)"
+        },
+        "student": {
+            "student_notification": ~(18;l),
+            "student_notification_date":"~(19)",
+            "student_notification_staff":"~(20;json)"
+        },
+        "concern_2": {
+            "concern_2": ~(21;l),
+            "concern_2_req_staff": "~(22;json)",
+            "concern_2_req_date": "~(23)",
+            "concern_2_sent_staff": "~(24;json)",
+            "concern_2_sent_date": "~(25)",
+            "concern_2_notes": "~(26;json)"
+        },
+        "concern_3": {
+            "concern_3": ~(c3;l),
+            "concern_3_req_staff": "~(c3rs;json)",
+            "concern_3_req_date": "~(c3rd)",
+            "concern_3_sent_staff": "~(c3ss;json)",
+            "concern_3_sent_date": "~(c3sd)",
+            "concern_3_notes": "~(c3n;json)"
+        },
+        "concern_4": {
+            "concern_4": ~(c4;l),
+            "concern_4_req_staff": "~(c4rs;json)",
+            "concern_4_req_date": "~(c4rd)",
+            "concern_4_sent_staff": "~(c4ss;json)",
+            "concern_4_sent_date": "~(c4sd)",
+            "concern_4_notes": "~(c4n;json)"
+        },
+        "referral": {
+            "referral": ~(ref;l),
+            "referral_staff": "~(refStaff;json)",
+            "referral_date": "~(refDate;json)",
+            "referral_notes": "~(refNotes;json)"
+        }
+	}
+[/tlist_sql]

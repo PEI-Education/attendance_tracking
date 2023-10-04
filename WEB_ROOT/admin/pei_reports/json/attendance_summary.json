@@ -1,0 +1,214 @@
+[~[if#hs.~(gpv.hs)=true]~[tlist_sql;
+select  count(recid), 
+        count(case when student_notification = 1 then 1 end) studentNotified,
+        count(case when parent_call_1 > 0 then 1 end) parentCall1,
+        count(case when parent_call_2 > 0 then 1 end) parentCall2,
+        count(case when parent_call_3 > 0 then 1 end) parentCall3,
+        count(case when concern_2 >= 1 then 1 end) concern2req,
+        count(case when concern_2 = 2 then 1 end) concern2sent,
+        count(case when concern_3 >= 1 then 1 end) concern3req,
+        count(case when concern_3 = 2 then 1 end) concern3sent,
+        count(case when concern_4 >= 1 then 1 end) concern4req,
+        count(case when concern_4 = 2 then 1 end) concern4sent,
+       count(case when referral = 1 then 1 end) referred
+from (select 
+  u.id recid,
+  nvl(u.termid,0) termid,
+  u.student_notification,
+  u.parent_call_1,
+  u.parent_call_2,
+  u.parent_call_3,
+  u.concern_2,
+  u.concern_3,
+  u.concern_4,
+  u.referral,
+  ROW_NUMBER() OVER (PARTITION BY u.studentsdcid ORDER BY u.whencreated asc) rn
+from u_pei_att_track u																												
+join students s
+  on s.dcid = u.studentsdcid
+join ps_schoolenrollment pss
+  on pss.studentid = s.id 
+  and pss.entrydate <= (select lastday from terms where id=~(curtermid) and schoolid=~(curschoolid))
+where 1=1
+   and u.termid = ~(curtermid)
+    ~[if#cur.is.a.school]and pss.schoolid = ~(curschoolid)[/if#cur])
+where rn = 1
+]
+{
+    "id":1,
+    "prefix_name": "Checklists",
+    "name":"Created",
+    "count":~(1),
+    "carouselItem":true
+},{
+    "id":2,
+    "prefix_name":"Student",
+    "name":"Notified",
+    "count":~(2),
+    "carouselItem": true
+},{
+    "id":3,
+    "prefix_name":"Call 1",
+    "name":"Complete",
+    "count":~(3),
+    "carouselItem": true
+},{
+    "id":4,
+    "prefix_name":"Call 2",
+    "name": "Complete",
+    "count":~(4),
+    "carouselItem": true
+},{
+    "id":5,
+    "prefix_name":"Call 3",
+    "name":"Complete",
+    "count":~(5),
+    "carouselItem": true
+},{
+    "id":7,
+    "prefix_name":"Letter 1",
+    "name":"Requested",
+    "count":~(7),
+    "carouselItem": true
+},{
+    "id":8,
+    "prefix_name":"Letter 1",
+    "name":"Sent",
+    "count":~(8),
+    "carouselItem": true
+},{
+    "id":10,                
+    "prefix_name":"Letter 2",
+    "name":"Requested",
+    "count":~(10),
+    "carouselItem": true
+},{
+    "id":11,
+    "prefix_name": "Letter 2",
+    "name":"Sent",
+    "count":~(11),
+    "carouselItem": true
+},{        
+    "id":13,
+    "prefix_name":"Letter 3",
+    "name":"Requested",
+    "count":~(13),
+    "carouselItem": true
+},{
+    "id":14,
+    "prefix_name":"Letter 3",
+    "name": "Sent",
+    "count":~(14),
+    "carouselItem": true
+},{            
+    "id":15,
+    "prefix_name":"Referred to",
+    "name": "Director",
+    "count":~(15),
+    "carouselItem": true
+}
+[/tlist_sql]
+[else#hs]
+~[tlist_sql;
+select  count(recid), 
+        count(case when parent_call_1 > 0 then 1 end) parentCall1,
+        count(case when parent_call_2 > 0 then 1 end) parentCall2,
+        count(case when parent_call_3 > 0 then 1 end) parentCall3,
+        count(case when concern_2 >= 1 then 1 end) concern2waiting,
+        count(case when concern_2 = 2 then 1 end) concern2send,
+        count(case when concern_3 >= 1 then 1 end) concern3waiting,
+        count(case when concern_3 = 2 then 1 end) concern3sent,
+        count(case when concern_4 >= 1 then 1 end) concern4waiting,
+        count(case when concern_4 = 2 then 1 end) concern4sent,
+       count(case when referral = 1 then 1 end) referred
+from (select 
+  u.id recid,
+  nvl(u.termid,0) termid,
+  u.student_notification,
+  u.parent_call_1,
+  u.parent_call_2,
+  u.parent_call_3,
+  u.concern_2,
+  u.concern_3,
+  u.concern_4,
+  u.referral,
+  ROW_NUMBER() OVER (PARTITION BY u.studentsdcid ORDER BY u.whencreated asc) rn
+from u_pei_att_track u																												
+join students s
+  on s.dcid = u.studentsdcid
+join ps_schoolenrollment pss
+  on pss.studentid = s.id and pss.entrydate <= (select lastday from terms where id=~(curtermid) and schoolid=~(curschoolid))
+where 1=1
+  and u.termid = ~(curtermid)
+    ~[if#cur.is.a.school]and pss.schoolid = ~(curschoolid)[/if#cur])
+where rn = 1
+]
+{
+    "id":1,
+    "prefix_name": "Checklists",
+    "name":"Created",
+    "count":~(1),
+    "carouselItem":true
+},{
+    "id":3,
+    "prefix_name":"Call 1",
+    "name":"Complete",
+    "count":~(3),
+    "carouselItem": true
+},{
+    "id":4,
+    "prefix_name":"Call 2",
+    "name": "Complete",
+    "count":~(4),
+    "carouselItem": true
+},{
+    "id":5,
+    "prefix_name":"Call 3",
+    "name":"Complete",
+    "count":~(5),
+    "carouselItem": true
+},{
+    "id":7,
+    "prefix_name":"Letter 1",
+    "name":"Requested",
+    "count":~(7),
+    "carouselItem": true
+},{
+    "id":8,
+    "prefix_name":"Letter 1",
+    "name":"Sent",
+    "count":~(8),
+    "carouselItem": true
+},{
+    "id":10,                
+    "prefix_name":"Letter 2",
+    "name":"Requested",
+    "count":~(10),
+    "carouselItem": true
+},{
+    "id":11,
+    "prefix_name": "Letter 2",
+    "name":"Sent",
+    "count":~(11),
+    "carouselItem": true
+},{        
+    "id":13,
+    "prefix_name":"Letter 3",
+    "name":"Requested",
+    "count":~(13),
+    "carouselItem": true
+},{
+    "id":14,
+    "prefix_name":"Letter 3",
+    "name": "Sent",
+    "count":~(14),
+    "carouselItem": true
+},{            
+    "id":15,
+    "prefix_name":"Referred to",
+    "name": "Director",
+    "count":~(15),
+    "carouselItem": true
+}
+[/tlist_sql][/if#hs]
+]
