@@ -5,7 +5,7 @@ TemplateName:Admin
 <html>
 <head>
    <meta name="Author" content="Luke Walker, PEI Dept of Education">
-   <meta name="Version" content="0.5">
+   <meta name="Version" content="0.9">
 	<title>Attendance Concerns Tracking</title>
 <!-- required scripts -->
 	~[wc:commonscripts] 
@@ -64,10 +64,16 @@ TemplateName:Admin
 <div class="box-round" data-require-path="components/attTrack/index" data-module-name="attApp" ng-cloak>
     <div ng-controller="attGridCtrl">
         <input type="hidden" value="~(curtermid)" id="termid">
+        ~[if#sch.is.a.school]
+            ~[if#pref.prefschool.attendancetracking=]<div class="feedback-error">Concern Notification Email Recipients: no school recipients defined - please send email list to <a href="mailto:powerschoolhelp@cloud.edu.pe.ca">powerschoolhelp@cloud.edu.pe.ca</a>.</div>
+            [else#pref]
+            <div class="feedback-confirm">Concern Notification Email Recipients: ~[displayprefschool:attendancetracking]. Update this list by emailing <a href="mailto:powerschoolhelp@cloud.edu.pe.ca">powerschoolhelp@cloud.edu.pe.ca</a>.</div>
+            [/if#pref]
+        [/if#sch]
         <div class="feedback-info">
                <ul>
                 <li>Click a tile in the carousel below to filter the list by students <strong>at or beyond</strong> a step in the checklist.</li>
-                <li>Use the <strong>Current Step </strong>filter below the carousel to find all students at a specific step on the checklist.</li>
+                <li>Use the <strong>Current Step</strong> filter below the carousel to find all students at a specific step on the checklist.</li>
                 <li>To see high school students, the term picker dropdown must be set to a semester.</li>
                 <li>To see K-9 students, the term picker must be set to a full year.</li>
             </ul>
@@ -112,6 +118,7 @@ TemplateName:Admin
                 <table class="grid">
                     <thead>
                     <tr>
+                        ~[if.district.office]<th data-pss-sort-fields="termSchool">School</th>[/if]
                         <th data-pss-sort-fields="studentNumber|number">Student Number</th>
                         <th data-pss-sort-fields="lastName">Last Name</th>
                         <th data-pss-sort-fields="firstName">First Name</th>
@@ -122,6 +129,7 @@ TemplateName:Admin
                     </thead>
                     <tbody>
                     <tr data-ng-repeat="student in gridDataFiltered">
+                       ~[if.district.office]<td class="left">{{student.termSchoolName}}</td>[/if]
                         <td class="center">
                             <a href="/admin/students/home.html?frn=001{{student.studentsdcid}}&lsp=pei_attendance_tracking.html" target="_blank">{{student.studentNumber}}</a>
                         </td>

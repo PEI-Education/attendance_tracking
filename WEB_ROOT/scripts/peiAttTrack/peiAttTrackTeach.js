@@ -12,9 +12,9 @@ define(['angular', 'components/shared/index'], function(angular) {
             $scope.forms = {};
             $scope.getRecord('json/pei_attTrack.json');
             $scope.concerns = {};
+            $scope.queue = {};
         };
         
- 
         $scope.getRecord = function(datafile) {
             dbConnect.getRecord(`${datafile}?term=${$scope.termid}`).then(function(retData) {
                 if (typeof retData === "object") {
@@ -181,6 +181,32 @@ define(['angular', 'components/shared/index'], function(angular) {
             $scope.forms.concern_2.$setDirty();
         };
     
+        // Triggers an email notification be sent to school administrators.
+        $scope.triggerEmail = function(phase) {
+            $scope.queue = {
+                "type": 100,
+                "tdata1": document.getElementById('emailFrom').value,
+                "tdata2": document.getElementById('emailTo').value,
+                "tdata3": document.getElementById('emailSubject').value,
+                "tdata4": document.getElementById('emailBody').value,
+                "date": document.getElementById('emailDate').value,
+                "time": document.getElementById('emailTime').value
+            };
+            console.log($scope.queue);
+            dbConnect.triggerEmail($scope.queue, function(retID) {
+                if (retID == -1 || retID === $scope.record.id) {
+                    $timeout(function() {
+                       $scope[`${phase}_emailed`] = 1;
+                       $scope.queue = {};
+                       closeLoading();
+                    }, 1000);
+                } else {
+                    alert(`Email not sent (returned: ${retID})`);
+                    closeLoading();
+                }
+            })
+        };
+        
         // Saves data to the u_pei_att_track table
         const SAVED = 'saved';
         const SAVING = 'saving';
@@ -221,6 +247,14 @@ define(['angular', 'components/shared/index'], function(angular) {
             }
         };
         
+        $scope.saveAndEmail = function(e, phase) {
+            $scope.save(e, phase);
+            if ($scope['record'][phase][phase]===1) {
+                console.log('sending email');
+                $scope.triggerEmail(phase);
+            }
+        }
+        
         init();
         
     }]);
@@ -243,7 +277,12 @@ define(['angular', 'components/shared/index'], function(angular) {
              let table = $psq('u_pei_att_track');
              table.insertChild({table: 'students', id: studentsdcid},fields, callback);
  
+            },
+            triggerEmail: function(fields, callback) {
+                let table = $psq('queue');
+                table.insert(fields, callback);
             }
         };
     }]);
+    
  });

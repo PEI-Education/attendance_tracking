@@ -1,6 +1,6 @@
 [
    ~[tlist_sql;
-select recid, termid, studentsdcid, student_number, last_name, first_name, current_grade, term_grade, current_school, term_school, current_step, current_step_idx, to_char(action_date, 'mm/dd/yyyy') action_date, student_notification, parent_call_1, parent_call_2, parent_call_3, concern_2, concern_3, concern_4, referral, call_points from (
+select recid, termid, studentsdcid, student_number, last_name, first_name, current_grade, term_grade, current_school, term_school, term_schoolname, current_step, current_step_idx, to_char(action_date, 'mm/dd/yyyy') action_date, student_notification, parent_call_1, parent_call_2, parent_call_3, concern_2, concern_3, concern_4, referral, call_points from (
    select 
      u.id recid,
      nvl(u.termid,0) termid,
@@ -12,6 +12,7 @@ select recid, termid, studentsdcid, student_number, last_name, first_name, curre
      pss.grade_level term_grade,
      s.schoolid current_school,
      pss.schoolid term_school,
+     pss.schoolname term_schoolname,
      case
          when u.referral = 1 then 'Referred to Director'
          when u.concern_4 = 2 then 'Letter 3 sent'
@@ -24,7 +25,7 @@ select recid, termid, studentsdcid, student_number, last_name, first_name, curre
          when u.parent_call_3 = 1 then 'Call 3 - no contact'
          when u.parent_call_2 = 3 then 'Call 2 - contact made'
          when u.parent_call_2 = 1 then 'Call 2 - no contact'
-         when u.parent_call_1 = 3 then 'Call 1 - contat made'
+         when u.parent_call_1 = 3 then 'Call 1 - contact made'
          when u.parent_call_1 = 1 then 'Call 1 - no contact'
          when u.student_notification = 1 then 'Student notified'
      else
@@ -83,6 +84,7 @@ select recid, termid, studentsdcid, student_number, last_name, first_name, curre
       "termGrade":~(6), 
       "currentSchool":~(7), 
       "termSchool":~(8), 
+      "termSchoolName":"~(8a;json)",
       "currentStep":"~(9;json)", 
       "currentStepIdx": ~(current_step_idx),
       "stepDate":"~(10)",

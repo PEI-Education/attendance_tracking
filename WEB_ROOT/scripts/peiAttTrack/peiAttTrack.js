@@ -7,7 +7,7 @@ define(['angular', 'components/shared/index'], function(angular) {
         let init = function() {
             $scope.termid = document.getElementById('termid').value;
             $scope.record = {};
-            $scope.getGrade('pei_attTrackGrade.json');
+            $scope.gradeInYear = document.getElementById('gradeInYear').value;
             $scope.validTerm();
             $scope.forms = {};
             $scope.getRecord('pei_attTrack.json');
@@ -66,7 +66,9 @@ define(['angular', 'components/shared/index'], function(angular) {
  
         }
         
-        // Adds the student's grade_level in the context of the termid, and sets the student_notification property to 'na' if that level is less than Grade 10
+        /* 
+        NO LONGER NECESSARY - built tlist sql in to html page.
+        Adds the student's grade_level in the context of the termid, and sets the student_notification property to 'na' if that level is less than Grade 10
         $scope.getGrade = function(datafile) {
             dbConnect.getRecord(datafile).then(function(retData) {
                 if (typeof(retData) === 'number') {
@@ -78,7 +80,7 @@ define(['angular', 'components/shared/index'], function(angular) {
                     alert('bad response to getGrade');
                 }
             });
-        }
+        } */
         
         // Checks if the termid is valid for the student's grade_level in the context of the termid
         $scope.validTerm = function() {

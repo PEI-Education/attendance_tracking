@@ -207,6 +207,11 @@ input.ng-invalid, textarea.ng-invalid {
   color: #1E8449;
 }
 
+.emailed {
+  font-size: 0.8em;
+  color: #0066a5;
+}
+
 .textareaCounter {
    font-size: 0.8rem !important;
 }
