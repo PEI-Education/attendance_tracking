@@ -3,7 +3,7 @@
    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
    description="PEI Attendance Tracking Interface" 
    name="PEI Attendance Tracking" 
-   version="0.9" 
+   version="0.9.2" 
    xsi:schemaLocation="http://plugin.powerschool.pearson.com plugin.xsd">
    <publisher name="PEI Dept of Education - Luke Walker">
       <contact email="lawalker@gov.pe.ca"/>
