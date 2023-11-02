@@ -44,13 +44,13 @@ TemplateName:Teacher Backpack
  <h1>~[text:psx.htmlc.teachers.studentpages.pei.attendance_concerns_checklist]<span class="nav-teacher"><select name="page" size=1 onChange="javascript:formHandler()"><option value="">Select Screens</option><option value="">--------------------</option>~[x:teacherpages]</select></span>~[studentalert]</h1>
 <p>~(studentname) &nbsp; ~(grade_level) &nbsp; ~(student_number) &nbsp; &nbsp; ~(track) &nbsp; &nbsp; ~(studschoolabbr) &nbsp; &nbsp; ~[enrollmentstatus]</p></form>
 
-<div data-require-path="peiAttTrack/peiAttTrackTeach" data-module-name="attTrackMod"> 
+<div data-require-path="peiAttTrack/peiAttTrack" data-module-name="attTrackMod"> 
     <div class="box-round" ng-controller="attTrackCtrl" ng-cloak>
         <input type="hidden" id="staffName" value="~[x:username;firstlast]" />
         <input type="hidden" id="studentsdcid" value="~(studentrn)" />
         <input type="hidden" id="dateToday" value="~[date]" />
         <input type="hidden" id="studentName" value="~(first_name) ~(last_name)" />
-        <input type="hidden" id="gradeInYear" value="~[tlist_sql;select e.grade_level from ps_schoolenrollment e where e.studentid = ~(curstudid) and e.yearid = ~(curyearid) order by 1;nonemessage=-9]~(1)[/tlist_sql]" />
+        <input type="hidden" id="gradeInYear" value="~[tlist_sql;select * from (select e.grade_level from ps_schoolenrollment e where e.studentid = ~(curstudid) and e.yearid = ~(curyearid) order by 1 desc) where ROWNUM=1;nonemessage=-9]~(1)[/tlist_sql]" />  
         <input type="hidden" id="termid" value="~[tlist_sql;select id from terms where schoolid = ~(curschoolid) and yearid = ~(curyearid) and lastday >= to_date('~[date]','mm/dd/yyyy') and firstday <= to_date('~[date]','mm/dd/yyyy') and isYearRec = ~[if.~(grade_level)>9]0[else]1[/if];nonemessage='No results']~(term;json)[/tlist_sql]" />
         <div>
             <h2>Checklist for ~[tlist_sql;select name from terms where schoolid = ~(curschoolid) and yearid = ~(curyearid) and lastday >= to_date('~[date]','mm/dd/yyyy') and firstday <= to_date('~[date]','mm/dd/yyyy') and isYearRec = ~[if.~(grade_level)>9]0[else]1[/if];nonemessage='No results']~(term;json)[/tlist_sql]<span class="right boldtext">Grade level this term: {{gradeInYear}}&nbsp; &nbsp; <button class="btn btn-primary" onclick="printDiv()"><i class="fi-print"></i> Print View</button></span></h2>

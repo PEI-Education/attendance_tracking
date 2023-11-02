@@ -39,7 +39,7 @@
         <input type="hidden" id="studentsdcid" value="~(studentrn)" />
         <input type="hidden" id="dateToday" value="~[date]" />
         <input type="hidden" id="termid" value="~(curtermid)" />
-        <input type="hidden" id="gradeInYear" value="~[tlist_sql;select * from (select e.grade_level from ps_schoolenrollment e where e.studentid = ~(curstudid) and e.yearid = ~(curyearid) order by 1 desc) where ROWNUM=1;nonemessage=-9]~(1)[/tlist_sql]" />        
+        <input type="hidden" id="gradeInYear" value="~[tlist_sql;select * from (select e.grade_level from ps_schoolenrollment e where e.studentid = ~(curstudid) and e.yearid = ~(curyearid) order by 1 desc) where ROWNUM=1;nonemessage=-9]~(1)[/tlist_sql]" />  
         <div ng-if="validTerm()">
             <h2>Checklist for ~(termname) <span class="right boldtext">Grade level this term: {{gradeInYear}} &nbsp; &nbsp; <button class="btn btn-primary" onclick="printDiv()"><i class="fi-print"></i> Print View</button></span></h2>
             <div class="feedback-info no-print">
@@ -395,14 +395,15 @@
                                 </td>
                                 <td row-span="2" class="save-notes">
                                     <div id="referral_save" ng-if="referral_save=='saving'" data-pss-wait-spinner="small"></div>
-                                    <button type="submit" id="referral_save" ng-if="referral_save=='unsaved' || referral_save=='saved' || !referral_save" ng-disabled="forms.ref.$invalid || forms.ref.$pristine"><i class="fi-checkbox icon"></i></button>
+                                    <button type="submit" ng-click="saveAndEmail($event,'referral')" id="referral_save" ng-if="referral_save=='unsaved' || referral_save=='saved' || !referral_save" ng-disabled="forms.ref.$invalid || forms.ref.$pristine"><i class="fi-checkbox icon"></i></button>
                                     <div id="saved" class="saved" ng-if="referral_save=='saved' && !forms.ref.$dirty">Saved</div>
+                                    <div id="emailed" class="emailed" ng-if="referral_emailed==1 && !forms.ref.$dirty">Email Sent</div>
                                 </td>
                             </tr>
                              <tr>
                                 <td colspan="3" class="grid-item">
                                   <label class="notes-label" for="referral_notes">Notes</label>
-                                  <textarea class="notes" id="referral_notes" name="referral_notes" ng-model="record.referral.referral_notes"  maxlength="4000" ng-disabled="!record.referral"></textarea>
+                                  <textarea class="notes" id="referral_notes" name="referral_notes" ng-model="record.referral.referral_notes"  maxlength="4000" ~[if.is.a.school]disbled[else]ng-disabled="!record.referral"[/if]></textarea>
                                 </td>
                               </tr>
                         </tbody>
@@ -633,6 +634,16 @@
                     </tr>
                 </tbody>
             </table>
+            <!-- For email notifications -->
+            <div id="emailHelper" style="display: none;">
+                <input name="type" type="hidden" id="emailType" value="100">
+                <input type="text" id="emailFrom" value="~[x:useremail]" size=75 >
+                <input type="text" value=~[if#psb.~(schoolid)<500]"~[displaypref:attendancetrackingPSB]"[else#psb]~[if#cslf.schoolid<601]"~[displaypref:attendancetrackingCSLF]"[/if#clsf][/if#psb] id="emailTo" size=75 >
+                <input type="text" id="emailSubject" value="Attendnace Concern Referral from ~(schoolid) for ~(first_name) ~(last_name)" size=35>
+                <input id="emailBody" rows=12 cols=100 value="~[x:username;firstlast] from ~(schoolid) has referred a student with attendance concerns to the Director. You can review their file by logging in to PowerSchool and searching for 'student_number = ~(student_number)'.  &NewLine;&NewLine; This email was automatically generated when a teacher updated the Attendance Concern Checklist in PowerSchool. Contact powerschoolhelp@cloud.edu.pe.ca if you received this email in error."/>
+                <input type="text" id="emailDate" name="date" value="~[date]" >
+                <input type="text" id="emailTime" name="time" value="~(f.currenttime)" >
+            </div>
         </fieldset>
     </div>
 <!-- end of content of bounding box -->

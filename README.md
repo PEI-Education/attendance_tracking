@@ -18,6 +18,7 @@ Shoelace, you can do without with some minor mods to the HTML and CSS of the sec
 psQuery, however, is pretty integral to the functioning of the plugin. Without it, you would need to either replicate its functionakity with a hidden form or find some way to include the right ID for a DirectTable.Select on U_PEI_ATT_TRACK. psQuery really shines with the bulk updates - a single call lets you iterate through an array of students and their related updates, so fast that I actually added a slight delay so that you actually see the loading timer.
 
 ## Version History
+- 0.10 - Added email to director on referral, and eliminated largely duplicative controllers
 - 0.9 - Added automatic email notifications to teacher interface
 - 0.8 - Fixed bug for K-12 schools not showing anything on teacher input page
 - 0.7 - Full suite ready for pilot use in production

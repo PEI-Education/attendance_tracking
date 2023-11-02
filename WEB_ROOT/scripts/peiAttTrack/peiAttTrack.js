@@ -7,32 +7,32 @@ define(['angular', 'components/shared/index'], function(angular) {
         let init = function() {
             $scope.termid = document.getElementById('termid').value;
             $scope.record = {};
-            $scope.getGrade('pei_attTrackGrade.json');
+            $scope.gradeInYear = document.getElementById('gradeInYear').value;
             $scope.validTerm();
             $scope.forms = {};
-            $scope.getRecord('pei_attTrack.json');
-            $scope.concerns = {}
-        }
+            $scope.getRecord('json/pei_attTrack.json');
+            $scope.concerns = {};
+            $scope.queue = {};
+        };
         
         $scope.getRecord = function(datafile) {
-            dbConnect.getRecord(datafile).then(function(retData) {
+            dbConnect.getRecord(`${datafile}?term=${$scope.termid}`).then(function(retData) {
                 if (typeof retData === "object") {
                     $scope.record = retData;
                     // set the value of flag concern and letter sent indicators based on value of concern_2, concern_3 and concern_4
                     for (var i=2; i < 5; i++) {
                         if ($scope.record[`concern_${i}`][`concern_${i}`] == 1) {
-                            $scope.concerns[`concern_${i}_req`] = true
-                            $scope.concerns[`concern_${i}_sent`] = false
+                            $scope.concerns[`concern_${i}_req`] = true;
+                            $scope.concerns[`concern_${i}_sent`] = false;
                         } else if ($scope.record[`concern_${i}`][`concern_${i}`] == 2) {
-                            $scope.concerns[`concern_${i}_req`] = true
-                            $scope.concerns[`concern_${i}_sent`] = true
+                            $scope.concerns[`concern_${i}_req`] = true;
+                            $scope.concerns[`concern_${i}_sent`] = true;
                         } else {
-                            $scope.concerns[`concern_${i}_req`] = false
-                            $scope.concerns[`concern_${i}_sent`] = false                            
+                            $scope.concerns[`concern_${i}_req`] = false;
+                            $scope.concerns[`concern_${i}_sent`] = false;                          
                         }
                     }
                     $scope.referral = $scope.record.referral.referral===1 ? true : false;
- 
                 } else {
                     $scope.record = {
                         studentsdcid: document.getElementById('studentsdcid').value,
@@ -57,6 +57,9 @@ define(['angular', 'components/shared/index'], function(angular) {
                         referral: {
                             referral: 0
                         }
+                    };
+                    if ($scope.gradeInYear < 10) {
+                        $scope.record.student.student_notification = '-1';
                     }
                 }
                 for (const prop in $scope.forms) {
@@ -64,7 +67,7 @@ define(['angular', 'components/shared/index'], function(angular) {
                 }
             });
  
-        }
+        };
         
         // Adds the student's grade_level in the context of the termid, and sets the student_notification property to 'na' if that level is less than Grade 10
         $scope.getGrade = function(datafile) {
@@ -78,11 +81,11 @@ define(['angular', 'components/shared/index'], function(angular) {
                     alert('bad response to getGrade');
                 }
             });
-        }
+        };
         
         // Checks if the termid is valid for the student's grade_level in the context of the termid
         $scope.validTerm = function() {
-            let remainder = parseInt(document.getElementById('termid').value) % 100
+            let remainder = $scope.termid % 100;
             if (remainder !== 0 && $scope.gradeInYear < 10) { 
                 return false;
             } 
@@ -90,7 +93,7 @@ define(['angular', 'components/shared/index'], function(angular) {
                 return false;
             }
             return true;
-        }
+        };
         
         // Function to toggle student notification, calls (after recordCalls), and referrals on/off
         $scope.toggle = function(e, phase, step) {
@@ -105,36 +108,36 @@ define(['angular', 'components/shared/index'], function(angular) {
                     $scope.record[phase][`${step}_date`] = document.getElementById(`dateToday`).value;
                 }
             }
-        }
+        };
         
         // Calls pass through this function to set the value (1 for attempted, 3 for 'made contact').
         $scope.recordCall = function(e, step, value) {
             $scope.record.calls[step] = value;
             $scope.forms.calls.$setDirty();
             $scope.toggle(e, 'calls', step);
-        }
+        };
         
-        // Determines whether or not written notification can begin, based on whether all three calls have been attempted, or one call succeeded
+        // Determines whether or not written notification can begin, based on whether all three calls have been attempted, or one call succeeded.
         $scope.countCalls = function() {
             if (!$scope.record.calls) {
                 return true;
             }
-            return ($scope.record.calls.parent_call_1 + $scope.record.calls.parent_call_2 + $scope.record.calls.parent_call_3) <3
-        }
+            return ($scope.record.calls.parent_call_1 + $scope.record.calls.parent_call_2 + $scope.record.calls.parent_call_3) < 3;
+        };
         
         // Returns the number of days between two dates, for use in calculating whether or not student is eligibe for next stepss
         $scope.daysPassed = function(earlyDate, laterDate) {
             let date1 = new Date(earlyDate);
             let date2 = new Date(laterDate);
             return Math.ceil((date2 - date1)/(1000 * 3600 * 24));
-        }
+        };
         
         // Returns date + 5 days 
         $scope.addFiveDays = function(date) {
             let originalDate = new Date(date);
-            let numberOfDays = 7 // 5 business days + a weekend
+            let numberOfDays = 7; // 5 business days + a weekend
             return originalDate.setDate(originalDate.getDate() + numberOfDays);
-        }
+        };
         
         // Logic for disabling the buttons relating to written notifications
         // Previous letter must have been sent and at least 5 weekdays (1 week) must have passed
@@ -151,7 +154,7 @@ define(['angular', 'components/shared/index'], function(angular) {
                 return true;
             }
             return false;
-        }
+        };
         
         // Similar to toggle, but handles the additional logic of flagging concerns and then sending a letter in a single variable.
         $scope.handleConcern = function(e, phase, step) {
@@ -169,9 +172,9 @@ define(['angular', 'components/shared/index'], function(angular) {
                 }
             } else {
                 if (step.slice(step.length-4)==='_req') {
-                    $scope.record[phase][phase] = 0
+                    $scope.record[phase][phase] = 0;
                 } else {
-                    $scope.record[phase][phase] = 1
+                    $scope.record[phase][phase] = 1;
                 }
                 $scope.record[phase][`${step}_staff`] = null;
                 $scope.record[phase][`${step}_date`] = null;
@@ -179,7 +182,7 @@ define(['angular', 'components/shared/index'], function(angular) {
             $scope.forms.concern_2.$setDirty();
         }
     
-        // Logic for disabling the referral section
+        // Logic for disabling the referral section -> not used on teacher portal.
         $scope.disableReferral = function() {
             let concerns = ['concern_2', 'concern_3', 'concern_4']
             for (const concern of concerns) {
@@ -196,39 +199,77 @@ define(['angular', 'components/shared/index'], function(angular) {
             return false;
         }
         
+        // Triggers an email notification be sent to school administrators.
+        $scope.triggerEmail = function(phase) {
+            $scope.queue = {
+                "type": 100,
+                "tdata1": document.getElementById('emailFrom').value,
+                "tdata2": document.getElementById('emailTo').value,
+                "tdata3": document.getElementById('emailSubject').value,
+                "tdata4": document.getElementById('emailBody').value,
+                "date": document.getElementById('emailDate').value,
+                "time": document.getElementById('emailTime').value
+            };
+            console.log($scope.queue);
+            dbConnect.triggerEmail($scope.queue, function(retID) {
+                if (retID == -1 || retID === $scope.record.id) {
+                    $timeout(function() {
+                       $scope[`${phase}_emailed`] = 1;
+                       $scope.queue = {};
+                       closeLoading();
+                    }, 1000);
+                } else {
+                    alert(`Email not sent (returned: ${retID})`);
+                    closeLoading();
+                }
+            })
+        };
+
         // Saves data to the u_pei_att_track table
         const SAVED = 'saved';
         const SAVING = 'saving';
         const UNSAVED = 'unsaved';
  
         $scope.save = function(e, phase) {
-            $scope[`${phase}_save`] = SAVING
-            let list = $scope.record[phase]
+            $scope[`${phase}_save`] = SAVING;
+            let list = $scope.record[phase];
             if (!$scope.record.id) {
                 list.termid = $scope.record.termid;
                 dbConnect.insertRecord($scope.record.studentsdcid, list, function(retID) {
-                    console.log(retID)
-                    if (retID === '-1' || retID > 0) {
-                       $timeout(function() {
-                           $scope[`${phase}_save`] = SAVED;
-                           $scope.getRecord('pei_attTrack.json');
-                        }, 1000);   
-                    } else {
-                        console.error(`${phase} not saved.`);
+                    if (retID === 0) {
+                        alert(`${phase} not saved (returned ${retID})`);
                         $scope[`${phase}_save`] = UNSAVED;
+                        closeLoading();
+                    } else {
+                        $timeout(function() {
+                           $scope[`${phase}_save`] = SAVED;
+                           $scope.getRecord('json/pei_attTrack.json');
+                           closeLoading();
+                        }, 1000);   
                     }
                 });
             } else {
                 dbConnect.updateRecord($scope.record.id, list, function(retID) {
-                    if (retID === '-1' || retID === $scope.record.id) {
+                    if (retID == -1 || retID === $scope.record.id) {
                         $timeout(function() {
-                           $scope[`${phase}_save`] = SAVED
-                           $scope.getRecord('pei_attTrack.json');
+                           $scope[`${phase}_save`] = SAVED;
+                           $scope.getRecord('json/pei_attTrack.json'); 
+                           closeLoading();
                         }, 1000);
                     } else {
-                        console.error(`${phase} not saved.`);
-                    }
+                        alert(`${phase} not saved (returned: ${retID})`);
+                        $scope[`${phase}_save`] = UNSAVED;
+                        closeLoading();                   
+                     }
                 });
+            }
+        };
+
+        $scope.saveAndEmail = function(e, phase) {
+            $scope.save(e, phase);
+            if ($scope['record'][phase][phase]===1) {
+                console.log('sending email');
+                $scope.triggerEmail(phase);
             }
         }
         
@@ -238,8 +279,8 @@ define(['angular', 'components/shared/index'], function(angular) {
     
     // Service to interact with PowerSchool database via PSQuery
     attTrackApp.factory('dbConnect', ['$http', function($http) {
+
         return {
-            
             getRecord: function(datafile) {
                 return $http.get(datafile)
                 .then(function(result) {
@@ -252,7 +293,11 @@ define(['angular', 'components/shared/index'], function(angular) {
             },
             insertRecord: function(studentsdcid, fields, callback) {
                 let table = $psq('u_pei_att_track');
-                table.insertChild({table: 'students', id: studentsdcid}, fields, callback);
+                table.insertChild({table: 'students', id: studentsdcid},fields, callback);
+            },
+            triggerEmail: function(fields, callback) {
+                let table = $psq('queue');
+                table.insert(fields, callback);
             }
         };
     }]);

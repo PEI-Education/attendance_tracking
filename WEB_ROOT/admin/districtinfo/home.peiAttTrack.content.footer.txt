@@ -1,0 +1,22 @@
+<div id="peiatttrack" class="box-round">
+   <h2>Email Notice for Attendance Concern Tracking</h2>
+   <table border="0" cellspacing="0" cellpadding="4">
+      <tr class="~[evenoddrow]">
+         <td class="bold" width="30%">Notifications for the Director</td>
+         <td>Email address(es) that should receive a notification when a school escalates an attendance concern to the Director. Multiple emails: comma separated with a space between, no line breaks.</td>
+      </tr>
+      <tr class="~[evenoddrow]">
+         <td class="bold">PSB</td>
+         <td><textarea id="emailaddreses" name="[pref]attendancetrackingPSB" value="" rows="3" cols="70"></textarea></td>
+      </tr>
+      <tr class="~[evenoddrow]">
+         <td class="bold">CSLF</td>
+         <td><textarea id="emailaddreses" name="[pref]attendancetrackingCSLF" value="" rows="3" cols="70"></textarea></td>
+      </tr>
+   </table>
+</div>
+
+<script>
+  $j( function() {
+    $j("h2:contains('~[text:psx.html.admin_districtinfo.home.district_tech_support_title]')").parent().after($j('#peiatttrack'));
+  } );

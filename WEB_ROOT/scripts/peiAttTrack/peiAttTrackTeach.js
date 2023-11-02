@@ -1,3 +1,5 @@
+/* File is redundant and can be deleted once new combo controller is thoroughly tested */
+
 define(['angular', 'components/shared/index'], function(angular) {
     
     var attTrackApp = angular.module('attTrackMod', ['powerSchoolModule']);
@@ -37,7 +39,9 @@ define(['angular', 'components/shared/index'], function(angular) {
                     $scope.record = {
                         studentsdcid: document.getElementById('studentsdcid').value,
                         termid: $scope.termid,
-                        student: {},
+                        student: {
+                            student_notification: 0
+                        },
                         calls: {
                              parent_call_1: 0,
                              parent_call_2: 0,
@@ -52,7 +56,9 @@ define(['angular', 'components/shared/index'], function(angular) {
                         concern_4: {
                              concern_4: 0
                         },
-                        referral: {}
+                        referral: {
+                            referral: 0
+                        }
                     };
                     if ($scope.gradeInYear < 10) {
                         $scope.record.student.student_notification = '-1';
@@ -92,7 +98,6 @@ define(['angular', 'components/shared/index'], function(angular) {
             }
             return true;
         };
-        
  
         // Function to toggle student notification, calls (after recordCalls), and referrals on/off
         $scope.toggle = function(e, phase, step) {
@@ -274,9 +279,8 @@ define(['angular', 'components/shared/index'], function(angular) {
              table.update(recordid, fields, callback);
             },
             insertRecord: function(studentsdcid, fields, callback) {
-             let table = $psq('u_pei_att_track');
-             table.insertChild({table: 'students', id: studentsdcid},fields, callback);
- 
+                let table = $psq('u_pei_att_track');
+                table.insertChild({table: 'students', id: studentsdcid},fields, callback);
             },
             triggerEmail: function(fields, callback) {
                 let table = $psq('queue');
