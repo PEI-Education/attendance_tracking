@@ -403,7 +403,7 @@
                              <tr>
                                 <td colspan="3" class="grid-item">
                                   <label class="notes-label" for="referral_notes">Notes</label>
-                                  <textarea class="notes" id="referral_notes" name="referral_notes" ng-model="record.referral.referral_notes"  maxlength="4000" ~[if.is.a.school]disbled[else]ng-disabled="!record.referral"[/if]></textarea>
+                                  <textarea class="notes" id="referral_notes" name="referral_notes" ng-model="record.referral.referral_notes"  maxlength="4000" ~[if.is.a.school]ng-disabled="true"[else]ng-disabled="record.referral.referral != 1"[/if]></textarea>
                                 </td>
                               </tr>
                         </tbody>
