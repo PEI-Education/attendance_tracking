@@ -23,7 +23,7 @@ define(function(require) {
 
         $scope.setHS = function() {
             let termid = parseInt(document.getElementById('termid'));
-            
+
             return termid  % 100 === 0 ? false : true;
         };
         
@@ -96,8 +96,8 @@ define(function(require) {
                dataService
                   .getData('json/attendance_tracking.json?step=' + (state.selectedStep || ''))
                   .then(function (retData) {
-                     retData.pop();
-                     //apply any transformations that can't be made in the view
+                    retData.pop();
+                    //apply any transformations that can't be made in the view
                     retData.forEach(data => {
                         if (data.stepDate) {
                             data.stepDate = new Date(data.stepDate)
