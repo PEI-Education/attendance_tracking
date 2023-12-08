@@ -24,6 +24,7 @@
         <field name="concern_2" type="Integer" defaultValue="0" comment=" 0 = false, 1 = concern flagged; 2 = letter sent"/>
         <field name="concern_2_sent_staff" type="String" length="80"/>
         <field name="referral_date" type="Date"/>
+        <field name="referral_closed_date" type="Date"/>
         <field name="referral_notes" type="String" length="4000"/>
         <field name="concern_2_sent_date" type="Date"/>
         <field name="parent_call_2_staff" type="String" length="80"/>
@@ -33,7 +34,7 @@
         <field name="concern_4_req_staff" type="String" length="80"/>
         <field name="concern_3_notes" type="String" length="4000"/>
         <field name="termid" type="Integer" comment="Reference to the Terms table"/>
-        <field name="referral" type="Integer" defaultValue="0" comment="0 = false; 1 = referred to director"/>
+        <field name="referral" type="Integer" defaultValue="0" comment="0 = false; 1 = referred to director; 2 = referral closed"/>
         <field name="student_notification" type="Integer" defaultValue="0" comment="0 = not notified; 1 = notified; -1 = exempt (&lt; Grade 10)"/>
         <field name="parent_call_3_date" type="Date"/>
         <field name="concern_3_sent_staff" type="String" length="80"/>

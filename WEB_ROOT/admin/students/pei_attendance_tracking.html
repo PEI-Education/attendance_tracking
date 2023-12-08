@@ -400,12 +400,27 @@
                                     <div id="emailed" class="emailed" ng-if="referral_emailed==1 && !forms.ref.$dirty">Email Sent</div>
                                 </td>
                             </tr>
-                             <tr>
-                                <td colspan="3" class="grid-item">
-                                  <label class="notes-label" for="referral_notes">Notes</label>
-                                  <textarea class="notes" id="referral_notes" name="referral_notes" ng-model="record.referral.referral_notes"  maxlength="4000" ~[if.is.a.school]ng-disabled="true"[else]ng-disabled="record.referral.referral != 1"[/if]></textarea>
-                                </td>
-                              </tr>
+                            <tr>
+                              <td class="grid-item stretchCell">
+                                  <label class="form-control" for="referral_sent">
+                                  <input type="checkbox" ng-model="referral.referral_sent" ng-click="handleConcern($event, 'concern_4','concern_4_sent')" name="concern_4_sent" id="concern_4_sent" ng-disabled="!concerns.concern_4_req || record.referral.referral===1" value="1" /> Notification sent
+                                  </label>
+                              </td>
+                              <td class="grid-item">
+                                  <label for="concern_4_sent_staff">Contacted by</label> 
+                                  <input size="40" id="concern_4_sent_staff" name="sent_staff" length="40" ng-model="record.concern_4.concern_4_sent_staff" ng-disabled="!concerns.concern_4_sent || record.referral.referral===1" ng-required="concerns.concern_4_sent" />
+                              </td>
+                              <td class="grid-item">
+                                  <label for="concern_4_sent_date">Date</label> 
+                                  <input id="concern_4_sent_date" name="sent_date" ng-model="record.concern_4.concern_4_sent_date" type="text" pss-date-widget data-minDate="{{ record.concern_4s.concern_4_req_date }}" ng-disabled="!concerns.concern_4_sent || record.referral.referral===1" ng-required="concerns.concern_4_sent===true" />
+                              </td>
+                            </tr>
+                            <tr>
+                              <td colspan="3" class="grid-item">
+                                <label class="notes-label" for="referral_notes">Notes</label>
+                                ~[if.is.a.school]{{record.referral.referral_notes}}[else]<textarea class="notes" id="referral_notes" name="referral_notes" ng-model="record.referral.referral_notes"  maxlength="4000"></textarea>[/if]
+                              </td>
+                            </tr>
                         </tbody>
                     </table>
                 </form>
@@ -618,7 +633,7 @@
                 <tbody>
                     <tr>
                         <td class="grid-item stretchCell">
-                             <span ng-if="record.referral.referral==1"><i class="fi-check"></i></span><span ng-if="record.referral.referral != 1"><i class="fi-x"></i></span> &nbsp; Notification to the Director
+                             <span ng-if="record.referral.referral>0"><i class="fi-check"></i></span><span ng-if="record.referral.referral==0"><i class="fi-x"></i></span> &nbsp; Notification to the Director
                         </td>
                         <td class="grid-item">
                             <strong>Contacted by:</strong> {{ record.referral.referral_staff }}

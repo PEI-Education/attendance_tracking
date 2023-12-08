@@ -5,7 +5,7 @@ TemplateName:Admin
 <html>
 <head>
     <meta name="Author" content="Luke Walker, PEI Dept of Education">
-    <meta name="Version" content="0.7">
+    <meta name="Version" content="2023.12">
 	<title>Mass Update Attendance Checklists</title>
 	<link rel="stylesheet" type="text/css" href="/admin/pei_reports/css/foundation-icons.css" />
 <!-- required scripts -->
@@ -452,19 +452,18 @@ TemplateName:Admin
                             <tr>
                                 <td class="grid-item stretchCell">
                                     <label class="form-control" for="concern_4_req">
-                                    <input type="checkbox" ng-model="c4req.concern_4_req" ng-true-value="1" ng-false-value="2" ng-click="setStaffDate('c4req','concern_4_req')" name="concern_4_req" id="concern_4_req" /> Flag concern to admin
+                                    <input type="checkbox" ng-model="c4req.concern_4" ng-true-value="1" ng-false-value="0" ng-click="setValues('c4req','concern_4_req')" name="concern_4_req" id="concern_4_req" /> Flag concern to admin
                                     </label>
                                 </td>
                                 <td class="grid-item">
                                     <label for="concern_4_req_staff">Contacted by:</label> 
-                                    <input size="40" id="concern_4_req_staff" name="req_staff" length="40" ng-model="$parent.concern_4_req_staff"  />
+                                    <input size="40" id="concern_4_req_staff" name="req_staff" length="40" ng-model="c4req.concern_4_req_staff"  />
                                 </td>
                                 <td class="grid-item">
                                     <label for="concern_4_req_date">Date:</label> 
-                                    <input id="concern_4_req_date" name="req_date" ng-model="$parent.concern_4_req_date" type="text" pss-date-widget/>
+                                    <input id="concern_4_req_date" name="req_date" ng-model="c4req.concern_4_req_date" type="text" pss-date-widget/>
                                 </td>
                                 <td class="save-notes" rowspan="2">
-                                    <div ng-if="taskComplete"><i class="fi fi-check green"> Saved</i></div>
                                     <button type="submit" ng-click="save('c4req')" id="concern_4_save"><i class="fi-checkbox icon"></i></button>
                                 </td>
                             </tr>
@@ -481,7 +480,7 @@ TemplateName:Admin
                         </tbody>
                     </table>
                 </form>        
-                <form ng-if="stepSelection.id===14" name="forms.concern_4" id="concern4Form" novalidate class="validatedForm" data-pss-validation-form data-dirty-state-check="true">
+                 <form ng-if="stepSelection.id===14" name="forms.concern_4" id="concern4Form" novalidate class="validatedForm" data-pss-validation-form data-dirty-state-check="true">
                     <table class="checklistTable">
                         <colgroup>
                             <col style="width:35%;" />
@@ -492,22 +491,22 @@ TemplateName:Admin
                         <tbody>
                             <tr>
                                 <td colspan="4">
-                                    <h3>Written Notification #3</h3>
+                                    <h3>Written Notification #3 (sent)</h3>
                                 </td>
                             </tr>
                             <tr>
                                 <td class="grid-item stretchCell">
                                     <label class="form-control" for="concern_4_sent">
-                                    <input type="checkbox" ng-model="concerns.concern_4_sent" ng-click="threeWayToggle('concern_4_sent',2)" name="concern_4_sent" id="concern_4_sent" value="2" /> Notification sent
+                                    <input type="checkbox" ng-model="c4sent.concern_4" ng-true-value="2" ng-false-value="1" ng-click="setStaffDate('c4sent','concern_4_sent')" name="concern_4_sent" id="concern_4_sent" /> Notification sent
                                     </label>
                                 </td>
                                 <td class="grid-item">
-                                    <label for="concern_4_sent_staff">Contacted by</label> 
-                                    <input size="40" id="concern_4_sent_staff" name="sent_staff" length="40" ng-model="$parent.concern_4_sent_staff" />
+                                    <label for="concern_4_sent_staff">Contacted by:</label> 
+                                    <input size="40" id="concern_4_sent_staff" name="sent_staff" length="40" ng-model="c4sent.concern_4_sent_staff" />
                                 </td>
                                 <td class="grid-item">
-                                    <label for="concern_4_sent_date">Date</label> 
-                                    <input id="concern_4_sent_date" name="sent_date" ng-model="$parent.concern_4_sent_date" type="text" pss-date-widget />
+                                    <label for="concern_4_sent_date">Date:</label> 
+                                    <input id="concern_4_sent_date" name="sent_date" ng-model="c4sent.concern_4_sent_date" type="text" pss-date-widget />
                                 </td>
                                 <td class="save-notes" rowspan="2">
                                     <button type="submit"  id="concern_4_save" ng-click="save('c4sent')"><i class="fi-checkbox icon"></i></button>
@@ -516,16 +515,16 @@ TemplateName:Admin
                         <!--
                             <tr>
                                 <td colspan="3" class="grid-item">
-                                    <label class="notes-label" for="concern_4_notes">Notes</label>
+                                    <label class="notes-label" for="concern_4_notes">Notes (required)</label>
                                     <p class="help-text">Any previously entered notes for this step will be overwritten.</p>
-                                    <textarea class="notes" id="concern_4_notes" name="notes" ng-model="$parent.concern_3_notes" maxlength="4000"></textarea>
+                                    <textarea class="notes" id="concern_4_notes" name="notes" ng-model="c4sent.concern_4_notes" maxlength="4000"></textarea>
                                     
                                 </td>
                             </tr>
                         -->
                         </tbody>
                     </table>
-                </form> 
+                </form>  
                 <form ng-if="stepSelection.id === 15" name="forms.referral" id="stuForm"  ng-submit="save('referral')" novalidate class="validatedForm" data-pss-validation-form data-dirty-state-check="true">
                     <table class="checklistTable">
                         <colgroup>
