@@ -1,0 +1,22 @@
+{
+  "pages": [
+    {
+      "htmlID": "navAttendanceConcerns",
+      "title": "Attendance Concerns",
+      "pageURL": "/admin/students/pei_attendance_tracking.html?frn=~(studentfrn)",
+      "version": "2024.2",
+      "contextType": "student",
+      "sortOrder": 250,
+      "parentHTMLID": "navStudentAttendanceSection"
+    },
+    {
+      "htmlID": "navAttendanceConcernsTracking",
+      "title": "Track Attendance Concerns",
+      "version": "2024.2.1",
+      "contextType": "main",
+      "sortOrder": 650,
+      "pageURL": "/admin/pei_reports/attendance_tracking.html",
+      "parentHTMLID": "navAttendanceAttendanceManagement"
+    }
+  ]
+}

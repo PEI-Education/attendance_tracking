@@ -1,4 +1,4 @@
-<table class="grid"  id="tempContainer"><tr><th colspan="2" class="left">Email Notice for Attendance Concerns Checklist</th></tr><tr><td class="bold">For multiple email addresses, comma separated with space between:<br />&nbsp;&nbsp;&nbsp;me@123.com, you@123.com<br />&nbsp;&nbsp;&nbsp;Do not use any line breaks.</td><td><textarea id="emailaddreses" name="[pref]attendancetracking-S~([39]school_number)" value="" rows="10" cols="70"></textarea></td></tr></table>
+<table class="grid"  id="tempContainer"><tr><th colspan="2" class="left">~[text:psx.htmlc.admin_attendance.attendance_tracking.email_notice_for_attendance_co]</th></tr><tr><td class="bold">~[text:psx.htmlc.admin_attendance.attendance_tracking.for_multiple_email_addresses]<br />&nbsp;&nbsp;&nbsp;me@123.com, you@123.com<br />&nbsp;&nbsp;&nbsp;~[text:psx.htmlc.admin_attendance.attendance_tracking.do_not_use_any_line_breaks]</td><td><textarea id="emailaddreses" name="[pref]attendancetracking-S~([39]school_number)" value="" rows="10" cols="70"></textarea></td></tr></table>
     
 <script>
     $j(function(){

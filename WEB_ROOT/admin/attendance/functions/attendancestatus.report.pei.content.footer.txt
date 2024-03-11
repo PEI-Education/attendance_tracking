@@ -1,7 +1,7 @@
 <table class="linkDescList" id="peispecial">
 	<tr id="pei" class="~[evenoddrow]">
-    	<td><a href="/admin/pei_reports/attendance_tracking.html">Track Attendance Concerns</a></td>
-		<td>Select students with identified attendance concerns, generate notifications to send home, add bulk status updates and more.</td>
+    	<td><a href="/admin/pei_reports/attendance_tracking.html">~[text:psx.htmlc.admin_attendance.attendance_tracking.track_attendance_concerns]</a></td>
+		  <td>~[text:psx.htmlc.admin_attendance.attendance_tracking.select_students_with_identifie]</td>
 	</tr>
 </table>
 <script>

@@ -23,9 +23,9 @@
         
         let sum = Object.values(requests).reduce((a, b) => a + b, 0);
         if (sum > 0) {
-           $j('#content-main').append(`<button id="bulkChecklists" class="btn btn-primary" onclick="window.location.assign('/admin/pei_reports/attendance_tracking.html')" style="position: absolute; right: 20px; top: 85px; background-color: red;"><i class="fi-flag"></i> Attendance Concerns - Action required</button>`) 
+           $j('#content-main').append(`<button id="bulkChecklists" class="btn btn-primary" onclick="window.location.assign('/admin/pei_reports/attendance_tracking.html')" style="position: absolute; right: 20px; top: 85px; background-color: red;"><i class="fi-flag"></i>   </button>`) 
         } else {
-           $j('#content-main').append(`<button id="bulkChecklists" class="btn btn-primary" onclick="window.location.assign('/admin/pei_reports/attendance_tracking.html')" style="position: absolute; right: 20px; top: 85px;"><i class="fi-torsos-all"></i> Track Attendance Concerns</button>`) 
+           $j('#content-main').append(`<button id="bulkChecklists" class="btn btn-primary" onclick="window.location.assign('/admin/pei_reports/attendance_tracking.html')" style="position: absolute; right: 20px; top: 85px;"><i class="fi-torsos-all"></i> ~[text:psx.htmlc.admin_attendance.attendance_tracking.track_attendance_concerns]</button>`) 
         }
     });
 </script>

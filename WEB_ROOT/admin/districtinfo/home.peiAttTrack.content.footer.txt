@@ -2,8 +2,8 @@
    <h2>Email Notice for Attendance Concern Tracking</h2>
    <table border="0" cellspacing="0" cellpadding="4">
       <tr class="~[evenoddrow]">
-         <td class="bold" width="30%">Notifications for the Director</td>
-         <td>Email address(es) that should receive a notification when a school escalates an attendance concern to the Director. Multiple emails: comma separated with a space between, no line breaks.</td>
+         <td class="bold" width="30%">~[text:psx.htmlc.admin_attendance.attendance_tracking.notifications_for_the_director]</td>
+         <td>~[text:psx.htmlc.admin_attendance.attendance_tracking.email_addresses_that_should] ~[text:psx.htmlc.admin_attendance.attendance_tracking.multiple_emails_comma_separated]</td>
       </tr>
       <tr class="~[evenoddrow]">
          <td class="bold">PSB</td>
