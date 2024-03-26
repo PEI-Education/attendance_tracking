@@ -1,8 +1,9 @@
-~[if.~(studentscreenaccess;attendance.html)=1]
-    <script>
+<script>
+~[if#sch.is.a.school]
+  ~[if#sec.~(studentscreenaccess;attendance.html)=1]
         $j(function() {
             let requests = { ~[tlist_sql;
-                              select
+                select
                     count(case when u.concern_2 = 1 then 1 else null end) as letter1,
                     count(case when u.concern_3 = 1 then 1 else null end) as letter2,
                     count(case when u.concern_4 = 1 then 1 else null end) as letter3
@@ -10,7 +11,7 @@
                 join students s
                     on s.dcid = u.studentsdcid
                 where
-                    substr(u.termid,0,2) = ~(curyearid)
+                    u.termid = ~(curtermid) --Changed from yearid
                     and s.schoolid = ~(curschoolid)
                 order by 1;
                 ]
@@ -27,5 +28,6 @@
                 $j('h1:contains(~[text:psx.html.admin.home.start_page])').after(`<div id="attAlert" class="feedback-alert">Staff have requested ${sum} written attendance notifications. See the list of students on the <a href="/admin/pei_reports/attendance_tracking.html">Attendance Concerns Dashboard</a>.</div>`);
             }
         });
-    </script>
-[/if]
+  [/if#sec]
+[/if#sch]
+</script>

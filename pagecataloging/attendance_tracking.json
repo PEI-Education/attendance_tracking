@@ -2,17 +2,17 @@
   "pages": [
     {
       "htmlID": "navAttendanceConcerns",
-      "title": "Attendance Concerns",
+      "title": "psx.htmlc.admin_attendance.attendance_tracking.attendance_tracking",
       "pageURL": "/admin/students/pei_attendance_tracking.html?frn=~(studentfrn)",
-      "version": "2024.2",
+      "version": "2024.3.0.4",
       "contextType": "student",
       "sortOrder": 250,
       "parentHTMLID": "navStudentAttendanceSection"
     },
     {
       "htmlID": "navAttendanceConcernsTracking",
-      "title": "Track Attendance Concerns",
-      "version": "2024.2.1",
+      "title": "psx.htmlc.admin_attendance.attendance_tracking.track_attendance_concerns",
+      "version": "2024.3.0.4",
       "contextType": "main",
       "sortOrder": 650,
       "pageURL": "/admin/pei_reports/attendance_tracking.html",

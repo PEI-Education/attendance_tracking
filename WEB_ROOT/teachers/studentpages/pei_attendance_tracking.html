@@ -6,7 +6,7 @@ TemplateName:Teacher Backpack
 <head>
     <meta name="Author" content="Luke Walker, PEI Dept of Education">
     <meta name="Version" content="2024.3">
-	<title>~[text:psx.htmlc.teachers.studentpages.pei.attendance_concerns_checklist]</title>
+	<title>~[text:psx.htmlc.admin_students.attendance_tracking.attendance_concerns_checklist]</title>
 	<link rel="stylesheet" type="text/css" href="/admin/pei_reports/css/foundation-icons.css" />
 <!-- required scripts -->
 	~[wc:commonscripts] 
@@ -41,7 +41,7 @@ TemplateName:Teacher Backpack
 ~[wc:teachers_header_fr_css]
 
  <form name="navigation"><span class="account-photo">~[studenttitlephoto]</span>
- <h1>~[text:psx.htmlc.teachers.studentpages.pei.attendance_concerns_checklist]<span class="nav-teacher"><select name="page" size=1 onChange="javascript:formHandler()"><option value="">~[text:psx.htmlc.teachers_studentpages.attendance_tracking.select_screens]</option><option value="">--------------------</option>~[x:teacherpages]</select></span>~[studentalert]</h1>
+ <h1>~[text:psx.htmlc.admin_students.attendance_tracking.attendance_concerns_checklist]<span class="nav-teacher"><select name="page" size=1 onChange="javascript:formHandler()"><option value="">~[text:psx.htmlc.teachers_studentpages.attendance_tracking.select_screens]</option><option value="">--------------------</option>~[x:teacherpages]</select></span>~[studentalert]</h1>
 <p>~(studentname) &nbsp; ~(grade_level) &nbsp; ~(student_number) &nbsp; &nbsp; ~(track) &nbsp; &nbsp; ~(studschoolabbr) &nbsp; &nbsp; ~[enrollmentstatus]</p></form>
 
 <div data-require-path="peiAttTrack/peiAttTrack" data-module-name="attTrackMod"> 
@@ -57,11 +57,11 @@ TemplateName:Teacher Backpack
       <div class="feedback-info no-print">
           <ul>
               <li>~[text:psx.htmlc.admin_students.attendance_tracking.this_checklist_must_be_complet] ~[text:psx.htmlc.admin_students.attendance_tracking.most_steps_must_have_a_date_la] ~[text:psx.htmlc.admin_students.attendance_tracking.in_the_case_of_written_notific] ~[text:psx.htmlc.admin_students.attendance_tracking.the_one_exception_is_the_first]</li>
-              <li>~[text:psx.htmlc.teachers_studentspages.attendance_tracking.each_section_save].</li>
-              <li>~[text:psx.htmlc.teachers_studentspages.attendance_tracking.in_the_event_clear_data]</li>
+              <li>~[text:psx.htmlc.teachers_studentpages.attendance_tracking.each_section_save]</li>
+              <li>~[text:psx.htmlc.teachers_studentpages.attendance_tracking.in_the_event_clear_data]</li>
               <li>~[text:psx.htmlc.admin_students.attendance_tracking.a_red_border_around_a_field_in]</li>
-              <li>~[text:psx.htmlc.teachers_studentspages.attendance_tracking.office_staff_receive_requests]</li>
-              <li>~[text:psx.htmlc.admin_students.attendance_tracking.for_a_printable_version_of_thi] ~[text:psx.htmlc.admin_students.attendance_tracking.a_popup_wil_open_with_a_versio]</li>
+              <li>~[text:psx.htmlc.teachers_studentpages.attendance_tracking.office_staff_receive_requests] ~[if#lt.prefschool.attendancetracking=]~[text:psx.htmlc.teachers_studentpages.attendance_tracking.teachers_emails_not_set][else#lt]~[text:psx.htmlc.teachers_studentpages.attendance_tracking.teachers_emails_set] ~[displayprefschool:attendancetracking].[/if#lt]</li>
+              <li>~[text:psx.htmlc.admin_students.attendance_tracking.for_a_printable_version] ~[text:psx.htmlc.admin_students.attendance_tracking.a_popup_wil_open_with_a_versio]</li>
           </ul>
       </div>
       <fieldset ng-if="gradeInYear > 9">
@@ -177,7 +177,7 @@ TemplateName:Teacher Backpack
                       <tr class="alternateRow">
                           <td colspan="3" class="grid-item">
                               <label for="parent_call_notes" class="notes-label">~[text:psx.htmlc.admin_attendance.attendance_tracking.notes]</label>
-                              <textarea class="notes" id="parent_call_notes" name="parent_call_notes" ng-model="record.calls.parent_call_notes" ng-disabled="record.calls.parent_call_1==0 || concerns.concern_2_req==1" placeholder="Note any relevant details regarding phone calls with guardians." maxlength="4000"></textarea>
+                              <textarea class="notes" id="parent_call_notes" name="parent_call_notes" ng-model="record.calls.parent_call_notes" ng-disabled="record.calls.parent_call_1==0 || concerns.concern_2_req==1" placeholder="~[text:psx.htmlc.teachers_studentpages.attendance_tracking.call_notes_placeholder]" maxlength="4000"></textarea>
                           </td>
                       </tr>
                   </tbody>
@@ -213,9 +213,9 @@ TemplateName:Teacher Backpack
                   <tr>
                       <td colspan="4">
                           <ng-messages for="forms.concern_2.notes.$error" ng-show="forms.concern_2.$invalid && forms.concern_2.notes.$touched" role="alert">
-                              <ng-message when="required" class="feedback-error">Notes are required when a continued concern is flagged. Click the clipboard icon above for more information on documentation requirements.</ng-message>
-                              <ng-message when="minlength" class="feedback-error">Notes must be at least 20 characters.</ng-message>
-                              <ng-message when="maxlength" class="feedback-error">Notes must be less than 4000 characters.</ng-message>
+                            <ng-message when="required" class="feedback-error">~[text:psx.htmlc.teachers_studentpages.attendance_tracking.notes_error1]</ng-message>
+                            <ng-message when="minlength" class="feedback-error">~[text:psx.htmlc.teachers_studentpages.attendance_tracking.notes_error2]</ng-message>
+                            <ng-message when="maxlength" class="feedback-error">~[text:psx.htmlc.teachers_studentpages.attendance_tracking.notes_error3]</ng-message>
                           </ng-messages>
                       </td>
                   </tr>
@@ -237,7 +237,7 @@ TemplateName:Teacher Backpack
                           <div id="concern_2_save" ng-if="concern_2_save=='saving'" data-pss-wait-spinner="small"></div>
                           <button type="submit" ng-click="saveAndEmail($event,'concern_2')" id="concern_2_save" ng-if="concern_2_save=='unsaved' || concern_2_save=='saved' || !concern_2_save" ng-disabled="forms.concern_2.$invalid || forms.concern_2.$pristine || forms.calls.$dirty"><i class="fi-checkbox icon"></i></button>
                           <div id="saved" class="saved" ng-if="concern_2_save=='saved' && !forms.concern_2.$dirty">~[text:psx.htmlc.admin_attendance.attendance_tracking.saved]</div>
-                          <div id="emailed" class="emailed" ng-if="concern_2_emailed==1 && !forms.concern_2.$dirty">Email Sent</div>
+                          <div id="emailed" class="emailed" ng-if="concern_2_emailed==1 && !forms.concern_2.$dirty">~[text:psx.htmlc.teachers_studentpages.attendance_tracking.email_sent]</div>
                       </td>
                   </tr>
                   <tr>
@@ -257,7 +257,7 @@ TemplateName:Teacher Backpack
                   </tr>
                   <tr>
                       <td colspan="3" class="grid-item">
-                          <label class="notes-label" for="concern_2_notes">~[text:psx.htmlc.admin_attendance.attendance_tracking.notes] (required)</label>
+                          <label class="notes-label" for="concern_2_notes">~[text:psx.htmlc.admin_attendance.attendance_tracking.notes] (~[text:psx.htmlc.admin_students.attendance_tracking.required])</label>
                           <p class="help-text">~[text:psx.htmlc.admin_students.attendance_tracking.note_any_concerns_dates1] ~[text:psx.htmlc.admin_students.attendance_tracking.note_any_supports_or_intervent] ~[text:psx.htmlc.admin_students.attendance_tracking.for_example_referral_to_schoo]</p>                                  
                           <textarea class="notes" id="concern_2_notes" name="notes" ng-model="record.concern_2.concern_2_notes" ng-disabled="!concerns.concern_2_req || concerns.concern_3_req===true" ng-required="concerns.concern_2_req===true" ng-minlength="20" maxlength="4000"></textarea>
                       </td>
@@ -273,9 +273,9 @@ TemplateName:Teacher Backpack
                   <tr class="alternateRow">
                       <td colspan="4">
                           <ng-messages for="forms.concern_3.notes.$error" ng-show="forms.concern_3.$invalid && forms.concern_3.notes.$touched" role="alert">
-                              <ng-message when="required" class="feedback-error">Notes are required when a continued concern is flagged. Click the clipboard icon above for more information on documentation requirements.</ng-message>
-                              <ng-message when="minlength" class="feedback-error">Notes must be at least 20 characters.</ng-message>
-                              <ng-message when="maxlength" class="feedback-error">Notes must be less than 4000 characters.</ng-message>
+                              <ng-message when="required" class="feedback-error">~[text:psx.htmlc.teachers_studentpages.attendance_tracking.notes_error1]</ng-message>
+                              <ng-message when="minlength" class="feedback-error">~[text:psx.htmlc.teachers_studentpages.attendance_tracking.notes_error2]</ng-message>
+                              <ng-message when="maxlength" class="feedback-error">~[text:psx.htmlc.teachers_studentpages.attendance_tracking.notes_error3]</ng-message>
                           </ng-messages>
                       </td>
                   </tr>
@@ -297,7 +297,7 @@ TemplateName:Teacher Backpack
                           <div id="concern_3_save" ng-if="concern_3_save=='saving'" data-pss-wait-spinner="small"></div>
                           <button type="submit" ng-click="saveAndEmail($event,'concern_3')" id="concern_3_save" ng-if="concern_3_save=='unsaved' || concern_3_save=='saved' || !concern_3_save"  ng-disabled="forms.concern_3.$invalid || forms.concern_3.$pristine"><i class="fi-checkbox icon"></i></button>
                           <div id="saved" class="saved" ng-if="concern_3_save=='saved' && !forms.concern_3.$dirty">~[text:psx.htmlc.admin_attendance.attendance_tracking.saved]</div>
-                          <div id="emailed" class="emailed" ng-if="concern_3_emailed==1 && !forms.concern_3.$dirty">Email Sent</div>
+                          <div id="emailed" class="emailed" ng-if="concern_3_emailed==1 && !forms.concern_3.$dirty">~[text:psx.htmlc.teachers_studentpages.attendance_tracking.email_sent]</div>
                       </td>
                   </tr>
                   <tr class="alternateRow">
@@ -317,8 +317,8 @@ TemplateName:Teacher Backpack
                   </tr>
                   <tr class="alternateRow">
                       <td colspan="3" class="grid-item">
-                          <label class="notes-label" for="concern_3_notes">~[text:psx.htmlc.admin_attendance.attendance_tracking.notes] (required)</label>
-                          <p class="help-text">~[text:psx.htmlc.admin_students.attendance_tracking.note_any_concerns_dates2] ~[text:psx.htmlc.admin_students.attendance_tracking.note_any_supports_or_intervent] For example, documented support plan, referral to youth worker, school counsellor, student well-being team, outside agencies etc.</p>                                
+                          <label class="notes-label" for="concern_3_notes">~[text:psx.htmlc.admin_attendance.attendance_tracking.notes] (~[text:psx.htmlc.admin_students.attendance_tracking.required])</label>
+                          <p class="help-text">~[text:psx.htmlc.admin_students.attendance_tracking.note_any_concerns_dates2] ~[text:psx.htmlc.admin_students.attendance_tracking.note_any_supports_or_intervent] ~[text:psx.htmlc.admin_students.attendance_tracking.for_example_referral_to_schoo]</p>                                
                           <textarea class="notes" id="concern_3_notes" name="notes" ng-model="record.concern_3.concern_3_notes" ng-disabled="!concerns.concern_3_req || concerns.concern_4_req===true" ng-required="concerns.concern_3_req===true" ng-minlength="20" maxlength="4000"></textarea>
                           
                       </td>
@@ -334,9 +334,9 @@ TemplateName:Teacher Backpack
                   <tr>
                       <td colspan="4">
                           <ng-messages for="forms.concern_4.notes.$error" ng-show="forms.concern_4.$invalid && forms.concern_4.notes.$touched" role="alert">
-                              <ng-message when="required" class="feedback-error">Notes are required when a continued concern is flagged. Click the clipboard icon above for more information on documentation requirements.</ng-message>
-                              <ng-message when="minlength" class="feedback-error">Notes must be at least 20 characters.</ng-message>
-                              <ng-message when="maxlength" class="feedback-error">Notes must be less than 4000 characters.</ng-message>
+                              <ng-message when="required" class="feedback-error">~[text:psx.htmlc.teachers_studentpages.attendance_tracking.notes_error1]</ng-message>
+                              <ng-message when="minlength" class="feedback-error">~[text:psx.htmlc.teachers_studentpages.attendance_tracking.notes_error2]</ng-message>
+                              <ng-message when="maxlength" class="feedback-error">~[text:psx.htmlc.teachers_studentpages.attendance_tracking.notes_error3]</ng-message>
                           </ng-messages>
                       </td>
                   </tr>
@@ -358,7 +358,7 @@ TemplateName:Teacher Backpack
                           <div id="concern_4_save" ng-if="concern_4_save=='saving'" data-pss-wait-spinner="small"></div>
                           <button type="submit" ng-click="saveAndEmail($event,'concern_4')" id="concern_4_save" ng-if="concern_4_save=='unsaved' || concern_4_save=='saved' || !concern_4_save"  ng-disabled="forms.concern_4.$invalid || forms.concern_4.$pristine"><i class="fi-checkbox icon"></i></button>
                           <div id="saved" class="saved" ng-if="concern_4_save=='saved' && !forms.concern_4.$dirty">~[text:psx.htmlc.admin_attendance.attendance_tracking.saved]</div>
-                          <div id="emailed" class="emailed" ng-if="concern_4_emailed==1 && !forms.concern_4.$dirty">Email Sent</div>
+                          <div id="emailed" class="emailed" ng-if="concern_4_emailed==1 && !forms.concern_4.$dirty">~[text:psx.htmlc.teachers_studentpages.attendance_tracking.email_sent]</div>
                       </td>
                   </tr>
                   <tr>
@@ -378,8 +378,8 @@ TemplateName:Teacher Backpack
                   </tr>
                   <tr>
                       <td colspan="3" class="grid-item">
-                          <label class="notes-label" for="concern_4_notes">~[text:psx.htmlc.admin_attendance.attendance_tracking.notes] (required)</label>
-                          <p class="help-text">Note dates of parent/guardian contact and outcome of any discussions or meetings after third notification letter. Note any further supports or interventions that have been advised or put in place at this time. For example, documented support plan, referral to youth worker, school counsellor, student well-being team, outside agencies etc.</p>
+                          <label class="notes-label" for="concern_4_notes">~[text:psx.htmlc.admin_attendance.attendance_tracking.notes] (~[text:psx.htmlc.admin_students.attendance_tracking.required])</label>
+                          <p class="help-text">~[text:psx.htmlc.admin_students.attendance_tracking.note_any_concerns_dates2] ~[text:psx.htmlc.admin_students.attendance_tracking.note_any_supports_or_intervent] ~[text:psx.htmlc.admin_students.attendance_tracking.for_example_referral_to_schoo]</p>
                           <textarea class="notes" id="concern_4_notes" name="notes" ng-model="record.concern_4.concern_4_notes" ng-disabled="!concerns.concern_4_req || record.referral.referral===1" ng-required="concerns.concern_4_req===true" ng-minlength="20" maxlength="4000"></textarea>
                       </td>
                   </tr>
@@ -387,7 +387,7 @@ TemplateName:Teacher Backpack
           </table>
       </fieldset>
         <fieldset>
-          <legend>Referral</legend>
+          <legend>~[text:psx.htmlc.admin_students.attendance_tracking.referral]</legend>
           <form name="forms.ref" id="refForm" ng-submit="save($event,'referral')" novalidate class="validatedForm noSubmitLoading" data-pss-validation-form data-dirty-state-check="true">
               <table class="checklistTable">
                   <colgroup>
@@ -437,8 +437,8 @@ TemplateName:Teacher Backpack
   <div id="printarea" class="printable">
       <div class="no-print warning">~[text:psx.htmlc.admin_students.attendance_tracking.print_this_document_by_selecti] ~[text:psx.htmlc.admin_students.attendance_tracking.close_this_window_one_you_have]</div>
       <h1>~(first_name) ~(last_name)</h1>
-      <h2>Checklist for ~[tlist_sql;select name from terms where schoolid = ~(curschoolid) and yearid = ~(curyearid) and lastday >= to_date('~[date]','mm/dd/yyyy') and firstday <= to_date('~[date]','mm/dd/yyyy') and isYearRec = ~[if.~(grade_level)>9]0[else]1[/if];nonemessage="No results"]~(term;json)[/tlist_sq]<span class="right boldtext">~[text:this_term] {{gradeInYear}}</span></h2>
-      <fieldset ng-if="gradeInYear > 9">
+      <h2>~[text:psx.htmlc.admin_students.attendance_tracking.checklist_for] ~[tlist_sql;select name from terms where schoolid = ~(curschoolid) and yearid = ~(curyearid) and lastday >= to_date('~[date]','mm/dd/yyyy') and firstday <= to_date('~[date]','mm/dd/yyyy') and isYearRec = ~[if.~(grade_level)>9]0[else]1[/if];nonemessage="No results"]~(term;json)[/tlist_sql]<span class="right boldtext">~[text:psx.htmlc.admin_students.attendance_tracking.grade_level_this_term] {{gradeInYear}}</span></h2>
+      <fieldset ng-if="gradeInYear > 9">  
           <legend>~[text:psx.htmlc.admin_students.attendance_tracking.student_contact]</legend>
           <table class="checklistTable">
               <colgroup>
