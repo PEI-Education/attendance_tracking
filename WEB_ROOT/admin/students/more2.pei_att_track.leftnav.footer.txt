@@ -6,7 +6,7 @@
     $j(document).ready(function() {
         
     
-    		$j('ul#std_academics').append(`<li><a href="pei_attendance_tracking.html?frn=~(studentfrn)">Attendance Concerns</a></li>`);
+    		$j('ul#std_academics').append(`<li><a href="pei_attendance_tracking.html?frn=~(studentfrn)">~[text:psx.htmlc.admin_attendance.attendance_tracking.attendance_tracking_menu]</a></li>`);
          
     
     		$j('ul#std_academics li').sort(function(a, b)
