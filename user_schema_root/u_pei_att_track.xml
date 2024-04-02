@@ -4,6 +4,7 @@
     <extendedTable coreTable="Students" dbTableName="U_PEI_ATT_TRACK" childName="U_PEI_ATT_TRACK" comment="">
         <field name="parent_call_1_staff" type="String" length="80"/>
         <field name="referral_staff" type="String" length="80"/>
+        <field name="referral_closed_staff" type="String" length="80"/>
         <field name="parent_call_1" type="Integer" defaultValue="0" comment="0 = not attempted; 1 = no contact; 3 = contact made"/>
         <field name="student_notification_staff" type="String" length="80"/>
         <field name="parent_call_3" type="Integer" defaultValue="0" comment="0 = not attempted; 1 = no contact; 3 = contact made"/>

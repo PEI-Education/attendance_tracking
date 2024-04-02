@@ -2,7 +2,7 @@
 <html>
 <head>
     <meta name="Author" content="Luke Walker, PEI Dept of Education">
-    <meta name="Version" content="2024.3">
+    <meta name="Version" content="2024.4">
     <title>~[text:psx.htmlc.admin_students.attendance_tracking.attendance_concerns_checklist]</title>
     <link rel="stylesheet" type="text/css" href="/admin/pei_reports/css/foundation-icons.css" />
     ~[wc:commonscripts]
@@ -656,7 +656,7 @@
                 <input type="text" id="emailFrom" value="~[x:useremail]" size=75 >
                 <input type="text" value=~[if#psb.~(schoolid)<500]"~[displaypref:attendancetrackingPSB]"[else#psb]~[if#cslf.schoolid<601]"~[displaypref:attendancetrackingCSLF]"[/if#clsf][/if#psb] id="emailTo" size=75 >
                 <input type="text" id="emailSubject" value="~[text:psx.htmlc.admin_students.attendance_tracking.attendance_concern_referral_sub]" size=35>
-                <input id="emailBody" rows=12 cols=100 value="~[text:psx.htmlc.admin_students.attendance_tracking.user_has_requested_email] ~[text:psx.htmlc.admin_students.attendance_tracking.you_can_review_their_file_by_l].  &NewLine;&NewLine; ~[text:psx.htmlc.admin_students.attendance_tracking.this_email_was_automatically_g] ~[text:psx.htmlc.admin_students.attendance_tracking.contact_powerschoolhelp@cloud.]"/>
+                <input id="emailBody" rows=12 cols=100 value="~[text:psx.htmlc.admin_students.attendance_tracking.user_has_requested_email] ~[text:psx.htmlc.admin_students.attendance_tracking.you_can_review_their_file_by_l] = ~(student_number)'.  &NewLine;&NewLine; ~[text:psx.htmlc.admin_students.attendance_tracking.this_email_was_automatically_g] ~[text:psx.htmlc.admin_students.attendance_tracking.contact_powerschoolhelp]"/>
                 <input type="text" id="emailDate" name="date" value="~[date]" >
                 <input type="text" id="emailTime" name="time" value="~(f.currenttime)" >
             </div>
