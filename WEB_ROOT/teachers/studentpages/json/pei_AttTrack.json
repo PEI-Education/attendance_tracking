@@ -35,10 +35,12 @@
             u.concern_4_sent_staff,
             to_char(u.concern_4_sent_date, 'mm/dd/yyyy') concern_4_sent_date,
             u.concern_4_notes,
-            u.referral,
-            u.referral_staff,
-            to_char(u.referral_date,'mm/dd/yyyy') referral_date,
-            u.referral_notes,            
+             u.referral,
+          u.referral_staff,
+          to_char(u.referral_date,'mm/dd/yyyy') referral_date,
+          u.referral_closed_staff,
+          to_char(u.referral_closed_date, 'mm/dd/yyyy') referral_closed_date,
+          u.referral_notes,                  
             ROW_NUMBER() OVER (PARTITION BY u.studentsdcid ORDER BY u.whencreated asc) rn
     	FROM u_pei_att_track u
     	JOIN students s 
@@ -96,6 +98,8 @@
             "referral": ~(ref;l),
             "referral_staff": "~(refStaff;json)",
             "referral_date": "~(refDate;json)",
+            "referral_closed_staff": "~(refClosedStaff;json)",
+            "referral_closed_date": "~(refClosedDate;json)",
             "referral_notes": "~(refNotes;json)"
         }
 	}

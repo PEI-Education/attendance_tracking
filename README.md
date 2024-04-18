@@ -18,6 +18,7 @@ Shoelace, you can do without with some minor mods to the HTML and CSS of the sec
 psQuery, however, is pretty integral to the functioning of the plugin. Without it, you would need to either replicate its functionakity with a hidden form or find some way to include the right ID for a DirectTable.Select on U_PEI_ATT_TRACK. psQuery really shines with the bulk updates - a single call lets you iterate through an array of students and their related updates, so fast that I actually added a slight delay so that you actually see the loading timer.
 
 ## Version History
+- 2024.4.1 - Added "Referral closed" checkbox to checklist interface. Can only be changed at district office.
 - 2024.3.2 - Added message keys and French translations to student checklist interfaces (admin and teacher portals)
 > Note: After 0.10, version numbering scheme was changed to match the year and month of the release. This is to simplify, clarify, better align with the versioning scheme of PowerSchool itself.
 - 0.10 - Added email to director on referral, and eliminated largely duplicative controllers

@@ -12,6 +12,7 @@ define(['angular', 'components/shared/index'], function(angular) {
           $scope.forms = {};
           $scope.getRecord('json/pei_attTrack.json');
           $scope.concerns = {};
+          $scope.referral = {};
           $scope.queue = {};
       };
       
@@ -22,8 +23,8 @@ define(['angular', 'components/shared/index'], function(angular) {
                   // set the value of flag concern and letter sent indicators based on value of concern_2, concern_3 and concern_4
                   for (var i=2; i < 5; i++) {
                       if ($scope.record[`concern_${i}`][`concern_${i}`] == 1) {
-                          $scope.concerns[`concern_${i}_req`] = true;
-                          $scope.concerns[`concern_${i}_sent`] = false;
+                        $scope.concerns[`concern_${i}_req`] = true;
+                        $scope.concerns[`concern_${i}_sent`] = false;
                       } else if ($scope.record[`concern_${i}`][`concern_${i}`] == 2) {
                           $scope.concerns[`concern_${i}_req`] = true;
                           $scope.concerns[`concern_${i}_sent`] = true;
@@ -32,7 +33,16 @@ define(['angular', 'components/shared/index'], function(angular) {
                           $scope.concerns[`concern_${i}_sent`] = false;                          
                       }
                   }
-                  $scope.referral = $scope.record.referral.referral===1 ? true : false;
+                  if ($scope.record.referral.referral === 0) {
+                    $scope.referral.referral = false;
+                    $scope.referral.referral_closed = false;
+                  } else if ($scope.record.referral.referral === 1) {
+                    $scope.referral.referral = true;
+                    $scope.referral.referral_closed = false;
+                  } else if ($scope.record.referral.referral === 2) {
+                    $scope.referral.referral = true;
+                    $scope.referral.referral_closed = true;
+                  }
               } else {
                   $scope.record = {
                       studentsdcid: document.getElementById('studentsdcid').value,
@@ -179,9 +189,38 @@ define(['angular', 'components/shared/index'], function(angular) {
               $scope.record[phase][`${step}_staff`] = null;
               $scope.record[phase][`${step}_date`] = null;
           }
-          $scope.forms.concern_2.$setDirty();
+          let form = $scope.forms[phase];
+          form.$setDirty();
       }
-  
+      
+      // Logic for handling a referral or closure of a referral
+      $scope.handleReferral = function(e, step) {
+        if ($scope.referral[step]) {
+          if (step === 'referral') {
+            $scope.record.referral.referral = 1;
+          } else {
+              $scope.record.referral.referral = 2;
+          }
+          if (!$scope.record.referral[`${step}_staff`]) {
+            $scope.record.referral[`${step}_staff`] = document.getElementById('staffName').value;
+          }
+          if (!$scope.record.referral[`${step}_date`]) {
+              $scope.record.referral[`${step}_date`] = document.getElementById('dateToday').value;
+          }
+        } else {
+          if (step === 'referral') {
+            $scope.record.referral.referral = 0;
+          } else {
+              $scope.record.referral.referral = 1;
+          }
+          $scope.record.referral[`${step}_staff`] = null;
+          $scope.record.referral[`${step}_date`] = null;
+        }        
+        console.log('setting form to dirty')
+        let form = $scope.forms.ref
+        form.$setDirty();
+      }
+      
       // Logic for disabling the referral section -> not used on teacher portal.
       $scope.disableReferral = function() {
           let concerns = ['concern_2', 'concern_3', 'concern_4']
@@ -260,7 +299,7 @@ define(['angular', 'components/shared/index'], function(angular) {
                       alert(`${phase} not saved (returned: ${retID})`);
                       $scope[`${phase}_save`] = UNSAVED;
                       closeLoading();                   
-                   }
+                  }
               });
           }
       };

@@ -51,7 +51,7 @@
                     <li>~[text:psx.htmlc.admin_students.attendance_tracking.for_a_printable_version] ~[text:psx.htmlc.admin_students.attendance_tracking.a_popup_wil_open_with_a_versio]</li>
                 </ul>
             </div>
-            <fieldset ng-if="gradeInYear > 9">
+            <fieldset ng-if="gradeInYear > 9" id="fieldset-student-notification">
                 <legend>~[text:psx.htmlc.admin_students.attendance_tracking.student_contact]</legend>
                 <form name="forms.stu" id="stuForm"  ng-submit="save($event,'student')" novalidate class="validatedForm noSubmitLoading" data-pss-validation-form data-dirty-state-check="true">
                     <table class="checklistTable">
@@ -85,7 +85,7 @@
                     </table>
                 </form>
             </fieldset>
-             <fieldset>
+             <fieldset id="fieldset-parent-calls">
                 <legend><span class="qcicon">~[text:psx.htmlc.admin_students.attendance_tracking.initial_concern_and_guardian_c]&nbsp;</span> 
                     <a class='dialogM' title='Quick Contacts' href="/admin/alerts/pscb_contacts_alert.html?frn=~(studentfrn)" style="visibility: visible;">
                       <img src="/images/iconContacts1.png" height="24" width="24" border="2">
@@ -171,7 +171,7 @@
                     </table>
                 </form>
             </fieldset>
-            <fieldset>
+            <fieldset id="fieldset-written-notifications">
                 <legend>~[text:psx.htmlc.admin_students.attendance_tracking.continued_concern_written_no]</legend>
                 <table class="checklistTable">
                     <colgroup>
@@ -320,7 +320,7 @@
                         <tr>
                             <td class="grid-item stretchCell">
                                 <label class="form-control" for="concern_4_req">
-                                <input type="checkbox" ng-model="concerns.concern_4_req" ng-click="handleConcern($event, 'concern_4','concern_4_req')" name="concern_4_req" id="concern_4_req" ng-disabled="disableConcern('concern_3') || concerns.concern_4_sent===true" value="1" /> <span>~[text:psx.htmlc.admin_students.attendance_tracking.notification_requested]</span> 
+                                  <input type="checkbox" ng-model="concerns.concern_4_req" ng-click="handleConcern($event, 'concern_4','concern_4_req')" name="concern_4_req" id="concern_4_req" ng-disabled="disableConcern('concern_3') || concerns.concern_4_sent===true" value="1" /> <span>~[text:psx.htmlc.admin_students.attendance_tracking.notification_requested]</span> 
                                 </label>
                             </td>
                             <td class="grid-item">
@@ -332,7 +332,7 @@
                                 <input id="concern_4_req_date" name="req_date" ng-model="record.concern_4.concern_4_req_date" type="text" pss-date-widget data-minDate="{{ addFiveDays(record.concern_3.concern_3_sent_date) | date: 'MM/dd/yyyy' }}" ng-disabled="!concerns.concern_4_req || concerns.concern_4_sent===true" ng-required="concerns.concern_4_req" />
                             </td>
                             <td class="save-notes" rowspan="3">
-                                <div id="concern_4_save" ng-if="concern_4_save=='saving'" data-pss-wair="small"></div>
+                                <div id="concern_4_save" ng-if="concern_4_save=='saving'" data-pss-wait-spinner="small"></div>
                                 <button type="submit" ng-click="save($event,'concern_4')" id="concern_4_save" ng-if="concern_4_save=='unsaved' || concern_4_save=='saved' || !concern_4_save"  ng-disabled="forms.concern_4.$invalid || forms.concern_4.$pristine"><i class="fi-checkbox icon"></i></button>
                                 <div id="saved" class="saved" ng-if="concern_4_save=='saved' && !forms.concern_4.$dirty">~[text:psx.htmlc.admin_students.attendance_tracking.saved]</div>
                             </td>
@@ -340,91 +340,99 @@
                         <tr>
                             <td class="grid-item stretchCell">
                                 <label class="form-control" for="concern_4_sent">
-                                <input type="checkbox" ng-model="concerns.concern_4_sent" ng-click="handleConcern($event, 'concern_4','concern_4_sent')" name="concern_4_sent" id="concern_4_sent" ng-disabled="!concerns.concern_4_req || record.referral.referral===1" value="1" /> ~[text:psx.htmlc.admin_students.attendance_tracking.notification_sent]
+                                <input type="checkbox" ng-model="concerns.concern_4_sent" ng-click="handleConcern($event, 'concern_4','concern_4_sent')" name="concern_4_sent" id="concern_4_sent" ng-disabled="!concerns.concern_4_req || record.referral.referral>0" value="1" /> ~[text:psx.htmlc.admin_students.attendance_tracking.notification_sent]
                                 </label>
                             </td>
                             <td class="grid-item">
                                 <label for="concern_4_sent_staff">~[text:psx.htmlc.admin_students.attendance_tracking.contacted_by]</label> 
-                                <input size="40" id="concern_4_sent_staff" name="sent_staff" length="40" ng-model="record.concern_4.concern_4_sent_staff" ng-disabled="!concerns.concern_4_sent || record.referral.referral===1" ng-required="concerns.concern_4_sent" />
+                                <input size="40" id="concern_4_sent_staff" name="sent_staff" length="40" ng-model="record.concern_4.concern_4_sent_staff" ng-disabled="!concerns.concern_4_sent || record.referral.referral>0" ng-required="concerns.concern_4_sent" />
                             </td>
                             <td class="grid-item">
                                 <label for="concern_4_sent_date">~[text:psx.htmlc.admin_students.attendance_tracking.date]</label> 
-                                <input id="concern_4_sent_date" name="sent_date" ng-model="record.concern_4.concern_4_sent_date" type="text" pss-date-widget data-minDate="{{ record.concern_4s.concern_4_req_date }}" ng-disabled="!concerns.concern_4_sent || record.referral.referral===1" ng-required="concerns.concern_4_sent===true" />
+                                <input id="concern_4_sent_date" name="sent_date" ng-model="record.concern_4.concern_4_sent_date" type="text" pss-date-widget data-minDate="{{ record.concern_4.concern_4_req_date }}" ng-disabled="!concerns.concern_4_sent || record.referral.referral>0" ng-required="concerns.concern_4_sent===true" />
                             </td>
                         </tr>
                         <tr>
                             <td colspan="3" class="grid-item">
                                 <label class="notes-label" for="concern_4_notes">~[text:psx.htmlc.admin_students.attendance_tracking.notes] (~[text:psx.htmlc.admin_students.attendance_tracking.required])</label>
                                 <p class="help-text">~[text:psx.htmlc.admin_students.attendance_tracking.note_any_concerns_dates3] ~[text:psx.htmlc.admin_students.attendance_tracking.note_any_supports_or_intervent] ~[text:psx.htmlc.admin_students.attendance_tracking.for_example_referral_to_schoo]</p>
-                                <textarea class="notes" id="concern_4_notes" name="notes" ng-model="record.concern_4.concern_4_notes" ng-disabled="!concerns.concern_4_req || record.referral.referral===1" ng-required="concerns.concern_4_req===true" ng-minlength="20" maxlength="4000"></textarea>
+                                <textarea class="notes" id="concern_4_notes" name="notes" ng-model="record.concern_4.concern_4_notes" ng-disabled="!concerns.concern_4_req || record.referral.referral>0" ng-required="concerns.concern_4_req===true" ng-minlength="20" maxlength="4000"></textarea>
                             </td>
                         </tr>
                     </tbody>
                 </table>
             </fieldset>
-             <fieldset>
+             <fieldset id="fieldset-referral">
                 <legend>~[text:psx.htmlc.admin_students.attendance_tracking.referral]</legend>
-                <form name="forms.ref" id="refForm" ng-submit="save($event,'referral')" novalidate class="validatedForm noSubmitLoading" data-pss-validation-form data-dirty-state-check="true">
-                    <table class="checklistTable">
-                        <colgroup>
-                            <col style="width:35%;" />
-                            <col style="width:38%;" />
-                            <col style="width:18%;" />
-                            <col style="width:9%;" />
-                        </colgroup>
-                        <tbody>
-                            <tr>
-                                <td class="grid-item stretchCell">
-                                    <label class="form-control" for="referral">
-                                    <input type="checkbox" ng-model="record.referral.referral" ng-click="toggle($event, 'referral', 'referral')" name="referral" id="referral" ng-true-value="1" ng-false-value="0" ng-disabled="disableReferral()"> ~[text:psx.htmlc.admin_students.attendance_tracking.notification_to_the_director]
-                                    </label>
-                                    <!--
-                                   <button id="referral_btn" class="stretch" ng-show="record.referral.referral==0" ng-click="handleReferral()" ng-disabled="disableReferral()">Notification to Director</button>
-                                   <div class="successText stretch" ng-show="record.referral.referral>0"><i class="fi-check"></i> Concern flagged</div>
-                                    <input type="hidden" id="referral" name="referral" ng-model="record.referral.referral" data-step="referral" />-->
-                                </td>
-                                <input type="hidden" ng-model="record.referral.referral" name="referral" id="referral">
-                                <td class="grid-item">
-                                    <label for="referral_staff">~[text:psx.htmlc.admin_students.attendance_tracking.contacted_by]</label> 
-                                    <input size="40" id="referral_staff" name="staff" length="40" ng-model="record.referral.referral_staff" ng-disabled="record.referral.referral==0" ng-required="record.referral.referral==1" />
-                                </td>
-                                <td class="grid-item">
-                                    <label for="referral_date">~[text:psx.htmlc.admin_students.attendance_tracking.date]</label> 
-                                    <input id="referral_date" name="date" data-minDate="{{ record.concern_4.concern_4_sent_date }}" ng-model="record.referral.referral_date" type="text" pss-date-widget  ng-disabled="record.referral.referral==0" ng-required="record.referral.referral==1" />
-                                </td>
-                                <td row-span="2" class="save-notes">
-                                    <div id="referral_save" ng-if="referral_save=='saving'" data-pss-wait-spinner="small"></div>
-                                    <button type="submit" ng-click="saveAndEmail($event,'referral')" id="referral_save" ng-if="referral_save=='unsaved' || referral_save=='saved' || !referral_save" ng-disabled="forms.ref.$invalid || forms.ref.$pristine"><i class="fi-checkbox icon"></i></button>
-                                    <div id="saved" class="saved" ng-if="referral_save=='saved' && !forms.ref.$dirty">~[text:psx.htmlc.admin_students.attendance_tracking.saved]</div>
-                                    <div id="emailed" class="emailed" ng-if="referral_emailed==1 && !forms.ref.$dirty">Email Sent</div>
-                                </td>
-                            </tr>
-                            <!--  HIDE UNTIL FUNCTIONALITY IS FINALIZED
-                            <tr>
-                              <td class="grid-item stretchCell">
-                                  <label class="form-control" for="referral_sent">
-                                  <input type="checkbox" ng-model="referral.referral_sent" ng-click="handleConcern($event, 'concern_4','concern_4_sent')" name="concern_4_sent" id="concern_4_sent" ng-disabled="!concerns.concern_4_req || record.referral.referral===1" value="1" /> ~[text:psx.htmlc.admin_students.attendance_tracking.notification_sent]
-                                  </label>
-                              </td>
-                              <td class="grid-item">
-                                  <label for="concern_4_sent_staff">~[text:psx.htmlc.admin_students.attendance_tracking.contacted_by]</label> 
-                                  <input size="40" id="concern_4_sent_staff" name="sent_staff" length="40" ng-model="record.concern_4.concern_4_sent_staff" ng-disabled="!concerns.concern_4_sent || record.referral.referral===1" ng-required="concerns.concern_4_sent" />
-                              </td>
-                              <td class="grid-item">
-                                  <label for="concern_4_sent_date">~[text:psx.htmlc.admin_students.attendance_tracking.date]</label> 
-                                  <input id="concern_4_sent_date" name="sent_date" ng-model="record.concern_4.concern_4_sent_date" type="text" pss-date-widget data-minDate="{{ record.concern_4s.concern_4_req_date }}" ng-disabled="!concerns.concern_4_sent || record.referral.referral===1" ng-required="concerns.concern_4_sent===true" />
-                              </td>
-                            </tr>
-                          -->
-                            <tr>
-                              <td colspan="3" class="grid-item">
-                                <label class="notes-label" for="referral_notes">~[text:psx.htmlc.admin_students.attendance_tracking.notes]</label>
-                                ~[if.is.a.school]{{record.referral.referral_notes}}[else]<textarea class="notes" id="referral_notes" name="referral_notes" ng-model="record.referral.referral_notes"  maxlength="4000"></textarea>[/if]
-                              </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </form>
+                <table class="checklistTable">
+                    <colgroup>
+                        <col style="width:35%;" />
+                        <col style="width:38%;" />
+                        <col style="width:18%;" />
+                        <col style="width:9%;" />
+                    </colgroup>
+                    <tbody name="forms.ref" id="refForm" novalidate class="validatedForm noSubmitLoading" data-pss-validation-form data-dirty-state-check="true">
+                        <tr>
+                            <td class="grid-item stretchCell">
+                                <label class="form-control" for="referral">
+                                <input type="checkbox" ng-model="referral.referral" ng-click="handleReferral($event, 'referral')" name="referral" id="referral" value="1" ng-disabled="!concerns.concern_4_sent || referral.referral_closed"> ~[text:psx.htmlc.admin_students.attendance_tracking.notification_to_the_director]
+                               <!-- <input type="hidden" ng-model="record.referral.referral" name="referral" id="referral"> -->
+                                </label>
+                            </td>
+                            <td class="grid-item">
+                                <label for="referral_staff">~[text:psx.htmlc.admin_students.attendance_tracking.contacted_by]</label> 
+                                <input size="40" id="referral_staff" name="staff" length="40" ng-model="record.referral.referral_staff" ng-disabled="!referral.referral || referral.referral_closed" ng-required="referral.referral==1" />
+                            </td>
+                            <td class="grid-item">
+                                <label for="referral_date">~[text:psx.htmlc.admin_students.attendance_tracking.date]</label> 
+                                <input id="referral_date" name="date" data-minDate="{{ record.concern_4.concern_4_sent_date }}" ng-model="record.referral.referral_date" type="text" pss-date-widget  ng-disabled="!referral.referral || referral.referral_closed" ng-required="referral.referral>0" />
+                            </td>
+                            <td row-span="3" class="save-notes">
+                                <div id="referral_save" ng-if="referral_save=='saving'" data-pss-wait-spinner="small"></div>
+                                <button type="submit" ng-click="saveAndEmail($event,'referral')" id="referral_save" ng-if="referral_save=='unsaved' || referral_save=='saved' || !referral_save" ng-disabled="forms.ref.$invalid || forms.ref.$pristine"><i class="fi-checkbox icon"></i></button>
+                                <div id="saved" class="saved" ng-if="referral_save=='saved' && !forms.ref.$dirty">~[text:psx.htmlc.admin_students.attendance_tracking.saved]</div>
+                                <div id="emailed" class="emailed" ng-if="referral_emailed==1 && !forms.ref.$dirty">~[text:psx.htmlc.teachers_studentpages.attendance_tracking.email_sent]t</div>
+                            </td>
+                        </tr>
+                        <tr>
+                        ~[if.is.a.school] 
+                          <td class="grid-item stretchCell">
+                              <label class="form-control" for="referral_closed">
+                              <input type="checkbox" ng-model="referral.referral_closed" ng-click="handleReferral($event, 'referral_closed')" name="referral_closed" id="referral_closed" ng-disabled="true" value="1" /> ~[text:psx.htmlc.admin_students.attendance_tracking.referral_closed]
+                              </label>
+                          </td>
+                          <td class="grid-item">
+                              <label for="referral_closed_staff">~[text:psx.htmlc.admin_students.attendance_tracking.contacted_by]</label> 
+                              <input size="40" id="referral_closed_staff" name="referral_closed_staff" length="40" ng-model="record.referral.referral_closed_staff" ng-disabled="true" ng-required="record.referral.referral>1" />
+                          </td>
+                          <td class="grid-item">
+                              <label for="referral_closed_date">~[text:psx.htmlc.admin_students.attendance_tracking.date]</label> 
+                              <input id="referral_closed_date" name="referral_closed_date" ng-model="record.referral.referral_closed_date" type="text" pss-date-widget data-minDate="{{ record.referral.referral_date }}" ng-disabled="true" ng-required="referral.referral_closed===true" />
+                          </td>
+                        [else]
+                          <td class="grid-item stretchCell">
+                              <label class="form-control" for="referral_closed">
+                              <input type="checkbox" ng-model="referral.referral_closed" ng-click="handleReferral($event, 'referral_closed')" name="referral_closed" id="referral_closed" ng-disabled="!referral.referral" value="1" /> ~[text:psx.htmlc.admin_students.attendance_tracking.referral_closed]
+                              </label>
+                          </td>
+                          <td class="grid-item">
+                              <label for="referral_closed_staff">~[text:psx.htmlc.admin_students.attendance_tracking.contacted_by]</label> 
+                              <input size="40" id="referral_closed_staff" name="referral_closed_staff" length="40" ng-model="record.referral.referral_closed_staff" ng-disabled="!referral.referral_closed" ng-required="record.referral.referral>1" />
+                          </td>
+                          <td class="grid-item">
+                              <label for="referral_closed_date">~[text:psx.htmlc.admin_students.attendance_tracking.date]</label> 
+                              <input id="referral_closed_date" name="referral_closed_date" ng-model="record.referral.referral_closed_date" type="text" pss-date-widget data-minDate="{{ record.referral.referral_date }}" ng-disabled="!referral.referral_closed" ng-required="referral.referral_closed===true" />
+                          </td>
+                          [/if]
+                        </tr>
+                        <tr>
+                          <td colspan="3" class="grid-item">
+                            <label class="notes-label" for="referral_notes">~[text:psx.htmlc.admin_students.attendance_tracking.notes]</label>
+                            ~[if.is.a.school]<p>{{record.referral.referral_notes}}</p>[else]<textarea class="notes" id="referral_notes" name="referral_notes" ng-model="record.referral.referral_notes" maxlength="4000"></textarea>[/if]
+                          </td>
+                        </tr>
+                    </tbody>
+                </table>
             </fieldset>
         </div>
         <div id="alertMsgs" style="margin-top: 10px;">
@@ -438,7 +446,7 @@
         <div class="no-print warning">~[text:psx.htmlc.admin_students.attendance_tracking.print_this_document_by_selecti] ~[text:psx.htmlc.admin_students.attendance_tracking.close_this_window_one_you_have]</div>
         <h1>~(first_name) ~(last_name)</h1>
         <h2>~[text:psx.htmlc.admin_students.attendance_tracking.grade_level_this_term] ~(termname) <span class="right boldtext">~[text:psx.htmlc.admin_students.attendance_tracking.grade_level_this_term] {{gradeInYear}}</span></h2>
-        <fieldset ng-if="gradeInYear > 9">
+        <fieldset ng-if="gradeInYear > 9" id="fieldset-student-notification-print">
             <legend>~[text:psx.htmlc.admin_students.attendance_tracking.student_contact]</legend>
             <table class="checklistTable">
                 <colgroup>
@@ -461,7 +469,7 @@
                 </tbody>
             </table>
         </fieldset>
-         <fieldset>
+         <fieldset id="fieldset-parent-calls-print">
             <legend>~[text:psx.htmlc.admin_students.attendance_tracking.initial_concern_and_guardian_c]</legend>
             <table class="checklistTable">
                 <colgroup>
@@ -511,7 +519,7 @@
                 </tbody>
             </table>
         </fieldset>
-        <fieldset>
+        <fieldset id="fieldset-written-notifications-print">
             <legend>~[text:psx.htmlc.admin_students.attendance_tracking.continued_concern_&_written_no]</legend>
             <table class="checklistTable">
                 <colgroup>
@@ -623,7 +631,7 @@
                 </tbody>
             </table>
         </fieldset>
-         <fieldset>
+         <fieldset id="fieldset-referral-print">
             <legend>~[text:psx.htmlc.admin_students.attendance_tracking.referral]</legend>
             <table class="checklistTable">
                 <colgroup>
@@ -634,7 +642,7 @@
                 <tbody>
                     <tr>
                         <td class="grid-item stretchCell">
-                             <span ng-if="record.referral.referral>0"><i class="fi-check"></i></span><span ng-if="record.referral.referral==0"><i class="fi-x"></i></span> &nbsp; ~[text:psx.htmlc.admin_students.attendance_tracking.notification_to_the_director]
+                            <span ng-if="record.referral.referral>0"><i class="fi-check"></i></span><span ng-if="record.referral.referral==0"><i class="fi-x"></i></span> &nbsp; ~[text:psx.htmlc.admin_students.attendance_tracking.notification_to_the_director]
                         </td>
                         <td class="grid-item">
                             <strong>~[text:psx.htmlc.admin_students.attendance_tracking.contacted_by]:</strong> {{ record.referral.referral_staff }}
@@ -643,6 +651,17 @@
                             <strong>~[text:psx.htmlc.admin_students.attendance_tracking.date]:</strong> {{ record.referral.referral_date }}
                         </td>
                     </tr>
+                    <tr>
+                      <td class="grid-item stretchCell">
+                          <span ng-if="record.referral.referral===2"><i class="fi-check"></i></span><span ng-if="record.referral.referral<2"><i class="fi-x"></i></span> &nbsp; ~[text:psx.htmlc.admin_students.attendance_tracking.referral_closed]
+                      </td>
+                      <td class="grid-item">
+                          <strong>~[text:psx.htmlc.admin_students.attendance_tracking.contacted_by]:</strong> {{ record.referral.referral_closed_staff }}
+                      </td>
+                      <td class="grid-item">
+                          <strong>~[text:psx.htmlc.admin_students.attendance_tracking.date]:</strong> {{ record.referral.referral_closed_date }}
+                      </td>
+                  </tr>
                     <tr>
                         <td colspan="3" class="grid-item">
                             <p><strong>~[text:psx.htmlc.admin_students.attendance_tracking.notes]:</strong> {{record.referral.referral_notes}}</p>
@@ -653,10 +672,10 @@
             <!-- For email notifications -->
             <div id="emailHelper" style="display: none;">
                 <input name="type" type="hidden" id="emailType" value="100">
-                <input type="text" id="emailFrom" value="~[x:useremail]" size=75 >
-                <input type="text" value=~[if#psb.~(schoolid)<500]"~[displaypref:attendancetrackingPSB]"[else#psb]~[if#cslf.schoolid<601]"~[displaypref:attendancetrackingCSLF]"[/if#clsf][/if#psb] id="emailTo" size=75 >
-                <input type="text" id="emailSubject" value="~[text:psx.htmlc.admin_students.attendance_tracking.attendance_concern_referral_sub]" size=35>
-                <input id="emailBody" rows=12 cols=100 value="~[text:psx.htmlc.admin_students.attendance_tracking.user_has_requested_email] ~[text:psx.htmlc.admin_students.attendance_tracking.you_can_review_their_file_by_l] = ~(student_number)'.  &NewLine;&NewLine; ~[text:psx.htmlc.admin_students.attendance_tracking.this_email_was_automatically_g] ~[text:psx.htmlc.admin_students.attendance_tracking.contact_powerschoolhelp]"/>
+                <input type="text" id="emailFrom" value="~[x:useremail]" size="75">
+                <input type="text" value=~[if#psb.~(schoolid)<500]"~[displaypref:attendancetrackingPSB]"[else#psb]~[if#cslf.schoolid<601]"~[displaypref:attendancetrackingCSLF]"[/if#clsf][/if#psb] id="emailTo" size="75" >
+                <input type="text" id="emailSubject" value="~[text:psx.htmlc.admin_students.attendance_tracking.attendance_concern_referral_sub]" size="35">
+                <input id="emailBody" rows=12 cols=100 value="~[text:psx.htmlc.admin_students.attendance_tracking.user_has_requested_email] ~[text:psx.htmlc.admin_students.attendance_tracking.you_can_review_their_file_by_l] &#13;&#13; ~[text:psx.htmlc.admin_students.attendance_tracking.this_email_was_automatically_g] ~[text:psx.htmlc.admin_students.attendance_tracking.contact_powerschoolhelp]"/>
                 <input type="text" id="emailDate" name="date" value="~[date]" >
                 <input type="text" id="emailTime" name="time" value="~(f.currenttime)" >
             </div>

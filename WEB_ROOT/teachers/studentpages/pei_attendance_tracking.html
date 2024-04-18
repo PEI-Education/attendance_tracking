@@ -5,7 +5,7 @@ TemplateName:Teacher Backpack
 <html>
 <head>
     <meta name="Author" content="Luke Walker, PEI Dept of Education">
-    <meta name="Version" content="2024.3">
+    <meta name="Version" content="2024.4">
 	<title>~[text:psx.htmlc.admin_students.attendance_tracking.attendance_concerns_checklist]</title>
 	<link rel="stylesheet" type="text/css" href="/admin/pei_reports/css/foundation-icons.css" />
 <!-- required scripts -->
@@ -400,12 +400,8 @@ TemplateName:Teacher Backpack
                       <tr>
                           <td class="grid-item stretchCell">
                               <label class="form-control" for="referral">
-                              <input type="checkbox" ng-model="record.referral.referral" ng-click="toggle($event, 'referral', 'referral')" name="referral" id="referral" ng-true-value="1" ng-false-value="0" ng-disabled="true"> Notification to the Director
+                              <input type="checkbox" ng-model="record.referral.referral" ng-click="toggle($event, 'referral', 'referral')" name="referral" id="referral" ng-true-value="1" ng-false-value="0" ng-disabled="true"> ~[text:psx.htmlc.admin_students.attendance_tracking.notification_to_the_director]
                               </label>
-                              <!--
-                              <button id="referral_btn" class="stretch" ng-show="record.referral.referral==0" ng-click="handleReferral()" ng-disabled="disableReferral()">Notification to Director</button>
-                              <div class="successText stretch" ng-show="record.referral.referral>0"><i class="fi-check"></i> Concern flagged</div>
-                              <input type="hidden" id="referral" name="referral" ng-model="record.referral.referral" data-step="referral" />-->
                               <input type="hidden" ng-model="record.referral.referral" name="referral" id="referral">
                           </td>
                           <td class="grid-item">
@@ -416,11 +412,26 @@ TemplateName:Teacher Backpack
                               <label for="referral_date">~[text:psx.htmlc.admin_attendance.attendance_tracking.date]</label> 
                               <input id="referral_date" name="date" data-minDate="{{ record.concern_4.concern_4_sent_date }}" ng-model="record.referral.referral_date" type="text" pss-date-widget  ng-disabled="true" />
                           </td>
-                          <td row-span="2" class="save-notes">
+                          <td row-span="3" class="save-notes">
                               <div id="referral_save" ng-if="referral_save=='saving'" data-pss-wait-spinner="small"></div>
                               <button type="submit" id="referral_save" ng-if="referral_save=='unsaved' || referral_save=='saved' || !referral_save" ng-disabled="true"><i class="fi-checkbox icon"></i></button>
                               <div id="saved" class="saved" ng-if="referral_save=='saved' && !forms.ref.$dirty">~[text:psx.htmlc.admin_attendance.attendance_tracking.saved]</div>
                           </td>
+                      </tr>
+                      <tr>
+                        <td class="grid-item stretchCell">
+                            <label class="form-control" for="referral_closed">
+                            <input type="checkbox" ng-model="record.referral.referral" ng-click="toggle($event, 'referral', 'referral')" name="referral_closed" id="referral_closed" ng-true-value="1" ng-false-value="0" ng-disabled="true"> ~[text:psx.htmlc.admin_students.attendance_tracking.referral_closed]
+                            </label>
+                        </td>
+                        <td class="grid-item">
+                            <label for="referral_closed_staff">~[text:psx.htmlc.admin_students.attendance_tracking.contacted_by]</label> 
+                            <input size="40" id="referral_closed_staff" name="referral_closed_staff" length="40" ng-model="record.referral.referral_closed_staff" ng-disabled="true" ng-required="record.referral.referral==2" />
+                        </td>
+                        <td class="grid-item">
+                            <label for="referral_closed_date">~[text:psx.htmlc.admin_attendance.attendance_tracking.date]</label> 
+                            <input id="referral_closed_date" name="referral_closed_date" data-minDate="{{ record.concern_4.concern_4_sent_date }}" ng-model="record.referral.referral_closed_date" type="text" pss-date-widget  ng-disabled="true" />
+                        </td>
                       </tr>
                         <tr>
                           <td colspan="3" class="grid-item">
@@ -644,6 +655,17 @@ TemplateName:Teacher Backpack
                       <td class="grid-item">
                           <strong>~[text:psx.htmlc.admin_attendance.attendance_tracking.date]:</strong> {{ record.referral.referral_date }}
                       </td>
+                  </tr>
+                  <tr>
+                    <td class="grid-item stretchCell">
+                        <span ng-if="record.referral.referral==2"><i class="fi-check"></i></span><span ng-if="record.referral.referral<2"><i class="fi-x"></i></span> &nbsp; ~[text:psx.htmlc.admin_students.attendance_tracking.notification_to_the_director]
+                    </td>
+                    <td class="grid-item">
+                        <strong>~[text:psx.htmlc.admin_students.attendance_tracking.contacted_by]:</strong> {{ record.referral.referral_staff }}
+                    </td>
+                    <td class="grid-item">
+                        <strong>~[text:psx.htmlc.admin_attendance.attendance_tracking.date]:</strong> {{ record.referral.referral_date }}
+                    </td>
                   </tr>
                   <tr>
                       <td colspan="3" class="grid-item">
