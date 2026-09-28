@@ -1,5 +1,5 @@
 <div id="peiatttrack" class="box-round">
-   <h2>Email Notice for Attendance Concern Tracking</h2>
+   <h2>~[text:psx.htmlc.admin_attendance.attendance_tracking.email_notice_for_attendance_co]</h2>
    <table border="0" cellspacing="0" cellpadding="4">
       <tr class="~[evenoddrow]">
          <td class="bold" width="30%">~[text:psx.htmlc.admin_attendance.attendance_tracking.notifications_for_the_director]</td>

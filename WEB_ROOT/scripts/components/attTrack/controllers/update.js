@@ -5,7 +5,8 @@ define(function(require) {
          $scope.gridData = [];
          $scope.spinner = state.spinner;
          $scope.task = state.task;
-         $scope.steps = [
+         // Labels are set from message keys via window.attTrackStepChoices (see attUpdateChecklist.html); fallback covers non-PS test contexts.
+         $scope.steps = window.attTrackStepChoices || [
             { id: 2, label: "Student Notification" },
             { id: 3, label: "Parent Call 1" },
             { id: 4, label: "Parent Call 2" },
@@ -16,7 +17,7 @@ define(function(require) {
             { id: 11, label: "Letter 2 sent" },
             { id: 13, label: "Letter 3 requested" },
             { id: 14, label: "Letter 3 sent" },
-            { id: 15, label: "Referred to the Director" }
+            { id: 15, label: "Referral to the Director" }
         ];
         $scope.sn = {
             student_notification: 0,

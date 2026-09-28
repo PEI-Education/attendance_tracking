@@ -4,7 +4,8 @@ define(function(require) {
     module.controller('attGridCtrl', ['$scope', 'dataService', 'state', '$timeout', function($scope, dataService, state, $timeout) {
          $scope.gridData = [];
          $scope.spinner = state.spinner;
-         $scope.stepMap = { 
+         // Labels are set from message keys via window.attTrackStepLabels (see attendance_tracking.html); fallback covers non-PS test contexts.
+         $scope.stepMap = window.attTrackStepLabels || {
             'Student notified': 'Student notified',
             'Call 1 - no answer':'Call 1 - no answer',
             'Call 1 - reached parent':'Call 1 - reached parent',
@@ -18,7 +19,7 @@ define(function(require) {
             'Letter 2 sent': 'Letter 2 sent',                
             'Letter 3 requested':'Letter 3 requested',
             'Letter 3 sent':'Letter 3 sent',
-            'Referral to the Director': 'Referred to Director'
+            'Referral to the Director': 'Referral to the Director'
          };
 
         $scope.setHS = function() {
