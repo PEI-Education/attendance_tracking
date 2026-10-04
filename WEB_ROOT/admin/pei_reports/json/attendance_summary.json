@@ -22,18 +22,33 @@ from (select
   u.concern_2,
   u.concern_3,
   u.concern_4,
-  u.referral,
-  ROW_NUMBER() OVER (PARTITION BY u.studentsdcid ORDER BY u.whencreated asc) rn
-from u_pei_att_track u																												
+  u.referral
+from (
+    SELECT u.*,
+           ROW_NUMBER() OVER (
+               PARTITION BY u.studentsdcid, u.termid
+               ORDER BY u.whencreated ASC NULLS LAST, u.id ASC
+           ) AS checklist_rn
+    FROM u_pei_att_track u
+    WHERE u.termid = ~(curtermid)
+) u
 join students s
   on s.dcid = u.studentsdcid
-join ps_schoolenrollment pss
-  on pss.studentid = s.id 
-  and pss.entrydate <= (select lastday from terms where id=~(curtermid) and schoolid=~(curschoolid))
-where 1=1
-   and u.termid = ~(curtermid)
-    ~[if#cur.is.a.school]and pss.schoolid = ~(curschoolid)[/if#cur])
-where rn = 1
+where u.checklist_rn = 1
+  ~[if#cur.is.a.school]and s.schoolid = ~(curschoolid)[/if#cur]
+  and exists (
+      select 1
+      from ps_schoolenrollment pss
+      join terms school_year
+        on school_year.schoolid = pss.schoolid
+       and school_year.yearid = ~(curyearid)
+       and school_year.id = school_year.yearid * 100
+      where pss.studentid = s.id
+        and pss.yearid = school_year.yearid
+        and pss.entrydate < school_year.lastday
+        and pss.exitdate > school_year.firstday
+        and pss.entrydate < pss.exitdate
+  ))
 ]
 {
     "id":1,
@@ -69,49 +84,49 @@ where rn = 1
     "id":7,
     "prefix_name":"Letter 1",
     "name":"Requested",
-    "count":~(7),
+    "count":~(6),
     "carouselItem": true
 },{
     "id":8,
     "prefix_name":"Letter 1",
     "name":"Sent",
-    "count":~(8),
+    "count":~(7),
     "carouselItem": true
 },{
     "id":10,                
     "prefix_name":"Letter 2",
     "name":"Requested",
-    "count":~(10),
+    "count":~(8),
     "carouselItem": true
 },{
     "id":11,
     "prefix_name": "Letter 2",
     "name":"Sent",
-    "count":~(11),
+    "count":~(9),
     "carouselItem": true
 },{        
     "id":13,
     "prefix_name":"Letter 3",
     "name":"Requested",
-    "count":~(13),
+    "count":~(10),
     "carouselItem": true
 },{
     "id":14,
     "prefix_name":"Letter 3",
     "name": "Sent",
-    "count":~(14),
+    "count":~(11),
     "carouselItem": true
 },{            
     "id":15,
     "prefix_name":"Referred to",
     "name": "Director",
-    "count":~(15),
+    "count":~(12),
     "carouselItem": true
 },{
     "id":16,
     "prefix_name":"Referral",
     "name": "Closed",
-    "count":~(17),
+    "count":~(13),
     "carouselItem": true
 
 }
@@ -140,17 +155,33 @@ from (select
   u.concern_2,
   u.concern_3,
   u.concern_4,
-  u.referral,
-  ROW_NUMBER() OVER (PARTITION BY u.studentsdcid ORDER BY u.whencreated asc) rn
-from u_pei_att_track u																												
+  u.referral
+from (
+    SELECT u.*,
+           ROW_NUMBER() OVER (
+               PARTITION BY u.studentsdcid, u.termid
+               ORDER BY u.whencreated ASC NULLS LAST, u.id ASC
+           ) AS checklist_rn
+    FROM u_pei_att_track u
+    WHERE u.termid = ~(curtermid)
+) u
 join students s
   on s.dcid = u.studentsdcid
-join ps_schoolenrollment pss
-  on pss.studentid = s.id and pss.entrydate <= (select lastday from terms where id=~(curtermid) and schoolid=~(curschoolid))
-where 1=1
-  and u.termid = ~(curtermid)
-    ~[if#cur.is.a.school]and pss.schoolid = ~(curschoolid)[/if#cur])
-where rn = 1
+where u.checklist_rn = 1
+  ~[if#cur.is.a.school]and s.schoolid = ~(curschoolid)[/if#cur]
+  and exists (
+      select 1
+      from ps_schoolenrollment pss
+      join terms school_year
+        on school_year.schoolid = pss.schoolid
+       and school_year.yearid = ~(curyearid)
+       and school_year.id = school_year.yearid * 100
+      where pss.studentid = s.id
+        and pss.yearid = school_year.yearid
+        and pss.entrydate < school_year.lastday
+        and pss.exitdate > school_year.firstday
+        and pss.entrydate < pss.exitdate
+  ))
 ]
 {
     "id":1,
@@ -162,67 +193,67 @@ where rn = 1
     "id":3,
     "prefix_name":"Call 1",
     "name":"Complete",
-    "count":~(3),
+    "count":~(2),
     "carouselItem": true
 },{
     "id":4,
     "prefix_name":"Call 2",
     "name": "Complete",
-    "count":~(4),
+    "count":~(3),
     "carouselItem": true
 },{
     "id":5,
     "prefix_name":"Call 3",
     "name":"Complete",
-    "count":~(5),
+    "count":~(4),
     "carouselItem": true
 },{
     "id":7,
     "prefix_name":"Letter 1",
     "name":"Requested",
-    "count":~(7),
+    "count":~(5),
     "carouselItem": true
 },{
     "id":8,
     "prefix_name":"Letter 1",
     "name":"Sent",
-    "count":~(8),
+    "count":~(6),
     "carouselItem": true
 },{
     "id":10,                
     "prefix_name":"Letter 2",
     "name":"Requested",
-    "count":~(10),
+    "count":~(7),
     "carouselItem": true
 },{
     "id":11,
     "prefix_name": "Letter 2",
     "name":"Sent",
-    "count":~(11),
+    "count":~(8),
     "carouselItem": true
 },{        
     "id":13,
     "prefix_name":"Letter 3",
     "name":"Requested",
-    "count":~(13),
+    "count":~(9),
     "carouselItem": true
 },{
     "id":14,
     "prefix_name":"Letter 3",
     "name": "Sent",
-    "count":~(14),
+    "count":~(10),
     "carouselItem": true
 },{            
     "id":15,
     "prefix_name":"Referred to",
     "name": "Director",
-    "count":~(15),
+    "count":~(11),
     "carouselItem": true
 },{
     "id":16,
     "prefix_name":"Referral",
     "name": "Closed",
-    "count":~(16),
+    "count":~(12),
     "carouselItem": true
 }
 [/tlist_sql][/if#hs]

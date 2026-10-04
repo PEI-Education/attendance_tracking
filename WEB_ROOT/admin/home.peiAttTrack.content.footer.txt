@@ -13,13 +13,33 @@
                     count(case when u.concern_2 = 1 then 1 else null end) as letter1,
                     count(case when u.concern_3 = 1 then 1 else null end) as letter2,
                     count(case when u.concern_4 = 1 then 1 else null end) as letter3
-                from u_pei_att_track u
+                from (
+                    SELECT u.*,
+                           ROW_NUMBER() OVER (
+                               PARTITION BY u.studentsdcid, u.termid
+                               ORDER BY u.whencreated ASC NULLS LAST, u.id ASC
+                           ) AS checklist_rn
+                    FROM u_pei_att_track u
+                    WHERE u.termid = ~(curtermid)
+                ) u
                 join students s
                     on s.dcid = u.studentsdcid
                 where
-                    u.termid = ~(curtermid) --Changed from yearid
+                    u.checklist_rn = 1
                     and s.schoolid = ~(curschoolid)
-                order by 1;
+                    and exists (
+                        select 1
+                        from ps_schoolenrollment pss
+                        join terms school_year
+                          on school_year.schoolid = pss.schoolid
+                         and school_year.yearid = ~(curyearid)
+                         and school_year.id = school_year.yearid * 100
+                        where pss.studentid = s.id
+                          and pss.yearid = school_year.yearid
+                          and pss.entrydate < school_year.lastday
+                          and pss.exitdate > school_year.firstday
+                          and pss.entrydate < pss.exitdate
+                    );
                 ]
                     letter1: ~(1),
                     letter2: ~(2),

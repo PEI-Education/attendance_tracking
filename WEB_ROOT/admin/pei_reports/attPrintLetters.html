@@ -10,6 +10,7 @@ TemplateName:Admin
 <!-- Required style sheets: screen.css, and print.css --> 
 	<link href="/images/css/screen.css" rel="stylesheet" media="screen">
 	<link href="/images/css/print.css" rel="stylesheet" media="print">
+    <link href="/images/css/pei_att_track.css" rel="stylesheet">
 </head> 
 <body> 
 	~[wc:admin_header_css] 
@@ -19,7 +20,7 @@ TemplateName:Admin
 <!-- Start of Page --> 
 	<h1>~[text:psx.htmlc.admin_attendance.attendance_tracking.print_form_letters]</h1> 
 <!-- start of content area --> 
-	<div class="box-round"> 
+    <div class="box-round pei-att-track">
 <div class="container">
     <h2 id="printFormLetters">~[text:psx.htmlc.admin_attendance.attendance_tracking.print_form_letters]</h2>
     <div>
@@ -36,17 +37,17 @@ TemplateName:Admin
         <tr>
         <td class="bold">~[text:psx.html.admin_studentlist.printformletters.for_which_students]</td>
         <td>~[x:dothisfor]<br>
-        	<input type="radio" name="printwhat" value="allrecords" checked>~[text:psx.html.admin_studentlist.printformletters.all_records_in_a_single_batch]<br>
-        	<input type="radio" name="printwhat" value="onlythefirstfew">~[text:psx.html.admin_studentlist.printformletters.print_only_the_first]<input type="text" name="howmanytoprint" value="2" size="2">~[text:psx.html.admin_studentlist.printformletters.records]<br>
-        	<input type="radio" name="printwhat" value="inbatches">~[text:psx.html.admin_studentlist.printformletters.all_records_in_batches_of]<input type="text" name="batchsize" value="" size="4">~[text:psx.html.admin_studentlist.printformletters.records1]</td>
+            <input aria-label="~[text:psx.html.admin_studentlist.printformletters.all_records_in_a_single_batch]" type="radio" name="printwhat" value="allrecords" checked>~[text:psx.html.admin_studentlist.printformletters.all_records_in_a_single_batch]<br>
+            <input aria-label="~[text:psx.html.admin_studentlist.printformletters.print_only_the_first]" type="radio" name="printwhat" value="onlythefirstfew">~[text:psx.html.admin_studentlist.printformletters.print_only_the_first]<input type="text" aria-label="~[text:psx.html.admin_studentlist.printformletters.print_only_the_first]" name="howmanytoprint" value="2" size="2">~[text:psx.html.admin_studentlist.printformletters.records]<br>
+            <input aria-label="~[text:psx.html.admin_studentlist.printformletters.all_records_in_batches_of]" type="radio" name="printwhat" value="inbatches">~[text:psx.html.admin_studentlist.printformletters.all_records_in_batches_of]<input type="text" aria-label="~[text:psx.html.admin_studentlist.printformletters.all_records_in_batches_of]" name="batchsize" value="" size="4">~[text:psx.html.admin_studentlist.printformletters.records1]</td>
         </tr>
         <tr bgcolor="#edf3fe">
         <td class="bold">~[text:psx.html.admin_studentlist.printformletters.in_what_order]</td>
-        <td><input type="radio" name="sortorder" value="alpha" checked>~[text:psx.html.admin_studentlist.printformletters.alphabetical]<br><input type="radio" name="sortorder" value="bygrade">~[text:psx.html.admin_studentlist.printformletters.by_grade_then_alphabetical]<br><input type="radio" name="sortorder" value="byperiod">~[text:psx.html.admin_studentlist.printformletters.by_period__class_as_of_this,param:~[custompopup;name=period;list=sched_periods]]<br>~[text:psx.html.admin_studentlist.printformletters.nbspnbspdate]<input type="text" class="psDateWidget" name="period-date" value="~[short.date]" size="11">~[text:psx.html.admin_studentlist.printformletters.takes_extra_time]</td>
+        <td><input aria-label="~[text:psx.html.admin_studentlist.printformletters.alphabetical]" type="radio" name="sortorder" value="alpha" checked>~[text:psx.html.admin_studentlist.printformletters.alphabetical]<br><input aria-label="~[text:psx.html.admin_studentlist.printformletters.by_grade_then_alphabetical]" type="radio" name="sortorder" value="bygrade">~[text:psx.html.admin_studentlist.printformletters.by_grade_then_alphabetical]<br><input aria-label="~[text:psx.htmlc.admin_attendance.attendance_tracking.class_period_order]" type="radio" name="sortorder" value="byperiod">~[text:psx.html.admin_studentlist.printformletters.by_period__class_as_of_this,param:~[custompopup;name=period;list=sched_periods]]<br>~[text:psx.html.admin_studentlist.printformletters.nbspnbspdate]<input type="text" class="psDateWidget" aria-label="~[text:psx.htmlc.admin_attendance.attendance_tracking.date]" name="period-date" value="~[short.date]" size="11">~[text:psx.html.admin_studentlist.printformletters.takes_extra_time]</td>
         </tr>
         <tr>
         <td class="bold">~[text:psx.html.admin_studentlist.printformletters.when_to_print]</td>
-        <td><select name="printwhen"><option value="2">~[text:psx.html.admin_studentlist.printformletters.asap]<option value="3">~[text:psx.html.admin_studentlist.printformletters.at_night]<option value="4">~[text:psx.html.admin_studentlist.printformletters.on_weekend]<option value="5">~[text:psx.html.admin_studentlist.printformletters.on_specific_datetime]</select><br><input type="text" class="psDateWidget" name="printdate" value="" size=10> &nbsp;/&nbsp; <input name="printtime" type="text" class="timeEntry5" size="10"/></td>
+        <td><select aria-label="~[text:psx.html.admin_studentlist.printformletters.when_to_print]" name="printwhen"><option value="2">~[text:psx.html.admin_studentlist.printformletters.asap]<option value="3">~[text:psx.html.admin_studentlist.printformletters.at_night]<option value="4">~[text:psx.html.admin_studentlist.printformletters.on_weekend]<option value="5">~[text:psx.html.admin_studentlist.printformletters.on_specific_datetime]</select><br><input type="text" class="psDateWidget" aria-label="~[text:psx.htmlc.admin_attendance.attendance_tracking.date]" name="printdate" value="" size=10> &nbsp;/&nbsp; <input aria-label="~[text:psx.htmlc.admin_attendance.attendance_tracking.print_time]" name="printtime" type="text" class="timeEntry5" size="10"/></td>
         </tr>
         <tr>
         <td class="bold">~[text:psx.html.admin_studentlist.printformletters.report_output_locale]</td>

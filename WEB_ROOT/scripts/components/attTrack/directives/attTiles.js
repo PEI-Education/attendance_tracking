@@ -13,20 +13,26 @@ define(function(require) {
                      pssVidgetTiles: null,
                   };
                   
-                  state.spinner.wait = true;
-
-                  dataService
-                     .getData("json/attendance_summary.json?hs=" + state.hs)
-                     .then(function (retData) {
-                        var messages = localization.read();
-                        retData.forEach(function(tile) {
-                            tile.prefix_name = messages['tile:' + tile.prefix_name];
-                            tile.name = messages['tile:' + tile.name];
-                        });
-                        state.ctrlData.pssTilesVidget.setTiles(retData);
-                     });
-                     
-                  state.spinner.wait = false;
+                  state.reloadTiles = function() {
+                      if (state.spinner.tiles) return;
+                      state.spinner.tiles = true;
+                      state.spinner.tilesError = '';
+                      var messages = localization.read();
+                      return dataService.getData('json/attendance_summary.json?hs=' + state.hs)
+                          .then(function(retData) {
+                              if (!Array.isArray(retData)) throw new Error('Invalid tile response');
+                              retData.forEach(function(tile) {
+                                  tile.prefix_name = messages['tile:' + tile.prefix_name];
+                                  tile.name = messages['tile:' + tile.name];
+                              });
+                              state.ctrlData.pssTilesVidget.setTiles(retData);
+                          }).catch(function() {
+                              state.spinner.tilesError = messages.load_error;
+                          }).finally(function() {
+                              state.spinner.tiles = false;
+                          });
+                  };
+                  state.reloadTiles();
                },
             ],
 

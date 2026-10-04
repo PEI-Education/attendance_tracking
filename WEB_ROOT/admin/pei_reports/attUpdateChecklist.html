@@ -18,15 +18,15 @@ TemplateName:Admin
     <script type="module" src="https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.0.0/dist/shoelace.js"></script>
     <link href="/images/css/pei_att_track.css" rel="stylesheet">
 	<style>
-	   #wait-spinner-div {
+.pei-att-track #wait-spinner-div {
             position: fixed;
             top: 55%;
             left: 55%;
         }
-        .padding5 {
+.pei-att-track .padding5 {
             padding: 5px;
         }
-        .half-container {
+.pei-att-track .half-container {
             width: 49%;
             display: inline-block;
             vertical-align: top;
@@ -36,11 +36,13 @@ TemplateName:Admin
 <body>
 <!-- Resolved by PowerSchool before the standalone JavaScript reads textContent. -->
 <div id="attTrackMessages" hidden ng-non-bindable>
+    <span data-att-message="load_error">~[text:psx.htmlc.admin_attendance.attendance_tracking.load_error]</span>
     <span data-att-message="student_notification">~[text:psx.htmlc.admin_attendance.attendance_tracking.student_notification]</span>
     <span data-att-message="parent_call_1">~[text:psx.htmlc.admin_attendance.attendance_tracking.parent_call_1]</span>
     <span data-att-message="parent_call_2">~[text:psx.htmlc.admin_attendance.attendance_tracking.parent_call_2]</span>
     <span data-att-message="parent_call_3">~[text:psx.htmlc.admin_attendance.attendance_tracking.parent_call_3]</span>
     <span data-att-message="referred_to_the_director">~[text:psx.htmlc.admin_attendance.attendance_tracking.referred_to_the_director]</span>
+    <span data-att-message="bulk_summary">~[text:psx.htmlc.admin_attendance.attendance_tracking.bulk_summary]</span>
     <span data-att-message="all_sum_students">~[text:psx.htmlc.admin_attendance.attendance_tracking.all_sum_students]</span>
     <span data-att-message="letter_1_requested">~[text:psx.htmlc.admin_attendance.attendance_tracking.letter_1_requested]</span>
     <span data-att-message="letter_1_sent">~[text:psx.htmlc.admin_attendance.attendance_tracking.letter_1_sent]</span>
@@ -57,24 +59,26 @@ TemplateName:Admin
 <!-- Start of Page --> 
 	<h1>~[text:psx.htmlc.admin_attendance.attendance_tracking.mass_update_attendance_checkli]</h1> 
 <!-- start of content area --> 
-    <div class="box-round" data-require-path="components/attTrack/index" data-module-name="attApp" ng-cloak>
+    <div class="box-round pei-att-track" data-require-path="components/attTrack/index" data-module-name="attApp" ng-cloak>
         <div ng-controller="attUpdateCtrl">
             <div id="wait-spinner-div" ng-if="spinner.wait">
-                <div data-pss-wait-spinner="large"></div>
+                <div data-pss-wait-spinner="large" role="status" aria-label="~[text:psx.htmlc.admin_attendance.attendance_tracking.loading]"></div>
             </div>
             <input type="hidden" id="staffName" value="~[x:username;firstlast]" />
+            <input type="hidden" id="localeLang" value="~[locale.lang]" />
             <input type="hidden" id="dateToday" value="~[date]" />
          
-    	      <fieldset>
+          <div class="feedback-error" ng-if="loadError" role="alert">{{loadError}} <button type="button" ng-click="reloadStudents()" ng-disabled="spinner.wait">~[text:psx.htmlc.admin_attendance.attendance_tracking.retry]</button></div>
+          <fieldset ng-disabled="batchStarted || spinner.wait || loadError">
     	        <legend>1. ~[text:psx.htmlc.admin_attendance.attendance_tracking.select_a_checklist_step]</legend>
                 
                 <div class="padding5">                
                     <label for="stepChoice">~[text:psx.htmlc.admin_attendance.attendance_tracking.add_modify_entry_for]
-                        <select id="stepChoice" ng-model="stepChoice" ng-options="step.label for step in steps" ng-disabled="task.allDone">
+                        <select id="stepChoice" ng-model="stepChoice" ng-options="step.label for step in steps" ng-disabled="batchStarted || spinner.wait || loadError">
                             <option value="">~[text:psx.htmlc.admin_attendance.attendance_tracking.select_a_step]</option>
                         </select>
                     </label>
-                    <button ng-click="verifySelection()" ng-disabled="task.allDone">~[text:psx.htmlc.admin_attendance.attendance_tracking.continue]</button>
+                    <button ng-click="verifySelection()" ng-disabled="batchStarted || spinner.wait || loadError || !stepChoice">~[text:psx.htmlc.admin_attendance.attendance_tracking.continue]</button>
                     &nbsp; &nbsp; &nbsp;  ~[text:psx.htmlc.admin_attendance.attendance_tracking.choose_the_checklist_step_you]
                 </div>
                 <div ng-show="showValidation">
@@ -99,10 +103,10 @@ TemplateName:Admin
                 </div>
               
             </fieldset>
-            <fieldset ng-if="stepSelection">
+            <fieldset ng-if="stepSelection" ng-disabled="batchStarted">
                 <legend>2. ~[text:psx.htmlc.admin_attendance.attendance_tracking.modify_info]</legend>
                 <div>~[text:psx.htmlc.admin_attendance.attendance_tracking.any_information_entered_in_the]</div>
-                <form ng-if="stepSelection.id === 2" name="forms.student_notification" id="stuForm" novalidate class="validatedForm" data-pss-validation-form data-dirty-state-check="true">
+                <form ng-if="stepSelection.id === 2" name="forms.student_notification" id="bulk_sn_form" novalidate class="validatedForm" data-pss-validation-form data-dirty-state-check="true" ng-submit="save('sn')">
                     <table class="checklistTable">
                         <colgroup>
                             <col style="width:35%;" />
@@ -130,12 +134,12 @@ TemplateName:Admin
                                 <input id="student_notification_date" name="date" ng-model="sn.student_notification_date" type="text" pss-date-widget />
                             </td>
                             <td class="grid-item center">
-                                <button type="submit" id="student_save" ng-click="save('sn')"><i class="fi-checkbox icon"></i></button>
+                                <button type="submit" id="bulk_sn_save"><i aria-hidden="true" class="fi-checkbox icon"></i> <span>~[text:psx.htmlc.admin_attendance.attendance_tracking.save]</span></button>
                             </td>
                         </tr>
                     </table>
                 </form>
-                <form ng-if="stepSelection.id===3" name="forms.parent_call_1" id="call2Form" novalidate class="validatedForm" data-pss-validation-form data-dirty-state-check="true">
+                <form ng-if="stepSelection.id===3" name="forms.parent_call_1" id="bulk_pc1_form" novalidate class="validatedForm" data-pss-validation-form data-dirty-state-check="true" ng-submit="save('pc1')">
                     <table class="checklistTable" >
                         <colgroup>
                             <col style="width:35%;" />
@@ -151,7 +155,7 @@ TemplateName:Admin
                             </tr>
                             <tr>
                                 <td class="grid-item stretchCell">
-                                    <sl-radio-group label="" name="parent_call_1" value="{{pc1.parent_call_1}}" >
+                                    <sl-radio-group label="~[text:psx.htmlc.admin_attendance.attendance_tracking.parent_call_1]" name="parent_call_1" value="{{pc1.parent_call_1}}" >
                                         <sl-radio-button class="call-na" size="small" value="0" ng-click="setValues('pc1','parent_call_1',0)">~[text:psx.htmlc.admin_attendance.attendance_tracking.not_attempted]</sl-radio-button>
                                         <sl-radio-button class="call-nc" size="small" value="1" ng-click="setValues('pc1','parent_call_1',1)" >~[text:psx.htmlc.admin_attendance.attendance_tracking.no_contact]</sl-radio-button>
                                         <sl-radio-button class="call-co" size="small" value="3" ng-click="setValues('pc1','parent_call_1',3)" >~[text:psx.htmlc.admin_attendance.attendance_tracking.contact_made]</sl-radio-button>
@@ -166,7 +170,7 @@ TemplateName:Admin
                                     <input id="parent_call_1_date" name="date" ng-model="pc1.parent_call_1_date" type="text" pss-date-widget />
                                 </td>
                                 <td class="grid-item center" rowspan="2">
-                                    <button type="submit" id="call_save" ng-click="save('pc1')"><i class="fi-checkbox icon no-print"></i></button>
+                                    <button type="submit" id="bulk_pc1_save"><i aria-hidden="true" class="fi-checkbox icon no-print"></i> <span>~[text:psx.htmlc.admin_attendance.attendance_tracking.save]</span></button>
                                 </td>
                             </tr>
                         <!--
@@ -181,7 +185,7 @@ TemplateName:Admin
                         </tbody>
                     </table>
                 </form>
-                <form ng-if="stepSelection.id===4" name="forms.parent_call" id="call2Form" novalidate class="validatedForm" data-pss-validation-form data-dirty-state-check="true">
+                <form ng-if="stepSelection.id===4" name="forms.parent_call" id="bulk_pc2_form" novalidate class="validatedForm" data-pss-validation-form data-dirty-state-check="true" ng-submit="save('pc2')">
                     <table class="checklistTable">
                         <colgroup>
                             <col style="width:35%;" />
@@ -197,7 +201,7 @@ TemplateName:Admin
                             </tr>
                             <tr>
                                 <td class="grid-item stretchCell">
-                                    <sl-radio-group label="" name="parent_call_2" value="{{pc2.parent_call_2}}">
+                                    <sl-radio-group label="~[text:psx.htmlc.admin_attendance.attendance_tracking.parent_call_2]" name="parent_call_2" value="{{pc2.parent_call_2}}">
                                         <sl-radio-button class="call-na" size="small" value="0" ng-click="setValues('pc2','parent_call_2',0)">~[text:psx.htmlc.admin_attendance.attendance_tracking.not_attempted]</sl-radio-button>
                                         <sl-radio-button class="call-nc" size="small" value="1" ng-click="setValues('pc2','parent_call_2',1)">~[text:psx.htmlc.admin_attendance.attendance_tracking.no_contact]</sl-radio-button>
                                         <sl-radio-button class="call-co" size="small" value="3" ng-click="setValues('pc2','parent_call_2',3)">~[text:psx.htmlc.admin_attendance.attendance_tracking.contact_made]</sl-radio-button>
@@ -212,7 +216,7 @@ TemplateName:Admin
                                     <input id="parent_call_2_date" name="date" ng-model="pc2.parent_call_2_date" type="text" pss-date-widget  ng-required="parent_call_2>0" />
                                 </td>
                                 <td class="grid-item center" rowspan="4">
-                                    <button type="submit" id="calls_save" ng-click="save('pc2')"><i class="fi-checkbox icon no-print"></i></button>
+                                    <button type="submit" id="bulk_pc2_save"><i aria-hidden="true" class="fi-checkbox icon no-print"></i> <span>~[text:psx.htmlc.admin_attendance.attendance_tracking.save]</span></button>
                                 </td>
                             </tr>
                             <tr>
@@ -225,7 +229,7 @@ TemplateName:Admin
                         </tbody>
                     </table>
                 </form>
-                <form ng-if="stepSelection.id===5" name="forms.parent_call_3" id="call3Form" novalidate class="validatedForm" data-pss-validation-form data-dirty-state-check="true">
+                <form ng-if="stepSelection.id===5" name="forms.parent_call_3" id="bulk_pc3_form" novalidate class="validatedForm" data-pss-validation-form data-dirty-state-check="true" ng-submit="save('pc3')">
                     <table class="checklistTable">
                         <colgroup>
                             <col style="width:35%;" />
@@ -241,7 +245,7 @@ TemplateName:Admin
                             </tr>
                             <tr>
                                 <td class="grid-item stretchCell">
-                                    <sl-radio-group label="" name="parent_call_3" value="{{pc3.parent_call_3}}" >
+                                    <sl-radio-group label="~[text:psx.htmlc.admin_attendance.attendance_tracking.parent_call_3]" name="parent_call_3" value="{{pc3.parent_call_3}}" >
                                         <sl-radio-button class="call-na" size="small" value="0" ng-click="setValues('pc3','parent_call_3',0)">~[text:psx.htmlc.admin_attendance.attendance_tracking.not_attempted]</sl-radio-button> 
                                         <sl-radio-button class="call-nc" size="small" value="1" ng-click="setValues('pc3','parent_call_3',1)">~[text:psx.htmlc.admin_attendance.attendance_tracking.no_contact]</sl-radio-button>
                                         <sl-radio-button class="call-co" size="small" value="3" ng-click="setValues('pc3','parent_call_3',3)">~[text:psx.htmlc.admin_attendance.attendance_tracking.contact_made]</sl-radio-button>
@@ -256,7 +260,7 @@ TemplateName:Admin
                                     <input id="parent_call_3_date" name="date" ng-model="pc3.parent_call_3_date" type="text" pss-date-widget ng-required="parent_call_3>0" />
                                 </td>
                                 <td class="grid-item center" rowspan="4">
-                                    <button type="submit" id="calls_save" ng-click="save('pc3')"><i class="fi-checkbox icon no-print"></i></button>
+                                    <button type="submit" id="bulk_pc3_save"><i aria-hidden="true" class="fi-checkbox icon no-print"></i> <span>~[text:psx.htmlc.admin_attendance.attendance_tracking.save]</span></button>
                                 </td>
                             </tr>
                         <!--
@@ -271,7 +275,7 @@ TemplateName:Admin
                         </tbody>
                     </table>
                 </form>                
-                <form ng-if="stepSelection.id===7" name="forms.concern_2" id="concern2Form" novalidate class="validatedForm" data-pss-validation-form data-dirty-state-check="true">
+                <form ng-if="stepSelection.id===7" name="forms.concern_2" id="bulk_c2req_form" novalidate class="validatedForm" data-pss-validation-form data-dirty-state-check="true" ng-submit="save('c2req')">
                     <table class="checklistTable">
                         <colgroup>
                             <col style="width:35%;" />
@@ -288,7 +292,7 @@ TemplateName:Admin
                             <tr>
                                 <td class="grid-item stretchCell">
                                     <label class="form-control" for="concern_2_req">
-                                    <input type="checkbox" ng-model="c2req.concern_2" ng-true-value="1" ng-false-value="0" ng-click="setStaffDate('c2req','concern_2_req')" name="concern_2_req" id="concern_2_req" value="1" /> ~[text:psx.htmlc.admin_students.attendance_tracking.flag_concern_to_admin]
+                                    <input type="checkbox" ng-model="c2req.concern_2" ng-true-value="1" ng-false-value="0" ng-change="setStaffDate('c2req','concern_2_req','concern_2',1)" name="concern_2_req" id="concern_2_req" value="1" /> ~[text:psx.htmlc.admin_students.attendance_tracking.flag_concern_to_admin]
                                     </label>
                                 </td>
                                 <td class="grid-item">
@@ -300,7 +304,7 @@ TemplateName:Admin
                                     <input id="concern_2_req_date" name="req_date" ng-model="c2req.concern_2_req_date" type="text" pss-date-widget/>
                                 </td>
                                 <td class="save-notes" rowspan="2">
-                                    <button type="submit" ng-click="save('c2req')" id="concern_2_save"><i class="fi-checkbox icon"></i></button>
+                                    <button type="submit" id="bulk_c2req_save"><i aria-hidden="true" class="fi-checkbox icon"></i> <span>~[text:psx.htmlc.admin_attendance.attendance_tracking.save]</span></button>
                                 </td>
                             </tr>
                         <!--
@@ -316,7 +320,7 @@ TemplateName:Admin
                         </tbody>
                     </table>
                 </form>        
-                <form ng-if="stepSelection.id===8" name="forms.concerns" id="concern2Form" novalidate class="validatedForm" data-pss-validation-form data-dirty-state-check="true">
+                <form ng-if="stepSelection.id===8" name="forms.concerns" id="bulk_c2sent_form" novalidate class="validatedForm" data-pss-validation-form data-dirty-state-check="true" ng-submit="save('c2sent')">
                     <table class="checklistTable">
                         <colgroup>
                             <col style="width:35%;" />
@@ -333,7 +337,7 @@ TemplateName:Admin
                             <tr>
                                 <td class="grid-item stretchCell">
                                     <label class="form-control" for="concern_2_sent">
-                                    <input type="checkbox" ng-model="c2sent.concern_2" ng-true-value="2" ng-false-value="1" ng-click="setStaffDate('c2sent','concern_2_sent')" name="concern_2_sent" id="concern_2_sent" value="2" /> ~[text:psx.htmlc.admin_attendance.attendance_tracking.notification_sent]
+                                    <input type="checkbox" ng-model="c2sent.concern_2" ng-true-value="2" ng-false-value="1" ng-change="setStaffDate('c2sent','concern_2_sent','concern_2',2)" name="concern_2_sent" id="concern_2_sent" value="2" /> ~[text:psx.htmlc.admin_attendance.attendance_tracking.notification_sent]
                                     </label>
                                 </td>
                                 <td class="grid-item">
@@ -345,7 +349,7 @@ TemplateName:Admin
                                     <input id="concern_2_sent_date" name="sent_date" ng-model="c2sent.concern_2_sent_date" type="text" pss-date-widget />
                                 </td>
                                 <td class="save-notes" rowspan="2">
-                                    <button type="submit" id="concern_2_save" ng-click="save('c2sent')"><i class="fi-checkbox icon"></i></button>
+                                    <button type="submit" id="bulk_c2sent_save"><i aria-hidden="true" class="fi-checkbox icon"></i> <span>~[text:psx.htmlc.admin_attendance.attendance_tracking.save]</span></button>
                                 </td>
                             </tr>
                         <!--
@@ -361,7 +365,7 @@ TemplateName:Admin
                         </tbody>
                     </table>
                 </form>
-                <form ng-if="stepSelection.id===10" name="forms.concern_3" id="concern3Form" novalidate class="validatedForm" data-pss-validation-form data-dirty-state-check="true">
+                <form ng-if="stepSelection.id===10" name="forms.concern_3" id="bulk_c3req_form" novalidate class="validatedForm" data-pss-validation-form data-dirty-state-check="true" ng-submit="save('c3req')">
                     <table class="checklistTable">
                         <colgroup>
                             <col style="width:35%;" />
@@ -378,7 +382,7 @@ TemplateName:Admin
                             <tr>
                                 <td class="grid-item stretchCell">
                                     <label class="form-control" for="concern_3_req">
-                                    <input type="checkbox" ng-model="c3req.concern_3" ng-true-value="1" ng-false-value="0" ng-click="setValues('c3req','concern_3_req')" name="concern_3_req" id="concern_3_req" /> ~[text:psx.htmlc.admin_students.attendance_tracking.flag_concern_to_admin]
+                                    <input type="checkbox" ng-model="c3req.concern_3" ng-true-value="1" ng-false-value="0" ng-change="setStaffDate('c3req','concern_3_req','concern_3',1)" name="concern_3_req" id="concern_3_req" /> ~[text:psx.htmlc.admin_students.attendance_tracking.flag_concern_to_admin]
                                     </label>
                                 </td>
                                 <td class="grid-item">
@@ -390,7 +394,7 @@ TemplateName:Admin
                                     <input id="concern_3_req_date" name="req_date" ng-model="c3req.concern_3_req_date" type="text" pss-date-widget/>
                                 </td>
                                 <td class="save-notes" rowspan="2">
-                                    <button type="submit" ng-click="save('c3req')" id="concern_3_save"><i class="fi-checkbox icon"></i></button>
+                                    <button type="submit" id="bulk_c3req_save"><i aria-hidden="true" class="fi-checkbox icon"></i> <span>~[text:psx.htmlc.admin_attendance.attendance_tracking.save]</span></button>
                                 </td>
                             </tr>
                         <!--
@@ -406,7 +410,7 @@ TemplateName:Admin
                         </tbody>
                     </table>
                 </form>        
-                <form ng-if="stepSelection.id===11" name="forms.concern_3" id="concern3Form" novalidate class="validatedForm" data-pss-validation-form data-dirty-state-check="true">
+                <form ng-if="stepSelection.id===11" name="forms.concern_3" id="bulk_c3sent_form" novalidate class="validatedForm" data-pss-validation-form data-dirty-state-check="true" ng-submit="save('c3sent')">
                     <table class="checklistTable">
                         <colgroup>
                             <col style="width:35%;" />
@@ -423,7 +427,7 @@ TemplateName:Admin
                             <tr>
                                 <td class="grid-item stretchCell">
                                     <label class="form-control" for="concern_3_sent">
-                                    <input type="checkbox" ng-model="c3sent.concern_3" ng-true-value="2" ng-false-value="1" ng-click="setStaffDate('c3sent','concern_3_sent')" name="concern_3_sent" id="concern_3_sent" /> ~[text:psx.htmlc.admin_attendance.attendance_tracking.notification_sent]
+                                    <input type="checkbox" ng-model="c3sent.concern_3" ng-true-value="2" ng-false-value="1" ng-change="setStaffDate('c3sent','concern_3_sent','concern_3',2)" name="concern_3_sent" id="concern_3_sent" /> ~[text:psx.htmlc.admin_attendance.attendance_tracking.notification_sent]
                                     </label>
                                 </td>
                                 <td class="grid-item">
@@ -435,7 +439,7 @@ TemplateName:Admin
                                     <input id="concern_3_sent_date" name="sent_date" ng-model="c3sent.concern_3_sent_date" type="text" pss-date-widget />
                                 </td>
                                 <td class="save-notes" rowspan="2">
-                                    <button type="submit"  id="concern_3_save" ng-click="save('c3sent')"><i class="fi-checkbox icon"></i></button>
+                                    <button type="submit"  id="bulk_c3sent_save"><i aria-hidden="true" class="fi-checkbox icon"></i> <span>~[text:psx.htmlc.admin_attendance.attendance_tracking.save]</span></button>
                                 </td>
                             </tr>
                         <!--
@@ -451,7 +455,7 @@ TemplateName:Admin
                         </tbody>
                     </table>
                 </form>  
-                <form ng-if="stepSelection.id===13" name="forms.concern_4" id="concern4Form" novalidate class="validatedForm" data-pss-validation-form data-dirty-state-check="true">
+                <form ng-if="stepSelection.id===13" name="forms.concern_4" id="bulk_c4req_form" novalidate class="validatedForm" data-pss-validation-form data-dirty-state-check="true" ng-submit="save('c4req')">
                     <table class="checklistTable">
                         <colgroup>
                             <col style="width:35%;" />
@@ -468,7 +472,7 @@ TemplateName:Admin
                             <tr>
                                 <td class="grid-item stretchCell">
                                     <label class="form-control" for="concern_4_req">
-                                    <input type="checkbox" ng-model="c4req.concern_4" ng-true-value="1" ng-false-value="0" ng-click="setValues('c4req','concern_4_req')" name="concern_4_req" id="concern_4_req" /> ~[text:psx.htmlc.admin_students.attendance_tracking.flag_concern_to_admin]
+                                    <input type="checkbox" ng-model="c4req.concern_4" ng-true-value="1" ng-false-value="0" ng-change="setStaffDate('c4req','concern_4_req','concern_4',1)" name="concern_4_req" id="concern_4_req" /> ~[text:psx.htmlc.admin_students.attendance_tracking.flag_concern_to_admin]
                                     </label>
                                 </td>
                                 <td class="grid-item">
@@ -480,7 +484,7 @@ TemplateName:Admin
                                     <input id="concern_4_req_date" name="req_date" ng-model="c4req.concern_4_req_date" type="text" pss-date-widget/>
                                 </td>
                                 <td class="save-notes" rowspan="2">
-                                    <button type="submit" ng-click="save('c4req')" id="concern_4_save"><i class="fi-checkbox icon"></i></button>
+                                    <button type="submit" id="bulk_c4req_save"><i aria-hidden="true" class="fi-checkbox icon"></i> <span>~[text:psx.htmlc.admin_attendance.attendance_tracking.save]</span></button>
                                 </td>
                             </tr>
                         <!--
@@ -496,7 +500,7 @@ TemplateName:Admin
                         </tbody>
                     </table>
                 </form>        
-                 <form ng-if="stepSelection.id===14" name="forms.concern_4" id="concern4Form" novalidate class="validatedForm" data-pss-validation-form data-dirty-state-check="true">
+                 <form ng-if="stepSelection.id===14" name="forms.concern_4" id="bulk_c4sent_form" novalidate class="validatedForm" data-pss-validation-form data-dirty-state-check="true" ng-submit="save('c4sent')">
                     <table class="checklistTable">
                         <colgroup>
                             <col style="width:35%;" />
@@ -513,7 +517,7 @@ TemplateName:Admin
                             <tr>
                                 <td class="grid-item stretchCell">
                                     <label class="form-control" for="concern_4_sent">
-                                    <input type="checkbox" ng-model="c4sent.concern_4" ng-true-value="2" ng-false-value="1" ng-click="setStaffDate('c4sent','concern_4_sent')" name="concern_4_sent" id="concern_4_sent" /> ~[text:psx.htmlc.admin_attendance.attendance_tracking.notification_sent]
+                                    <input type="checkbox" ng-model="c4sent.concern_4" ng-true-value="2" ng-false-value="1" ng-change="setStaffDate('c4sent','concern_4_sent','concern_4',2)" name="concern_4_sent" id="concern_4_sent" /> ~[text:psx.htmlc.admin_attendance.attendance_tracking.notification_sent]
                                     </label>
                                 </td>
                                 <td class="grid-item">
@@ -525,7 +529,7 @@ TemplateName:Admin
                                     <input id="concern_4_sent_date" name="sent_date" ng-model="c4sent.concern_4_sent_date" type="text" pss-date-widget />
                                 </td>
                                 <td class="save-notes" rowspan="2">
-                                    <button type="submit"  id="concern_4_save" ng-click="save('c4sent')"><i class="fi-checkbox icon"></i></button>
+                                    <button type="submit"  id="bulk_c4sent_save"><i aria-hidden="true" class="fi-checkbox icon"></i> <span>~[text:psx.htmlc.admin_attendance.attendance_tracking.save]</span></button>
                                 </td>
                             </tr>
                         <!--
@@ -541,7 +545,7 @@ TemplateName:Admin
                         </tbody>
                     </table>
                 </form>  
-                <form ng-if="stepSelection.id === 15" name="forms.referral" id="stuForm"  ng-submit="save('referral')" novalidate class="validatedForm" data-pss-validation-form data-dirty-state-check="true">
+                <form ng-if="stepSelection.id === 15" name="forms.referral" id="bulk_referral_form"  ng-submit="save('referral')" novalidate class="validatedForm" data-pss-validation-form data-dirty-state-check="true">
                     <table class="checklistTable">
                         <colgroup>
                             <col style="width:35%;" />
@@ -557,20 +561,20 @@ TemplateName:Admin
                         <tr>
                             <td class="grid-item stretchCell">
                                 <label class="form-control" for="referral">
-                                <input type="checkbox" ng-model="fields.referral" ng-click="toggle('referral')" name="referral" id="referral"> ~[text:psx.htmlc.admin_attendance.attendance_tracking.referred_to_the_director]
+                                <input type="checkbox" ng-model="referral.referral" ng-true-value="1" ng-false-value="0" ng-change="setStaffDate('referral','referral')" name="referral" id="referral"> ~[text:psx.htmlc.admin_attendance.attendance_tracking.referred_to_the_director]
                                 </label>
                             </td>
                             <td class="grid-item">
                                 <label for="referral_staff">~[text:psx.htmlc.admin_attendance.attendance_tracking.referred_by]</label> 
-                                <input size="40" id="referral_staff" name="staff" length="40" ng-model="$parent.referral_staff"  />
+                                <input size="40" id="referral_staff" name="staff" length="40" ng-model="referral.referral_staff"  />
                             </td>
                             <td class="grid-item">
                                 <label for="referral_date">~[text:psx.htmlc.admin_attendance.attendance_tracking.date]:</label> 
-                                <input id="referral_date" name="date" ng-model="$parent.ereferral_date" type="text" pss-date-widget />
+                                <input id="referral_date" name="date" ng-model="referral.referral_date" type="text" pss-date-widget />
                             </td>
                             <td class="grid-item center">
                                 <div ng-if="taskComplete"><i class="fi fi-check green"> ~[text:psx.htmlc.admin_attendance.attendance_tracking.saved]</i></div>
-                                <button type="submit" id="referral_save" ng-if="!taskComplete"><i class="fi-checkbox icon"></i></button>
+                                <button type="submit" id="bulk_referral_save"><i aria-hidden="true" class="fi-checkbox icon"></i> <span>~[text:psx.htmlc.admin_attendance.attendance_tracking.save]</span></button>
                             </td>
                         </tr>
                     </table>
@@ -578,11 +582,25 @@ TemplateName:Admin
             </fieldset>
             <fieldset ng-if="task.allDone">
                 <legend>3. ~[text:psx.htmlc.admin_attendance.attendance_tracking.next_steps]</legend>
-                <div class="feedback-confirm" ng-show="task.success">{{ task.success }} </div>
+                <div class="feedback-confirm" role="status" aria-live="polite" ng-show="task.success">{{ task.success }} </div>
                 <div class="feedback-error" ng-show="task.errorMessage">{{ task.errorMessage }}</div>
+                <div ng-if="savedStudents.length">
+                    <h3>~[text:psx.htmlc.admin_attendance.attendance_tracking.saved]</h3>
+                    <ul><li ng-repeat="row in savedStudents"><a href="/admin/students/home.html?frn=001{{row.student.studentsdcid}}&amp;lsp=pei_attendance_tracking.html" target="_blank" rel="noopener">{{row.student.firstName}} {{row.student.lastName}}</a></li></ul>
+                </div>
+                <div ng-if="failedStudents.length">
+                    <h3>~[text:psx.htmlc.admin_attendance.attendance_tracking.bulk_failed]</h3>
+                    <ul><li ng-repeat="row in failedStudents"><a href="/admin/students/home.html?frn=001{{row.student.studentsdcid}}&amp;lsp=pei_attendance_tracking.html" target="_blank" rel="noopener">{{row.student.firstName}} {{row.student.lastName}}</a></li></ul>
+                </div>
+                <div ng-if="unconfirmedStudents.length">
+                    <h3>~[text:psx.htmlc.admin_attendance.attendance_tracking.bulk_unconfirmed]</h3>
+                    <ul><li ng-repeat="row in unconfirmedStudents"><a href="/admin/students/home.html?frn=001{{row.student.studentsdcid}}&amp;lsp=pei_attendance_tracking.html" target="_blank" rel="noopener">{{row.student.firstName}} {{row.student.lastName}}</a></li></ul>
+                </div>
+                <p ng-if="unconfirmedStudents.length">~[text:psx.htmlc.admin_students.attendance_tracking.save_unconfirmed]</p>
+                <button type="button" ng-if="failedStudents.length" ng-disabled="saveBusy" ng-click="retryFailed()">~[text:psx.htmlc.admin_attendance.attendance_tracking.bulk_retry]</button>
                 <div>
                     <ul>
-                        <li ng-if="task.success"> ~[text:psx.htmlc.admin_attendance.attendance_tracking.to_review_the_changes_you_mad] <span ng-repeat="student in validStudents"><a href="/admin/students/home.html?frn=001{{student.studentsdcid}}&lsp=pei_attendance_tracking.html" target="_blank">{{student.firstName}} {{student.lastName}}</a>{{$last ? '' : ', '}}</span></li>
+
                         <li>~[text:psx.htmlc.admin_attendance.attendance_tracking.to_continue_modifying_checklis]</li>
                         <li>~[text:psx.htmlc.admin_attendance.attendance_tracking.to_download_any_form_letters_y]</li>
                         <li>~[text:psx.htmlc.admin_attendance.attendance_tracking.to_select_a_new_group_of_stude]</li>

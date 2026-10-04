@@ -68,7 +68,7 @@ test('catalogue parity, placeholders, references, and standalone JS syntax', () 
     for (const page of JSON.parse(read('pagecataloging/attendance_tracking.json')).pages) assert.ok(en[page.title] && fr[page.title]);
 });
 for (const locale of ['US_en', 'CA_fr']) {
-    test(`${locale}: dashboard covers every SQL status, export field, and tile label`, () => {
+    test(`${locale}: dashboard covers every SQL status, export field, and tile label`, async () => {
         const dict = catalog(locale);
         const env = environment('WEB_ROOT/admin/pei_reports/attendance_tracking.html', dict);
         const scope = { $watch() {} };
@@ -82,6 +82,10 @@ for (const locale of ['US_en', 'CA_fr']) {
         const exported = decodeURIComponent(env.document.download.href.split(',')[1]).split('\n');
         assert.ok(!exported[0].split('\t').includes(''), 'untranslated export header');
         assert.ok(exported[1].includes(dict[A + 'no_steps_taken']));
+        assert.equal(scope.stepMap['Referral closed'], dict[S + 'referral_closed']);
+        row.currentStep = 'Referral closed';
+        scope.exportData([row]);
+        assert.ok(decodeURIComponent(env.document.download.href).includes(dict[S + 'referral_closed']));
         const tileSource = read('WEB_ROOT/admin/pei_reports/json/attendance_summary.json');
         const labels = [...tileSource.matchAll(/"(prefix_name|name)"\s*:\s*"([^"]+)"/g)];
         const messages = env.localization.read();
@@ -93,9 +97,10 @@ for (const locale of ['US_en', 'CA_fr']) {
         const directive = component('WEB_ROOT/scripts/components/attTrack/directives/attTiles.js', env, { dataService: service, state });
         // The directive controller resets ctrlData, then fetches asynchronously.
         let receive;
-        directive.controller.at(-1)({ getData: () => ({ then(fn) { receive = fn; } }) }, state);
+        directive.controller.at(-1)({ getData: () => new Promise(resolve => { receive = resolve; }) }, state);
         state.ctrlData.pssTilesVidget = { setTiles(value) { rendered = value; } };
         receive(tiles);
+        await new Promise(resolve => setImmediate(resolve));
         assert.equal(rendered[0].prefix_name, dict[S + 'referral']);
         assert.equal(rendered[0].name, dict[A + 'closed']);
         assert.equal(rendered[0].count, 2);
@@ -105,7 +110,7 @@ for (const locale of ['US_en', 'CA_fr']) {
         const env = environment('WEB_ROOT/admin/pei_reports/attUpdateChecklist.html', dict);
         const scope = {}, state = { spinner: {}, task: {} };
         component('WEB_ROOT/scripts/components/attTrack/controllers/update.js', env, {
-            $scope: scope, state, $timeout: fn => fn(), $q: { all: promises => Promise.all(promises) },
+            $scope: scope, state, $timeout: fn => fn(), $q: Object.assign(fn => new Promise(fn), { all: promises => Promise.all(promises) }),
             dataService: { getData: () => Promise.resolve([{}]), updateRecord: () => Promise.resolve(1) }
         });
         assert.equal(scope.steps.length, 11);
@@ -114,7 +119,7 @@ for (const locale of ['US_en', 'CA_fr']) {
         scope.validStudents = [{ recid: 1 }, { recid: 2 }];
         scope.save('sn');
         await new Promise(resolve => setImmediate(resolve));
-        assert.equal(state.task.success, dict[A + 'all_sum_students'].replace('${result.length}', '2'));
+        assert.equal(state.task.success, dict[A + 'bulk_summary'].replace('{saved}', '2').replace('{failed}', '0').replace('{unconfirmed}', '0'));
     });
     test(`${locale}: both student pages supply every alert and preserve punctuation`, () => {
         const dict = catalog(locale);
@@ -144,7 +149,7 @@ test('shared controller uses each portal’s exact endpoint and localized teache
             document: env.document, define: (dependencies, factory) => factory({ module: () => module }, {}, env.localization)
         });
         const requests = [];
-        controller({}, { getRecord(url) { requests.push(url); return { then() {} }; } }, () => {});
+        controller({}, { getRecord(url) { requests.push(url); return new Promise(() => {}); } }, () => {});
         assert.equal(requests[0], `${endpoint}?term=3601`);
         if (page.includes('/teachers/')) {
             for (const id of ['emailSubject', 'emailBody']) {

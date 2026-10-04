@@ -21,7 +21,7 @@
                                     '<link href="/images/css/print.css" rel="stylesheet" media="print">'+
                                     '<link href="/images/css/pei_att_track.css" rel="stylesheet">'+
                                     '<link href="/images/css/pei_att_track_print.css" rel="stylesheet">'+
-                                    '</head><body>' + document.querySelector('#printarea').innerHTML + '</body></html>');
+                                    '</head><body class="pei-att-track">' + document.querySelector('#printarea').innerHTML + '</body></html>');
             popupWin.print();  
         }
     </script>
@@ -29,8 +29,10 @@
 <body>
 <!-- Resolved by PowerSchool before the standalone JavaScript reads textContent. -->
 <div id="attTrackMessages" hidden ng-non-bindable>
+    <span data-att-message="load_error">~[text:psx.htmlc.admin_attendance.attendance_tracking.load_error]</span>
     <span data-att-message="grade_load_error">~[text:psx.htmlc.admin_students.attendance_tracking.grade_load_error]</span>
     <span data-att-message="email_not_sent">~[text:psx.htmlc.admin_students.attendance_tracking.email_not_sent]</span>
+    <span data-att-message="save_unconfirmed">~[text:psx.htmlc.admin_students.attendance_tracking.save_unconfirmed]</span>
     <span data-att-message="section_not_saved">~[text:psx.htmlc.admin_students.attendance_tracking.section_not_saved]</span>
 </div>
 
@@ -40,7 +42,7 @@
 ~[wc:title_student_begin_css]~[text:psx.htmlc.admin_students.attendance_tracking.attendance_concerns_checklist]~[wc:title_student_end_css]
 
 <!-- start of content and bounding box -->
-<div data-require-path="peiAttTrack/peiAttTrack202610" data-module-name="attTrackMod" ng-controller="attTrackCtrl" ng-cloak> 
+<div class="pei-att-track" data-require-path="peiAttTrack/peiAttTrack202610" data-module-name="attTrackMod" ng-controller="attTrackCtrl" ng-cloak>
     <div class="box-round no-print">
         <input type="hidden" id="staffName" value="~[x:username;firstlast]" />
         <input type="hidden" id="studentsdcid" value="~(studentrn)" />
@@ -48,8 +50,34 @@
         <input type="hidden" id="termid" value="~(curtermid)" />
         <input type="hidden" id="recordDataFile" value="json/pei_attTrack.json" />
     <input type="hidden" id="localeLang" value="~[locale.lang]" />
-        <input type="hidden" id="gradeInYear" value="~[tlist_sql;select * from (select e.grade_level from ps_schoolenrollment e where e.studentid = ~(curstudid) and e.yearid = ~(curyearid) order by 1 desc) where ROWNUM=1;nonemessage=-9]~(1)[/tlist_sql]" />  
-        <div ng-if="validTerm()">
+        <input type="hidden" id="gradeInYear" value="~[tlist_sql;
+SELECT e.grade_level
+FROM (
+    SELECT e.studentid, e.grade_level, e.schoolid, e.schoolname,
+           e.entrydate, e.exitdate,
+           ROW_NUMBER() OVER (
+               PARTITION BY e.studentid
+               ORDER BY e.entrydate DESC, e.exitdate DESC,
+                        e.schoolid ASC, e.grade_level DESC NULLS LAST,
+                        e.schoolname ASC NULLS LAST
+           ) AS enrollment_rn
+    FROM ps_schoolenrollment e
+    JOIN terms school_year
+      ON school_year.schoolid = e.schoolid
+     AND school_year.yearid = ~(curyearid)
+     AND school_year.id = school_year.yearid * 100
+    WHERE e.yearid = school_year.yearid
+      AND e.entrydate < school_year.lastday
+      AND e.exitdate > school_year.firstday
+      AND e.entrydate < e.exitdate
+) e
+JOIN students s ON s.id = e.studentid
+WHERE e.enrollment_rn = 1
+  AND s.id = ~(curstudid)
+  ~[if#school.is.a.school]AND s.schoolid = ~(curschoolid)[/if#school];nonemessage=-9]~(1)[/tlist_sql]" />
+        <div role="status" aria-live="polite" class="att-status"><span ng-if="recordLoading">~[text:psx.htmlc.admin_attendance.attendance_tracking.loading]</span><span ng-if="saveBusy || submitBusy">~[text:psx.htmlc.admin_attendance.attendance_tracking.saving]</span></div>
+        <div class="feedback-error" ng-if="recordLoadError" role="alert">~[text:psx.htmlc.admin_attendance.attendance_tracking.load_error] <button type="button" ng-click="retryLoad()" ng-disabled="recordLoading">~[text:psx.htmlc.admin_attendance.attendance_tracking.retry]</button></div>
+        <div ng-if="validTerm() && !recordLoading && !recordLoadError">
             <h2>~[text:psx.htmlc.admin_students.attendance_tracking.checklist_for] ~(termname) <span class="right boldtext">~[text:psx.htmlc.admin_students.attendance_tracking.grade_level_this_term] {{gradeInYear}} &nbsp; &nbsp; <a href="attendancehistory.html?frn=~(studentfrn)" target="_blank">~[text:psx.htmlc.admin_students.attendance_tracking.see_students_attendance_history]</a> &nbsp; &nbsp; <button class="btn btn-primary" onclick="printDiv()"><i class="fi-print"></i> ~[text:psx.htmlc.admin_students.attendance_tracking.print_view]</button></span></h2>
             <div class="feedback-info no-print">
                 <ul>
@@ -62,7 +90,7 @@
             </div>
             <fieldset ng-if="gradeInYear > 9" id="fieldset-student-notification">
                 <legend>~[text:psx.htmlc.admin_students.attendance_tracking.student_contact]</legend>
-                <form name="forms.stu" id="stuForm"  ng-submit="save($event,'student')" novalidate class="validatedForm noSubmitLoading" data-pss-validation-form data-dirty-state-check="true">
+                <form name="forms.stu" id="stuForm"  ng-submit="submitSection($event,'student',false)" novalidate class="validatedForm noSubmitLoading" data-pss-validation-form data-dirty-state-check="true">
                     <table class="checklistTable">
                         <colgroup>
                             <col style="width:35%;" />
@@ -85,9 +113,9 @@
                                     <input id="student_notification_date" name="date" ng-model="record.student.student_notification_date" type="text" pss-date-widget data-minDate="~[x:termbegdate]" ng-disabled="record.student.student_notification==0" ng-required="record.student.student_notification==1" />
                                 </td>
                                 <td class="grid-item center">
-                                    <div id="student_save" ng-if="student_save=='saving'" data-pss-wait-spinner="small"></div>
-                                    <button type="submit" id="student_save" ng-if="student_save=='unsaved' || student_save=='saved' || !student_save"  ng-disabled="forms.stu.$invalid || forms.stu.$pristine"><i class="fi-checkbox icon"></i></button>
-                                    <div id="saved" class="saved" ng-if="student_save=='saved' && !forms.stu.$dirty">~[text:psx.htmlc.admin_students.attendance_tracking.saved]</div>
+                                    <div ng-if="student_save=='saving'" data-pss-wait-spinner="small" role="status" aria-label="~[text:psx.htmlc.admin_attendance.attendance_tracking.loading]"></div>
+                                    <button type="submit" id="student_save"  ng-disabled="writeUncertain || saveBusy || submitBusy || forms.stu.$invalid || forms.stu.$pristine"><i aria-hidden="true" class="fi-checkbox icon"></i> <span>~[text:psx.htmlc.admin_attendance.attendance_tracking.save]</span></button>
+                                    <div class="saved" ng-if="student_save=='saved' && !forms.stu.$dirty" role="status" aria-live="polite">~[text:psx.htmlc.admin_students.attendance_tracking.saved]</div>
                                 </td>
                             </tr>
                         </tbody>
@@ -97,10 +125,10 @@
              <fieldset id="fieldset-parent-calls">
                 <legend><span class="qcicon">~[text:psx.htmlc.admin_students.attendance_tracking.initial_concern_and_guardian_c]&nbsp;</span> 
                     <a class='dialogM' title="~[text:psx.htmlc.admin_students.attendance_tracking.quick_contacts]" href="/admin/alerts/pscb_contacts_alert.html?frn=~(studentfrn)" style="visibility: visible;">
-                      <img src="/images/iconContacts1.png" height="24" width="24" border="2">
+                      <img alt="~[text:psx.htmlc.admin_students.attendance_tracking.quick_contacts]" src="/images/iconContacts1.png" height="24" width="24" border="2">
                     </a>
                 </legend>
-                <form name="forms.calls" id="callsForm"  ng-submit="save($event,'calls')" novalidate class="validatedForm noSubmitLoading" data-pss-validation-form data-dirty-state-check="true">
+                <form name="forms.calls" id="callsForm"  ng-submit="submitSection($event,'calls',false)" novalidate class="validatedForm noSubmitLoading" data-pss-validation-form data-dirty-state-check="true">
                     <table class="checklistTable">
                         <colgroup>
                             <col style="width:35%;" />
@@ -111,8 +139,7 @@
                         <tbody>
                             <tr>
                                 <td class="grid-item stretchCell">
-                                    <span class="label">~[text:psx.htmlc.admin_students.attendance_tracking.call_1] &nbsp;</span>
-                                    <sl-radio-group label="" name="parent_call_1" value="{{record.calls.parent_call_1}}" >
+                                    <sl-radio-group label="~[text:psx.htmlc.admin_attendance.attendance_tracking.parent_call_1]" name="parent_call_1" value="{{record.calls.parent_call_1}}" >
                                         <sl-radio-button class="call-na" size="small" ng-click="recordCall($event, 'parent_call_1',0)" value="0" ng-disabled="record.calls.parent_call_2>0 || concerns.concern_2_req==1">~[text:psx.htmlc.admin_students.attendance_tracking.not_attempted]</sl-radio-button>
                                         <sl-radio-button class="call-nc" size="small" value="1" ng-click="recordCall($event, 'parent_call_1',1)" ng-disabled="record.calls.parent_call_2>0 || concerns.concern_2_req==1">~[text:psx.htmlc.admin_students.attendance_tracking.no_contact]</sl-radio-button>
                                         <sl-radio-button class="call-co" size="small" value="3" ng-click="recordCall($event, 'parent_call_1',3)" ng-disabled="record.calls.parent_call_2>0 || concerns.concern_2_req==1">~[text:psx.htmlc.admin_students.attendance_tracking.contact_made]</sl-radio-button>
@@ -127,16 +154,15 @@
                                     <input id="parent_call_1_date" name="date" ng-model="record.calls.parent_call_1_date" type="text" pss-date-widget  data-minDate="{{ record.student.student_notification_date }}" ng-disabled="record.calls.parent_call_1==0 || record.calls.parent_call_2>0 || concerns.concern_2_req==1" ng-required="record.calls.parent_call_1>0" />
                                 </td>
                                 <td class="grid-item center" rowspan="4">
-                                    <div id="calls_save" ng-if="calls_save=='saving'" data-pss-wait-spinner="small"></div>
-                                    <button type="submit" ng-click="save($event, 'calls')" id="calls_save" ng-if="calls_save=='unsaved' || calls_save=='saved' || !calls_save"  ng-disabled="forms.calls.$invalid || forms.calls.$pristine || forms.stu.$dirty"><i class="fi-checkbox icon no-print"></i></button>
+                                    <div ng-if="calls_save=='saving'" data-pss-wait-spinner="small" role="status" aria-label="~[text:psx.htmlc.admin_attendance.attendance_tracking.loading]"></div>
+                                    <button type="submit" id="calls_save"  ng-disabled="writeUncertain || saveBusy || submitBusy || forms.calls.$invalid || forms.calls.$pristine || forms.stu.$dirty"><i aria-hidden="true" class="fi-checkbox icon no-print"></i> <span>~[text:psx.htmlc.admin_attendance.attendance_tracking.save]</span></button>
 
-                                    <div id="saved" class="saved" ng-if="calls_save=='saved' && !forms.calls.$dirty">~[text:psx.htmlc.admin_students.attendance_tracking.saved]</div>
+                                    <div class="saved" ng-if="calls_save=='saved' && !forms.calls.$dirty" role="status" aria-live="polite">~[text:psx.htmlc.admin_students.attendance_tracking.saved]</div>
                                 </td>
                             </tr>
                             <tr class="alternateRow">
                                 <td class="grid-item stretchCell">
-                                    <span class="label">~[text:psx.htmlc.admin_students.attendance_tracking.call_2] &nbsp;</span>
-                                    <sl-radio-group label="" name="parent_call_2" value="{{record.calls.parent_call_2}}" >
+                                    <sl-radio-group label="~[text:psx.htmlc.admin_attendance.attendance_tracking.parent_call_2]" name="parent_call_2" value="{{record.calls.parent_call_2}}" >
                                         <sl-radio-button class="call-na" size="small" ng-click="recordCall($event, 'parent_call_2',0)" value="0" ng-disabled="record.calls.parent_call_1==0 || record.calls.parent_call_3>0 || concerns.concern_2_req==1">~[text:psx.htmlc.admin_students.attendance_tracking.not_attempted]</sl-radio-button>
                                         <sl-radio-button class="call-nc" size="small" value="1" ng-click="recordCall($event, 'parent_call_2',1)" ng-disabled="record.calls.parent_call_1==0 || record.calls.parent_call_3>0  || concerns.concern_2_req==1">~[text:psx.htmlc.admin_students.attendance_tracking.no_contact]</sl-radio-button>
                                         <sl-radio-button class="call-co" size="small" value="3" ng-click="recordCall($event, 'parent_call_2',3)" ng-disabled="record.calls.parent_call_1==0 || record.calls.parent_call_3>0  || concerns.concern_2_req==1">~[text:psx.htmlc.admin_students.attendance_tracking.contact_made]</sl-radio-button>
@@ -153,8 +179,7 @@
                             </tr>
                             <tr>
                                 <td class="grid-item stretchCell">
-                                    <span class="label">~[text:psx.htmlc.admin_students.attendance_tracking.call_3] &nbsp;</span>
-                                    <sl-radio-group label="" name="parent_call_3" value="{{record.calls.parent_call_3}}" >
+                                    <sl-radio-group label="~[text:psx.htmlc.admin_attendance.attendance_tracking.parent_call_3]" name="parent_call_3" value="{{record.calls.parent_call_3}}" >
                                         <sl-radio-button class="call-na" size="small" ng-click="recordCall($event, 'parent_call_3',0)" value="0" ng-disabled="record.calls.parent_call_2==0 || concerns.concern_2_req==1">~[text:psx.htmlc.admin_students.attendance_tracking.not_attempted]</sl-radio-button>    
                                         <sl-radio-button class="call-nc" size="small" value="1" ng-click="recordCall($event, 'parent_call_3',1)" ng-disabled="record.calls.parent_call_2==0 || concerns.concern_2_req==1">~[text:psx.htmlc.admin_students.attendance_tracking.no_contact]</sl-radio-button>
                                         <sl-radio-button class="call-co" size="small" value="3" ng-click="recordCall($event, 'parent_call_3',3)" ng-disabled="record.calls.parent_call_2==0 || concerns.concern_2_req==1">~[text:psx.htmlc.admin_students.attendance_tracking.contact_made]</sl-radio-button>
@@ -189,7 +214,7 @@
                         <col style="width:18%;" />
                         <col style="width:9%;" />
                     </colgroup>  
-                    <tbody ng-form name="forms.concern_2" id="concern_2Form" novalidate class="validatedForm noSubmitLoading" data-pss-validation-form data-dirty-state-check="true">
+                    <tbody ng-form name="forms.concern_2" id="concern_2Form" novalidate class="validatedForm noSubmitLoading" data-pss-validation-form data-dirty-state-check="true" ng-keydown="sectionKeydown($event,'concern_2',false)">
                         <tr>
                             <td colspan="4">
                                 <h3 class="concern-head">~[text:psx.htmlc.admin_students.attendance_tracking.written_notification_1]</h3>
@@ -198,7 +223,7 @@
                         </tr>
                         <tr>
                             <td colspan="4">
-                                <ng-messages for="forms.concern_2.notes.$error" ng-show="forms.concern_2.$invalid && forms.concern_2.notes.$touched" role="alert">
+                                <ng-messages id="concern_2_notes_errors" for="forms.concern_2.notes.$error" ng-show="forms.concern_2.$invalid && forms.concern_2.notes.$touched" role="alert">
                                     <ng-message when="required" class="feedback-error">~[text:psx.htmlc.admin_students.attendance_tracking.notes_are_required_when_a_cont] ~[text:psx.htmlc.admin_students.attendance_tracking.click_the_clipboard_icon_above]</ng-message>
                                     <ng-message when="minlength" class="feedback-error">~[text:psx.htmlc.admin_students.attendance_tracking.notes_must_be_at_least_20_char]</ng-message>
                                     <ng-message when="maxlength" class="feedback-error">~[text:psx.htmlc.admin_students.attendance_tracking.notes_must_be_less_than_4000_c]</ng-message>
@@ -221,9 +246,9 @@
                                 <input id="concern_2_req_date" name="req_date" ng-model="record.concern_2.concern_2_req_date" type="text" pss-date-widget  ng-disabled="!concerns.concern_2_req || concerns.concern_2_sent==1" ng-required="concerns.concern_2_req" data-minDate="{{ record.calls.parent_call_3_date }}"/>
                             </td>
                             <td class="save-notes" rowspan="3">
-                                <div id="concern_2_save" ng-if="concern_2_save=='saving'" data-pss-wait-spinner="small"></div>
-                                <button type="submit" ng-click="save($event,'concern_2')" id="concern_2_save" ng-if="concern_2_save=='unsaved' || concern_2_save=='saved' || !concern_2_save"  ng-disabled="forms.concern_2.$invalid || forms.concern_2.$pristine || forms.calls.$dirty"><i class="fi-checkbox icon"></i></button>
-                                <div id="saved" class="saved" ng-if="concern_2_save=='saved' && !forms.concern_2.$dirty">~[text:psx.htmlc.admin_students.attendance_tracking.saved]</div>
+                                <div ng-if="concern_2_save=='saving'" data-pss-wait-spinner="small" role="status" aria-label="~[text:psx.htmlc.admin_attendance.attendance_tracking.loading]"></div>
+                                <button type="button" ng-click="submitSection($event,'concern_2',false)" id="concern_2_save"  ng-disabled="writeUncertain || saveBusy || submitBusy || forms.concern_2.$invalid || forms.concern_2.$pristine || forms.calls.$dirty"><i aria-hidden="true" class="fi-checkbox icon"></i> <span>~[text:psx.htmlc.admin_attendance.attendance_tracking.save]</span></button>
+                                <div class="saved" ng-if="concern_2_save=='saved' && !forms.concern_2.$dirty" role="status" aria-live="polite">~[text:psx.htmlc.admin_students.attendance_tracking.saved]</div>
                             </td>
                         </tr>
                         <tr>
@@ -245,12 +270,12 @@
                             <td colspan="3" class="grid-item">
                                 <label class="notes-label" for="concern_2_notes">~[text:psx.htmlc.admin_students.attendance_tracking.notes] (~[text:psx.htmlc.admin_students.attendance_tracking.required])</label>
                                 <p class="help-text">~[text:psx.htmlc.admin_students.attendance_tracking.note_any_concerns_dates1] ~[text:psx.htmlc.admin_students.attendance_tracking.note_any_supports_or_intervent] ~[text:psx.htmlc.admin_students.attendance_tracking.for_example_referral_to_schoo]</p>
-                                <textarea class="notes" id="concern_2_notes" name="notes" ng-model="record.concern_2.concern_2_notes" ng-disabled="!concerns.concern_2_req || concerns.concern_3_sent===true" ng-required="concerns.concern_2_req===true" ng-minlength="20" maxlength="4000"></textarea>
+                                <textarea class="notes" id="concern_2_notes" aria-describedby="concern_2_notes_errors" name="notes" ng-model="record.concern_2.concern_2_notes" ng-disabled="!concerns.concern_2_req || concerns.concern_3_sent===true" ng-required="concerns.concern_2_req===true" ng-minlength="20" maxlength="4000"></textarea>
                                 
                             </td>
                         </tr>
                     </tbody>
-                    <tbody ng-form name="forms.concern_3" id="concern_3Form" novalidate class="validatedForm noSubmitLoading" data-pss-validation-form data-dirty-state-check="true">
+                    <tbody ng-form name="forms.concern_3" id="concern_3Form" novalidate class="validatedForm noSubmitLoading" data-pss-validation-form data-dirty-state-check="true" ng-keydown="sectionKeydown($event,'concern_3',false)">
                         <tr class="alternateRow">
                             <td colspan="4">
                                 <h3 class="concern-head">~[text:psx.htmlc.admin_students.attendance_tracking.written_notification_2]</h3>
@@ -259,7 +284,7 @@
                         </tr>
                         <tr class="alternateRow">
                             <td colspan="4">
-                                <ng-messages for="forms.concern_3.notes.$error" ng-show="forms.concern_3.$invalid && forms.concern_3.notes.$touched" role="alert">
+                                <ng-messages id="concern_3_notes_errors" for="forms.concern_3.notes.$error" ng-show="forms.concern_3.$invalid && forms.concern_3.notes.$touched" role="alert">
                                     <ng-message when="required" class="feedback-error">~[text:psx.htmlc.admin_students.attendance_tracking.notes_are_required_when_a_cont] ~[text:psx.htmlc.admin_students.attendance_tracking.click_the_clipboard_icon_above]</ng-message>
                                     <ng-message when="minlength" class="feedback-error">~[text:psx.htmlc.admin_students.attendance_tracking.notes_must_be_at_least_20_char]</ng-message>
                                     <ng-message when="maxlength" class="feedback-error">~[text:psx.htmlc.admin_students.attendance_tracking.notes_must_be_less_than_4000_c]</ng-message>
@@ -281,9 +306,9 @@
                                 <input id="concern_3_req_date" name="req_date" ng-model="record.concern_3.concern_3_req_date" type="text" pss-date-widget data-minDate="{{ addFiveDays(record.concern_2.concern_2_sent_date) | date: '~[dateformat]' }}" ng-disabled="!concerns.concern_3_req || concerns.concern_3_sent===true" ng-required="concerns.concern_3_req" />
                             </td>
                             <td class="save-notes" rowspan="3">
-                                <div id="concern_3_save" ng-if="concern_3_save=='saving'" data-pss-wait-spinner="small"></div>
-                                <button type="submit" ng-click="save($event,'concern_3')" id="concern_3_save" ng-if="concern_3_save=='unsaved' || concern_3_save=='saved' || !concern_3_save"  ng-disabled="forms.concern_3.$invalid || forms.concern_3.$pristine"><i class="fi-checkbox icon"></i></button>
-                                <div id="saved" class="saved" ng-if="concern_3_save=='saved' && !forms.concern_3.$dirty">~[text:psx.htmlc.admin_students.attendance_tracking.saved]</div>
+                                <div ng-if="concern_3_save=='saving'" data-pss-wait-spinner="small" role="status" aria-label="~[text:psx.htmlc.admin_attendance.attendance_tracking.loading]"></div>
+                                <button type="button" ng-click="submitSection($event,'concern_3',false)" id="concern_3_save"  ng-disabled="writeUncertain || saveBusy || submitBusy || forms.concern_3.$invalid || forms.concern_3.$pristine"><i aria-hidden="true" class="fi-checkbox icon"></i> <span>~[text:psx.htmlc.admin_attendance.attendance_tracking.save]</span></button>
+                                <div class="saved" ng-if="concern_3_save=='saved' && !forms.concern_3.$dirty" role="status" aria-live="polite">~[text:psx.htmlc.admin_students.attendance_tracking.saved]</div>
                             </td>
                         </tr>
                         <tr class="alternateRow">
@@ -305,12 +330,12 @@
                             <td colspan="3" class="grid-item">
                                 <label class="notes-label" for="concern_3_notes">~[text:psx.htmlc.admin_students.attendance_tracking.notes] (~[text:psx.htmlc.admin_students.attendance_tracking.required])</label>
                                 <p class="help-text">~[text:psx.htmlc.admin_students.attendance_tracking.note_any_concerns_dates2] ~[text:psx.htmlc.admin_students.attendance_tracking.note_any_supports_or_intervent] ~[text:psx.htmlc.admin_students.attendance_tracking.for_example_referral_to_schoo]</p>
-                                <textarea class="notes" id="concern_3_notes" name="notes" ng-model="record.concern_3.concern_3_notes" ng-disabled="!concerns.concern_3_req || concerns.concern_4_sent===true" ng-required="concerns.concern_3_req===true" ng-minlength="20" maxlength="4000"></textarea>
+                                <textarea class="notes" id="concern_3_notes" aria-describedby="concern_3_notes_errors" name="notes" ng-model="record.concern_3.concern_3_notes" ng-disabled="!concerns.concern_3_req || concerns.concern_4_sent===true" ng-required="concerns.concern_3_req===true" ng-minlength="20" maxlength="4000"></textarea>
                                 
                             </td>
                         </tr>
                     </tbody>
-                     <tbody ng-form name="forms.concern_4" id="concern_4Form" novalidate class="validatedForm noSubmitLoading" data-pss-validation-form data-dirty-state-check="true">
+                     <tbody ng-form name="forms.concern_4" id="concern_4Form" novalidate class="validatedForm noSubmitLoading" data-pss-validation-form data-dirty-state-check="true" ng-keydown="sectionKeydown($event,'concern_4',false)">
                         <tr>
                             <td colspan="4">
                                 <h3 class="concern-head">~[text:psx.htmlc.admin_students.attendance_tracking.written_notification_3]</h3>
@@ -319,7 +344,7 @@
                         </tr>
                         <tr>
                             <td colspan="4">
-                                <ng-messages for="forms.concern_4.notes.$error" ng-show="forms.concern_4.$invalid && forms.concern_4.notes.$touched" role="alert">
+                                <ng-messages id="concern_4_notes_errors" for="forms.concern_4.notes.$error" ng-show="forms.concern_4.$invalid && forms.concern_4.notes.$touched" role="alert">
                                     <ng-message when="required" class="feedback-error">~[text:psx.htmlc.admin_students.attendance_tracking.notes_are_required_when_a_cont] ~[text:psx.htmlc.admin_students.attendance_tracking.click_the_clipboard_icon_above]</ng-message>
                                     <ng-message when="minlength" class="feedback-error">~[text:psx.htmlc.admin_students.attendance_tracking.notes_must_be_at_least_20_char]</ng-message>
                                     <ng-message when="maxlength" class="feedback-error">~[text:psx.htmlc.admin_students.attendance_tracking.notes_must_be_less_than_4000_c]</ng-message>
@@ -341,9 +366,9 @@
                                 <input id="concern_4_req_date" name="req_date" ng-model="record.concern_4.concern_4_req_date" type="text" pss-date-widget data-minDate="{{ addFiveDays(record.concern_3.concern_3_sent_date) | date: '~[dateformat]' }}" ng-disabled="!concerns.concern_4_req || concerns.concern_4_sent===true" ng-required="concerns.concern_4_req" />
                             </td>
                             <td class="save-notes" rowspan="3">
-                                <div id="concern_4_save" ng-if="concern_4_save=='saving'" data-pss-wait-spinner="small"></div>
-                                <button type="submit" ng-click="save($event,'concern_4')" id="concern_4_save" ng-if="concern_4_save=='unsaved' || concern_4_save=='saved' || !concern_4_save"  ng-disabled="forms.concern_4.$invalid || forms.concern_4.$pristine"><i class="fi-checkbox icon"></i></button>
-                                <div id="saved" class="saved" ng-if="concern_4_save=='saved' && !forms.concern_4.$dirty">~[text:psx.htmlc.admin_students.attendance_tracking.saved]</div>
+                                <div ng-if="concern_4_save=='saving'" data-pss-wait-spinner="small" role="status" aria-label="~[text:psx.htmlc.admin_attendance.attendance_tracking.loading]"></div>
+                                <button type="button" ng-click="submitSection($event,'concern_4',false)" id="concern_4_save"  ng-disabled="writeUncertain || saveBusy || submitBusy || forms.concern_4.$invalid || forms.concern_4.$pristine"><i aria-hidden="true" class="fi-checkbox icon"></i> <span>~[text:psx.htmlc.admin_attendance.attendance_tracking.save]</span></button>
+                                <div class="saved" ng-if="concern_4_save=='saved' && !forms.concern_4.$dirty" role="status" aria-live="polite">~[text:psx.htmlc.admin_students.attendance_tracking.saved]</div>
                             </td>
                         </tr>
                         <tr>
@@ -365,7 +390,7 @@
                             <td colspan="3" class="grid-item">
                                 <label class="notes-label" for="concern_4_notes">~[text:psx.htmlc.admin_students.attendance_tracking.notes] (~[text:psx.htmlc.admin_students.attendance_tracking.required])</label>
                                 <p class="help-text">~[text:psx.htmlc.admin_students.attendance_tracking.note_any_concerns_dates3] ~[text:psx.htmlc.admin_students.attendance_tracking.note_any_supports_or_intervent] ~[text:psx.htmlc.admin_students.attendance_tracking.for_example_referral_to_schoo]</p>
-                                <textarea class="notes" id="concern_4_notes" name="notes" ng-model="record.concern_4.concern_4_notes" ng-disabled="!concerns.concern_4_req || record.referral.referral>0" ng-required="concerns.concern_4_req===true" ng-minlength="20" maxlength="4000"></textarea>
+                                <textarea class="notes" id="concern_4_notes" aria-describedby="concern_4_notes_errors" name="notes" ng-model="record.concern_4.concern_4_notes" ng-disabled="!concerns.concern_4_req || record.referral.referral>0" ng-required="concerns.concern_4_req===true" ng-minlength="20" maxlength="4000"></textarea>
                             </td>
                         </tr>
                     </tbody>
@@ -380,7 +405,7 @@
                         <col style="width:18%;" />
                         <col style="width:9%;" />
                     </colgroup>
-                    <tbody name="forms.ref" id="refForm" novalidate class="validatedForm noSubmitLoading" data-pss-validation-form data-dirty-state-check="true">
+                    <tbody ng-form name="forms.ref" id="refForm" novalidate class="validatedForm noSubmitLoading" data-pss-validation-form data-dirty-state-check="true" ng-keydown="sectionKeydown($event,'referral',true)">
                         <tr>
                             <td class="grid-item stretchCell">
                                 <label class="form-control" for="referral">
@@ -397,26 +422,31 @@
                                 <input id="referral_date" name="date" data-minDate="{{ record.concern_4.concern_4_sent_date }}" ng-model="record.referral.referral_date" type="text" pss-date-widget  ng-disabled="!referral.referral || referral.referral_closed" ng-required="referral.referral>0" />
                             </td>
                             <td row-span="3" class="save-notes">
-                                <div id="referral_save" ng-if="referral_save=='saving'" data-pss-wait-spinner="small"></div>
-                                <button type="submit" ng-click="saveAndEmail($event,'referral')" id="referral_save" ng-if="referral_save=='unsaved' || referral_save=='saved' || !referral_save" ng-disabled="forms.ref.$invalid || forms.ref.$pristine"><i class="fi-checkbox icon"></i></button>
-                                <div id="saved" class="saved" ng-if="referral_save=='saved' && !forms.ref.$dirty">~[text:psx.htmlc.admin_students.attendance_tracking.saved]</div>
-                                <div id="emailed" class="emailed" ng-if="referral_emailed==1 && !forms.ref.$dirty">~[text:psx.htmlc.teachers_studentpages.attendance_tracking.email_sent]</div>
+                                <div ng-if="referral_save=='saving'" data-pss-wait-spinner="small" role="status" aria-label="~[text:psx.htmlc.admin_attendance.attendance_tracking.loading]"></div>
+                                <button type="button" ng-click="submitSection($event,'referral',true)" id="referral_save" ng-disabled="writeUncertain || saveBusy || submitBusy || forms.ref.$invalid || forms.ref.$pristine"><i aria-hidden="true" class="fi-checkbox icon"></i> <span>~[text:psx.htmlc.admin_attendance.attendance_tracking.save]</span></button>
+                                <div class="saved" ng-if="referral_save=='saved' && !forms.ref.$dirty" role="status" aria-live="polite">~[text:psx.htmlc.admin_students.attendance_tracking.saved]</div>
+                                <div class="emailed" ng-if="referral_emailed==1 && !forms.ref.$dirty" role="status" aria-live="polite">~[text:psx.htmlc.teachers_studentpages.attendance_tracking.email_sent]</div>
+                                <div class="feedback-error" ng-if="notificationFailed.referral">
+                                    ~[text:psx.htmlc.admin_students.attendance_tracking.saved_notification_failed]
+                                    <button type="button" ng-click="retryEmail('referral')" ng-disabled="writeUncertain || saveBusy || submitBusy || emailBusy.referral">~[text:psx.htmlc.admin_students.attendance_tracking.retry_notification]</button>
+                                </div>
+                                <div class="feedback-error" ng-if="notificationUnknown.referral">~[text:psx.htmlc.admin_students.attendance_tracking.notification_unconfirmed]</div>
                             </td>
                         </tr>
                         <tr>
                         ~[if.is.a.school] 
                           <td class="grid-item stretchCell">
-                              <label class="form-control" for="referral_closed">
-                              <input type="checkbox" ng-model="referral.referral_closed" ng-click="handleReferral($event, 'referral_closed')" name="referral_closed" id="referral_closed" ng-disabled="true" value="1" /> ~[text:psx.htmlc.admin_students.attendance_tracking.referral_closed]
+                              <label class="form-control" for="referral_closed_readonly">
+                              <input type="checkbox" ng-model="referral.referral_closed" ng-click="handleReferral($event, 'referral_closed')" name="referral_closed" id="referral_closed_readonly" ng-disabled="true" value="1" /> ~[text:psx.htmlc.admin_students.attendance_tracking.referral_closed]
                               </label>
                           </td>
                           <td class="grid-item">
-                              <label for="referral_closed_staff">~[text:psx.htmlc.admin_students.attendance_tracking.contacted_by]</label> 
-                              <input size="40" id="referral_closed_staff" name="referral_closed_staff" length="40" ng-model="record.referral.referral_closed_staff" ng-disabled="true" ng-required="record.referral.referral>1" />
+                              <label for="referral_closed_staff_readonly">~[text:psx.htmlc.admin_students.attendance_tracking.contacted_by]</label>
+                              <input size="40" id="referral_closed_staff_readonly" name="referral_closed_staff" length="40" ng-model="record.referral.referral_closed_staff" ng-disabled="true" ng-required="record.referral.referral>1" />
                           </td>
                           <td class="grid-item">
-                              <label for="referral_closed_date">~[text:psx.htmlc.admin_students.attendance_tracking.date]</label> 
-                              <input id="referral_closed_date" name="referral_closed_date" ng-model="record.referral.referral_closed_date" type="text" pss-date-widget data-minDate="{{ record.referral.referral_date }}" ng-disabled="true" ng-required="referral.referral_closed===true" />
+                              <label for="referral_closed_date_readonly">~[text:psx.htmlc.admin_students.attendance_tracking.date]</label>
+                              <input id="referral_closed_date_readonly" name="referral_closed_date" ng-model="record.referral.referral_closed_date" type="text" pss-date-widget data-minDate="{{ record.referral.referral_date }}" ng-disabled="true" ng-required="referral.referral_closed===true" />
                           </td>
                         [else]
                           <td class="grid-item stretchCell">
@@ -455,7 +485,7 @@
         <div class="no-print warning">~[text:psx.htmlc.admin_students.attendance_tracking.print_this_document_by_selecti] ~[text:psx.htmlc.admin_students.attendance_tracking.close_this_window_one_you_have]</div>
         <h1>~(first_name) ~(last_name)</h1>
         <h2>~[text:psx.htmlc.admin_students.attendance_tracking.grade_level_this_term] ~(termname) <span class="right boldtext">~[text:psx.htmlc.admin_students.attendance_tracking.grade_level_this_term] {{gradeInYear}}</span></h2>
-        <fieldset ng-if="gradeInYear > 9" id="fieldset-student-notification-print">
+        <fieldset ng-if="gradeInYear > 9" id="fieldset-student-notification-print-print">
             <legend>~[text:psx.htmlc.admin_students.attendance_tracking.student_contact]</legend>
             <table class="checklistTable">
                 <colgroup>
@@ -478,7 +508,7 @@
                 </tbody>
             </table>
         </fieldset>
-         <fieldset id="fieldset-parent-calls-print">
+         <fieldset id="fieldset-parent-calls-print-print">
             <legend>~[text:psx.htmlc.admin_students.attendance_tracking.initial_concern_and_guardian_c]</legend>
             <table class="checklistTable">
                 <colgroup>
@@ -528,7 +558,7 @@
                 </tbody>
             </table>
         </fieldset>
-        <fieldset id="fieldset-written-notifications-print">
+        <fieldset id="fieldset-written-notifications-print-print">
             <legend>~[text:psx.htmlc.admin_students.attendance_tracking.continued_concern_written_no]</legend>
             <table class="checklistTable">
                 <colgroup>
@@ -640,7 +670,7 @@
                 </tbody>
             </table>
         </fieldset>
-         <fieldset id="fieldset-referral-print">
+         <fieldset id="fieldset-referral-print-print">
             <legend>~[text:psx.htmlc.admin_students.attendance_tracking.referral]</legend>
             <table class="checklistTable">
                 <colgroup>

@@ -14,40 +14,39 @@ define(function(require) {
          });
 
         $scope.setHS = function() {
-            let termid = parseInt(document.getElementById('termid'));
+            let termid = parseInt(document.getElementById('termid').value, 10);
 
             return termid  % 100 === 0 ? false : true;
         };
         
         state.hs = $scope.setHS();
 
+        $scope.selectionBusy = false;
+        $scope.selectionError = '';
         $scope.makeCurrentSelection = function() {
-            state.spinner.wait = true;
-            let studentList = 0;
-            $scope.gridDataFiltered.forEach(function(row) {
-		        studentList = studentList + "," + row.studentsdcid;
-		    });                    
-		    let url = "/admin/changesrecorded.white.html";
-		    let payload = {ac:'buildsel;table=students;list=' + studentList};
-            dataService.postData(url, payload).then(function(result){
-                state.spinner.wait = false;
-                if (result.status === 'error') {
-                    alert(messages.selection_error);
-                } else {
-                    state.stuSelection = $scope.gridData;
-                    $scope.showActions = true;
-                }
+            if ($scope.selectionBusy || state.spinner.wait || !$scope.gridDataFiltered || !$scope.gridDataFiltered.length) return;
+            const selected = $scope.gridDataFiltered.slice();
+            $scope.selectionBusy = true;
+            $scope.selectionError = '';
+            $scope.showActions = false;
+            const payload = { ac: 'buildsel;table=students;list=0,' + selected.map(function(row) { return row.studentsdcid; }).join(',') };
+            return dataService.postData('/admin/changesrecorded.white.html', payload).then(function() {
+                state.stuSelection = selected;
+                $scope.showActions = true;
+            }).catch(function() {
+                $scope.selectionError = messages.selection_error;
+            }).finally(function() {
+                $scope.selectionBusy = false;
             });
-        };      
-        
-        
+        };
+
         function dateToText(date) {
             return `${date.getMonth()+1}/${date.getDate()}/${date.getFullYear()}`;
         }
         
         $scope.exportData = function(rowObjects) {
              
-            state.spinner.wait = true;        
+            if (!rowObjects || !rowObjects.length) return;
             
             // Get the keys of the first object in the array
             var keys = Object.keys(rowObjects[0]);
@@ -77,32 +76,32 @@ define(function(require) {
         
             // Click the link to download the file
             link.click();
-            state.spinner.wait = false;
         };
         
-         $scope.$watch(
-            function () {
-               return state.selectedStep;
-            },
-            function () {
+        let requestVersion = 0;
+        $scope.loadGrid = function() {
+            const version = ++requestVersion;
             state.spinner.wait = true;
-               
-               dataService
-                  .getData('json/attendance_tracking.json?step=' + (state.selectedStep || ''))
-                  .then(function (retData) {
-                    retData.pop();
-                    //apply any transformations that can't be made in the view
-                    retData.forEach(data => {
-                        if (data.stepDate) {
-                            data.stepDate = new Date(data.stepDate)
-                        }
+            $scope.loadError = '';
+            $scope.showActions = false;
+            $scope.gridData = [];
+            return dataService.getData('json/attendance_tracking.json?step=' + (state.selectedStep || ''))
+                .then(function(retData) {
+                    if (version !== requestVersion) return;
+                    if (!Array.isArray(retData)) throw new Error('Invalid grid response');
+                    const rows = retData.slice();
+                    if (rows.length && Object.keys(rows[rows.length - 1]).length === 0) rows.pop();
+                    rows.forEach(function(data) {
+                        if (data.stepDate) data.stepDate = new Date(data.stepDate);
                     });
-                    $scope.gridData = retData;
-                    state.spinner.wait = false;
-                  });
-            },
-            true
-         );
-      },
-   ]);
+                    $scope.gridData = rows;
+                }).catch(function() {
+                    if (version === requestVersion) $scope.loadError = messages.load_error;
+                }).finally(function() {
+                    if (version === requestVersion) state.spinner.wait = false;
+                });
+        };
+        $scope.reloadTiles = function() { return state.reloadTiles(); };
+        $scope.$watch(function() { return state.selectedStep; }, $scope.loadGrid);
+      }]);
 });

@@ -12,39 +12,39 @@ TemplateName:Admin
 <!-- Required style sheets: screen.css, and print.css --> 
 	<link href="/images/css/screen.css" rel="stylesheet" media="screen">
 	<link href="/images/css/print.css" rel="stylesheet" media="print">
+    <link href="/images/css/pei_att_track.css" rel="stylesheet">
 	<style>
-	    .tile-small-type-text {
+.pei-att-track .tile-small-type-text {
             font-size: 9pt !important;
         }
-        
-        #wait-spinner-div {
+.pei-att-track #wait-spinner-div {
             position: fixed;
             top: 55%;
             left: 55%;
         }
-        .center {
+.pei-att-track .center {
             text-align: center;
         }
-        #firstStep{
+.pei-att-track #firstStep {
             border: 1px solid gray;
         }
-        .button-row {
+.pei-att-track .button-row {
             padding: 5px;
         }
-        #firstStep > button {
+.pei-att-track #firstStep > button {
             background-color: green;
         }
-        #flex-container {
+.pei-att-track #flex-container {
             display: flex;
             flex-direction: row;
             justify-content: space-between;
             align-items: stretch;
         }
-        #flex-left {
+.pei-att-track #flex-left {
             order: 1;
             flex-basis: 70%;
         }
-        #flex-right {
+.pei-att-track #flex-right {
             order: 2;
             flex-basis: 30%;
         }
@@ -56,8 +56,10 @@ TemplateName:Admin
 <body>
 <!-- Resolved by PowerSchool before the standalone JavaScript reads textContent. -->
 <div id="attTrackMessages" hidden ng-non-bindable>
+    <span data-att-message="load_error">~[text:psx.htmlc.admin_attendance.attendance_tracking.load_error]</span>
     <span data-att-message="step:Student notified">~[text:psx.htmlc.admin_attendance.attendance_tracking.student_notified]</span>
     <span data-att-message="step:No steps taken">~[text:psx.htmlc.admin_attendance.attendance_tracking.no_steps_taken]</span>
+    <span data-att-message="step:Referral closed">~[text:psx.htmlc.admin_students.attendance_tracking.referral_closed]</span>
     <span data-att-message="step:Referred to Director">~[text:psx.htmlc.admin_attendance.attendance_tracking.referred_to_the_director]</span>
     <span data-att-message="step:Call 1 - no contact">~[text:psx.htmlc.admin_attendance.attendance_tracking.call_1_no_answer]</span>
     <span data-att-message="step:Call 1 - reached parent">~[text:psx.htmlc.admin_attendance.attendance_tracking.call_1_reached_parent]</span>
@@ -121,7 +123,7 @@ TemplateName:Admin
 <!-- Start of Page --> 
 	<h1>~[text:psx.htmlc.admin_attendance.attendance_tracking.attendance_concerns_tracking]</h1> 
 <!-- start of content area -->
-<div class="box-round" data-require-path="components/attTrack/index" data-module-name="attApp" ng-cloak>
+<div class="box-round pei-att-track" data-require-path="components/attTrack/index" data-module-name="attApp" ng-cloak>
     <div ng-controller="attGridCtrl">
         <input type="hidden" value="~(curtermid)" id="termid">
         ~[if#sch.is.a.school]
@@ -138,9 +140,12 @@ TemplateName:Admin
                 <li>~[text:psx.htmlc.admin_attendance.attendance_tracking.to_see_k-9_students_the_term]</li>
             </ul>
         </div>
-        <div id="wait-spinner-div" ng-if="spinner.wait">
-            <div data-pss-wait-spinner="large"></div>
+        <div id="wait-spinner-div" ng-if="spinner.wait || spinner.tiles || selectionBusy">
+            <div data-pss-wait-spinner="large" role="status" aria-label="~[text:psx.htmlc.admin_attendance.attendance_tracking.loading]"></div>
         </div>
+        <div class="feedback-error" ng-if="loadError" role="alert">{{loadError}} <button type="button" ng-click="loadGrid()" ng-disabled="spinner.wait">~[text:psx.htmlc.admin_attendance.attendance_tracking.retry]</button></div>
+        <div class="feedback-error" ng-if="spinner.tilesError" role="alert">{{spinner.tilesError}} <button type="button" ng-click="reloadTiles()" ng-disabled="spinner.tiles">~[text:psx.htmlc.admin_attendance.attendance_tracking.retry]</button></div>
+        <div class="feedback-error" ng-if="selectionError" role="alert">{{selectionError}}</div>
         <div data-ng-cloak>
             <div class="kpi-container">
                 <div class="kpi-header">
@@ -208,7 +213,7 @@ TemplateName:Admin
         	    <legend>~[text:psx.htmlc.admin_attendance.attendance_tracking.available_actions]</legend>
         	    <div class="button-row">
         	        ~[text:psx.htmlc.admin_attendance.attendance_tracking.to_work_with_the_set_of_studen] 
-        	        <button ng-click="makeCurrentSelection()">~[text:psx.htmlc.admin_attendance.attendance_tracking.make_current_student_selection]</button>
+                    <button ng-click="makeCurrentSelection()" ng-disabled="selectionBusy || spinner.wait || !gridDataFiltered.length">~[text:psx.htmlc.admin_attendance.attendance_tracking.make_current_student_selection]</button>
         	    </div>
                 <div ng-show="showActions">
                     <div class="button-row">
@@ -220,7 +225,7 @@ TemplateName:Admin
             	        ~[text:psx.htmlc.admin_attendance.attendance_tracking.these_buttons_will_open_a_new] ~[text:psx.htmlc.admin_attendance.attendance_tracking.return_to_this_page_to_update]
             	        <a href="/admin/messagesender/msgsndr.html" class="button" target="_blank">~[text:psx.htmlc.admin_attendance.attendance_tracking.email_via_message_sender]</a>
             	        <a href="/admin/studentlist/functions.html" class="button" target="_blank">~[text:psx.htmlc.admin_attendance.attendance_tracking.other_group_functions]</a>
-            	        <button id="exportData" ng-click="exportData(gridData)">~[text:psx.htmlc.admin_attendance.attendance_tracking.export_data]</button>
+                        <button id="exportData" ng-click="exportData(gridData)" ng-disabled="spinner.wait || !gridData.length">~[text:psx.htmlc.admin_attendance.attendance_tracking.export_data]</button>
             	    </div>
         	    </div>
         	</fieldset>

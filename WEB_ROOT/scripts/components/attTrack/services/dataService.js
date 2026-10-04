@@ -9,26 +9,17 @@ define(function(require) {
             });
          },
          postData: function (url, payload) {
-            return $http.post(url, $httpParamSerializer(payload), {headers: {'Content-Type':'application/x-www-form-urlencoded'}})
-            .success(function (data, status, headers, config) {
-                return {"status": status, "data": data};
-            })
-            .error(function (data, status, header, config) {
-                let responseDetails = "Data: " + data +
-                    "<hr />status: " + status +
-                    "<hr />headers: " + header +
-                    "<hr />config: " + config;
-                return {"status": "error", "data": responseDetails};
-            });
+            // Keep HTTP failures rejected so callers can handle them consistently.
+            return $http.post(url, $httpParamSerializer(payload), {headers: {'Content-Type':'application/x-www-form-urlencoded'}});
          },
         updateRecord: function(recordID, fields) {
               return $q(function(resolve, reject) {
-                console.log(recordID, fields)
                 $psq('u_pei_att_track').update(recordID, fields, function(retID) {
-                  if (retID !== 0) {
+                  var id = Number(retID);
+                  if (/^[1-9]\d*$/.test(String(retID)) && id <= 9007199254740991 && id === Number(recordID)) {
                     resolve(retID);
                   } else {
-                    reject('error on' + retID);
+                    reject({ outcome: retID === 0 || retID === '0' ? 'failed' : 'unconfirmed' });
                   }
                 });
               });

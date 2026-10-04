@@ -42,8 +42,8 @@
           to_char(u.referral_closed_date, '~[dateformat]') referral_closed_date,
           u.referral_notes,            
           ROW_NUMBER() OVER (
-            PARTITION BY u.studentsdcid
-            ORDER BY u.whencreated DESC NULLS LAST, u.id DESC
+            PARTITION BY u.studentsdcid, u.termid
+            ORDER BY u.whencreated ASC NULLS LAST, u.id ASC
         ) rn
     	FROM u_pei_att_track u
     	JOIN students s 
@@ -51,6 +51,7 @@
         WHERE
     	    u.termid = ~(gpv.term) AND
     	        s.id = ~(curstudid)
+            ~[if#school.is.a.school]AND s.schoolid = ~(curschoolid)[/if#school]
     ) WHERE rn = 1;nonemessage=-1]
     {
         "id": "~(1)",
@@ -105,6 +106,6 @@
             "referral_closed_date": "~(39;json)",
             "referral_notes": "~(40;json)"
         },
-        "rn": "~(rn)"
+        "rn": "~(41)"
     }
 [/tlist_sql]

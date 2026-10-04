@@ -1,9 +1,9 @@
-body { 
+
+body.pei-att-track {
   font-family: Arial, sans-serif; 
   line-height: 1.5em;    
 }
-                              
-fieldset legend {
+.pei-att-track fieldset legend {
   font-weight: bold;
   font-size: 128%;
   margin-left: 10px;
@@ -12,20 +12,18 @@ fieldset legend {
   border: 1px solid #ccc;
   border-radius: 4px;
 }
-
-legend {
+.pei-att-track legend {
   display: block;
   padding-inline-start: 2px;
   padding-inline-end: 2px;
 }
-
-fieldset {
+.pei-att-track fieldset {
   margin: 0 10px 10px 10px;
 }
 
 
 @media screen {
-  .warning {
+.pei-att-track .warning {
       color: red;
       font-weight: 700;
       text-align: center;
@@ -35,7 +33,6 @@ fieldset {
       border: 1px solid red;
   }
 }
-
-#printarea {
+.pei-att-track #printarea {
   display: block !important;
 }

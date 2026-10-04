@@ -14,6 +14,7 @@ select recid, termid, studentsdcid, student_number, last_name, first_name, curre
      pss.schoolid term_school,
      pss.schoolname term_schoolname,
      case
+         when u.referral = 2 then 'Referral closed'
          when u.referral = 1 then 'Referred to Director'
          when u.concern_4 = 2 then 'Letter 3 sent'
          when u.concern_4 = 1 then 'Letter 3 requested'
@@ -32,7 +33,8 @@ select recid, termid, studentsdcid, student_number, last_name, first_name, curre
         'No steps taken'
      end as current_step,
      case
-     when u.referral = 1 then 15
+         when u.referral = 2 then 16
+         when u.referral = 1 then 15
          when u.concern_4 = 2 then 14
          when u.concern_4 = 1 then 13
          when u.concern_3 = 2 then 11
@@ -49,7 +51,7 @@ select recid, termid, studentsdcid, student_number, last_name, first_name, curre
      else
         1
      end as current_step_idx,
-     coalesce(u.referral_date, u.concern_4_sent_date, u.concern_4_req_date, u.concern_3_sent_date, u.concern_3_req_date, u.concern_2_sent_date, u.concern_2_req_date, u.parent_call_3_date, u.parent_call_2_date, u.parent_call_1_date, u.student_notification_date) action_date,
+     coalesce(case when u.referral = 2 then u.referral_closed_date end, u.referral_date, u.concern_4_sent_date, u.concern_4_req_date, u.concern_3_sent_date, u.concern_3_req_date, u.concern_2_sent_date, u.concern_2_req_date, u.parent_call_3_date, u.parent_call_2_date, u.parent_call_1_date, u.student_notification_date) action_date,
      u.student_notification,
      u.parent_call_1,
      u.parent_call_2,
@@ -58,45 +60,70 @@ select recid, termid, studentsdcid, student_number, last_name, first_name, curre
      u.concern_3,
      u.concern_4,
      u.referral,
-     (u.parent_call_1 + u.parent_call_2 + u.parent_call_3) call_points,
-     ROW_NUMBER() OVER (PARTITION BY u.studentsdcid ORDER BY u.whencreated asc) rn
-  from u_pei_att_track u																											
+     (u.parent_call_1 + u.parent_call_2 + u.parent_call_3) call_points
+  from (
+    SELECT u.*,
+           ROW_NUMBER() OVER (
+               PARTITION BY u.studentsdcid, u.termid
+               ORDER BY u.whencreated ASC NULLS LAST, u.id ASC
+           ) AS checklist_rn
+    FROM u_pei_att_track u
+    WHERE u.termid = ~(curtermid)
+) u
   join students s
      on s.dcid = u.studentsdcid
-  join ps_schoolenrollment pss
-     on pss.studentid = s.id and pss.exitdate >= (select lastday from terms where id=~(curtermid) and schoolid=~(curschoolid))
+  join (
+    SELECT e.studentid, e.grade_level, e.schoolid, e.schoolname,
+           e.entrydate, e.exitdate,
+           ROW_NUMBER() OVER (
+               PARTITION BY e.studentid
+               ORDER BY e.entrydate DESC, e.exitdate DESC,
+                        e.schoolid ASC, e.grade_level DESC NULLS LAST,
+                        e.schoolname ASC NULLS LAST
+           ) AS enrollment_rn
+    FROM ps_schoolenrollment e
+    JOIN terms school_year
+      ON school_year.schoolid = e.schoolid
+     AND school_year.yearid = ~(curyearid)
+     AND school_year.id = school_year.yearid * 100
+    WHERE e.yearid = school_year.yearid
+      AND e.entrydate < school_year.lastday
+      AND e.exitdate > school_year.firstday
+      AND e.entrydate < e.exitdate
+) pss
+     on pss.studentid = s.id and pss.enrollment_rn = 1
   where
-      u.termid = ~(curtermid)
+      u.checklist_rn = 1
       ~[if.~(gpv.update)=1]and s.dcid in (select dcid from ~[temp.table.current.selection:students])[/if]
-       ~[if.is.a.school]and pss.schoolid = ~(curschoolid)[/if])
-  where rn = 1
+       ~[if.is.a.school]and s.schoolid = ~(curschoolid)[/if])
+  where 1 = 1
   ~[if.~(gpv.step)>0]and ~(gpv.step) <= current_step_idx[/if]
-  ~[if.~(gpv.exact=true]and ~(gpv.step) = current_step_idx[/if]
+  ~[if.~(gpv.exact)=true]and ~(gpv.step) = current_step_idx[/if]
   order by term_grade, last_name]
   {
       "recid": ~(1),
-      "termid":~(100),
-      "studentsdcid": ~(2),
-      "studentNumber": ~(200),
-      "lastName":"~(3;json)", 
-      "firstName":"~(4;json)", 
-      "currentGrade":~(5), 
-      "termGrade":~(6), 
-      "currentSchool":~(7), 
-      "termSchool":~(8), 
-      "termSchoolName":"~(8a;json)",
-      "currentStep":"~(9;json)", 
-      "currentStepIdx": ~(current_step_idx),
-      "stepDate":"~(10)",
-      "studentNotification":~(11), 
-      "parentCall1":~(12), 
-      "parentCall2":~(13), 
-      "parentCall3":~(14), 
-      "concern2":~(15), 
-      "concern3":~(16), 
-      "concern4":~(17), 
-      "referral":~(18),
-      "callPoints":~(19)
+      "termid": ~(2),
+      "studentsdcid": ~(3),
+      "studentNumber": ~(4),
+      "lastName": "~(5;json)",
+      "firstName": "~(6;json)",
+      "currentGrade": ~(7),
+      "termGrade": ~(8),
+      "currentSchool": ~(9),
+      "termSchool": ~(10),
+      "termSchoolName": "~(11;json)",
+      "currentStep": "~(12;json)",
+      "currentStepIdx": ~(13),
+      "stepDate": "~(14;json)",
+      "studentNotification": ~(15),
+      "parentCall1": ~(16),
+      "parentCall2": ~(17),
+      "parentCall3": ~(18),
+      "concern2": ~(19),
+      "concern3": ~(20),
+      "concern4": ~(21),
+      "referral": ~(22),
+      "callPoints": ~(23)
   },
   [/tlist_sql]
   {}
