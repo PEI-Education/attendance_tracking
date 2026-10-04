@@ -5,7 +5,7 @@ TemplateName:Admin
 <html>
 <head>
    <meta name="Author" content="Luke Walker, PEI Dept of Education">
-   <meta name="Version" content="0.5">
+   <meta name="Version" content="2026.10.0">
 	<title>~[text:psx.htmlc.admin_attendance.attendance_tracking.attendance_concerns_tracking]</title>
 <!-- required scripts -->
 	~[wc:commonscripts] 
@@ -49,9 +49,6 @@ TemplateName:Admin
             flex-basis: 30%;
         }
 	</style>
-	<script>
-	    var hs = ~(curtermid) % 100 === 0 ? false : true;
-	</script>
 </head> 
 <body>
 <!-- Resolved by PowerSchool before the standalone JavaScript reads textContent. -->
@@ -126,6 +123,7 @@ TemplateName:Admin
 <div class="box-round pei-att-track" data-require-path="components/attTrack/index" data-module-name="attApp" ng-cloak>
     <div ng-controller="attGridCtrl">
         <input type="hidden" value="~(curtermid)" id="termid">
+        <input type="hidden" value="~[dateformat]" id="dateFormat">
         ~[if#sch.is.a.school]
             ~[if#pref.prefschool.attendancetracking=]<div class="feedback-error">~[text:psx.htmlc.admin_attendance.attendance_tracking.concern_notification_email_rec_none]</div>
             [else#pref]
@@ -140,11 +138,10 @@ TemplateName:Admin
                 <li>~[text:psx.htmlc.admin_attendance.attendance_tracking.to_see_k-9_students_the_term]</li>
             </ul>
         </div>
-        <div id="wait-spinner-div" ng-if="spinner.wait || spinner.tiles || selectionBusy">
+        <div id="wait-spinner-div" ng-if="spinner.wait || selectionBusy">
             <div data-pss-wait-spinner="large" role="status" aria-label="~[text:psx.htmlc.admin_attendance.attendance_tracking.loading]"></div>
         </div>
         <div class="feedback-error" ng-if="loadError" role="alert">{{loadError}} <button type="button" ng-click="loadGrid()" ng-disabled="spinner.wait">~[text:psx.htmlc.admin_attendance.attendance_tracking.retry]</button></div>
-        <div class="feedback-error" ng-if="spinner.tilesError" role="alert">{{spinner.tilesError}} <button type="button" ng-click="reloadTiles()" ng-disabled="spinner.tiles">~[text:psx.htmlc.admin_attendance.attendance_tracking.retry]</button></div>
         <div class="feedback-error" ng-if="selectionError" role="alert">{{selectionError}}</div>
         <div data-ng-cloak>
             <div class="kpi-container">
@@ -187,7 +184,7 @@ TemplateName:Admin
                         <th data-pss-sort-fields="studentNumber|number">~[text:psx.htmlc.admin_attendance.attendance_tracking.student_number]</th>
                         <th data-pss-sort-fields="lastName">~[text:psx.htmlc.admin_attendance.attendance_tracking.last_name]</th>
                         <th data-pss-sort-fields="firstName">~[text:psx.htmlc.admin_attendance.attendance_tracking.first_name]</th>
-                        <th data-pss-sort-fields="grade|number">~[text:psx.htmlc.admin_attendance.attendance_tracking.grade]</th>
+                        <th data-pss-sort-fields="termGrade|number">~[text:psx.htmlc.admin_attendance.attendance_tracking.grade]</th>
                         <th data-pss-sort-fields="currentStep|select" data-default-filter="normal" data-filter-info="stepMap">~[text:psx.htmlc.admin_attendance.attendance_tracking.current_step]</th>
                         <th data-pss-sort-fields="stepDate|date">~[text:psx.htmlc.admin_attendance.attendance_tracking.last_action_date]</th>
                     </tr>
@@ -202,7 +199,7 @@ TemplateName:Admin
                         <td>{{student.firstName}}</td>
                         <td class="center">{{student.termGrade}}</td>
                         <td>{{stepMap[student.currentStep]}}</td>
-                        <td class="center">{{student.stepDate | date:'MM/dd/yyyy'}}</td>
+                        <td class="center">{{student.stepDate | date:'~[dateformat]'}}</td>
                     </tr>
                     </tbody>
                 </table>

@@ -17,8 +17,9 @@ def fixture_sql(sql, school=100, term=3601, student=1):
     # Explicitly substitute the known PS conditionals, not a general PS renderer.
     sql = re.sub(r'~\[if(?:#\w+)?\.is\.a\.school\](.*?)\[/if(?:#\w+)?\]',
                  lambda m: m[1] if school else '', sql, flags=re.S)
-    sql = re.sub(r'~\[if\.~\(gpv\.(?:update|step|exact).*?\[/if\]', '', sql, flags=re.S)
-    for tag, value in [('curtermid', term), ('gpv.term', term), ('curyearid', term // 100), ('curschoolid', school), ('curstudid', student)]:
+    sql = sql.replace('~[temp.table.current.selection:students]', 'current_selection')
+    sql = sql.replace("TO_DATE('~[date]', '~[dateformat]')", "'2026-10-04'")
+    for tag, value in [('curtermid', term), ('curyearid', term // 100), ('curschoolid', school), ('curstudid', student)]:
         sql = sql.replace(f'~({tag})', str(value))
     sql = sql.replace('~[dateformat]', 'mm/dd/yyyy')
     if 'order by term_grade, last_name]' in sql:
@@ -48,6 +49,7 @@ class EnrollmentQueryTests(unittest.TestCase):
                 (3600,36,200,'2026-09-01','2027-06-30'), (3601,36,200,'2026-09-01','2027-01-31');
             CREATE TABLE ps_schoolenrollment (studentid INTEGER, schoolid INTEGER, schoolname TEXT,
                                             yearid INTEGER, grade_level INTEGER, entrydate TEXT, exitdate TEXT);
+            CREATE TABLE current_selection (dcid INTEGER);
         ''')
 
     def add_student(self, student=1, current_school=100, grade=12):
@@ -67,8 +69,9 @@ class EnrollmentQueryTests(unittest.TestCase):
     def grid(self, **context):
         return self.query('admin/pei_reports/json/attendance_tracking.json', **context)
 
-    def summary(self, branch=0, **context):
-        return self.query('admin/pei_reports/json/attendance_summary.json', branch=branch, **context)[0]
+    def at_step(self, step, **context):
+        # Tiles count grid rows by current_step_idx (column 13) in the browser.
+        return sum(1 for row in self.grid(**context) if row[12] == step)
 
     def test_transfer_is_visible_only_at_current_school_and_counted_once(self):
         self.add_student(current_school=200)
@@ -79,22 +82,20 @@ class EnrollmentQueryTests(unittest.TestCase):
         self.checklist(id=11, whencreated='2026-10-02', referral=2)
         self.checklist(id=1, whencreated=None, concern_4=2)
         self.assertEqual(self.grid(school=100), [])
-        self.assertEqual(self.summary(school=100)[0], 0)
         for school in [200, 0]:
             rows = self.grid(school=school)
             self.assertEqual(len(rows), 1)
             self.assertEqual(rows[0][0], 10)
             self.assertEqual(rows[0][7], 11)  # latest grade, not highest/current grade
             self.assertEqual(rows[0][9], 200)
-            self.assertEqual(self.summary(school=school)[0], 1)
-            self.assertEqual(self.summary(school=school)[5], 1)  # first letter requested
-            self.assertEqual(self.summary(school=school)[12], 0)  # duplicate's closure ignored
+            self.assertEqual(self.at_step(7, school=school), 1)  # first letter requested
+            self.assertEqual(self.at_step(16, school=school), 0)  # duplicate's closure ignored
         for portal in ['admin/students/json/pei_attTrack.json', 'teachers/studentpages/json/pei_AttTrack.json']:
             self.assertEqual(self.query(portal, school=100), [])
             self.assertEqual(self.query(portal, school=200)[0][0], 10)
-        self.assertEqual(self.query('admin/students/json/pei_attTrackGrade.json', school=200), [(11,)])
         self.assertEqual(self.query('admin/students/pei_attendance_tracking.html', school=200), [(11,)])
-        self.assertEqual(self.query('admin/students/json/pei_attTrackGrade.json', school=100), [])
+        self.assertEqual(self.query('admin/students/pei_attendance_tracking.html', school=200), [(11,)])
+        self.assertEqual(self.query('admin/students/pei_attendance_tracking.html', school=100), [])
         notice = self.query('admin/home.peiAttTrack.content.footer.txt', school=200)
         self.assertEqual(notice, [(1, 0, 0)])
 
@@ -113,11 +114,29 @@ class EnrollmentQueryTests(unittest.TestCase):
             self.enroll(student, entry=entry, exit=exit, year=year)
             self.checklist(student)
         self.assertEqual([row[2] for row in self.grid()], [101, 102])
-        self.assertEqual(self.summary()[0], 2)
         for student in [1, 2]:
-            self.assertEqual(self.query('admin/students/json/pei_attTrackGrade.json', student=student), [(11,)])
+            self.assertEqual(self.query('admin/students/pei_attendance_tracking.html', student=student), [(11,)])
         for student in range(3, 8):
-            self.assertEqual(self.query('admin/students/json/pei_attTrackGrade.json', student=student), [])
+            self.assertEqual(self.query('admin/students/pei_attendance_tracking.html', student=student), [])
+
+    def test_bulk_endpoint_returns_only_the_current_selection(self):
+        for student in [1, 2, 3]:
+            self.add_student(student)
+            self.enroll(student)
+            self.checklist(student)
+        self.db.execute('INSERT INTO current_selection VALUES (101), (103)')
+        self.assertEqual([row[2] for row in self.grid()], [101, 102, 103])
+        selected = self.query('admin/pei_reports/json/attendance_tracking_selection.json')
+        self.assertEqual([row[2] for row in selected], [101, 103])
+
+    def test_bulk_endpoint_matches_dashboard_except_the_selection_filter(self):
+        folder = ROOT / 'WEB_ROOT/admin/pei_reports/json'
+        dashboard = (folder / 'attendance_tracking.json').read_text().splitlines()
+        selection = (folder / 'attendance_tracking_selection.json').read_text().splitlines()
+        extra = [line for line in selection if line not in dashboard]
+        self.assertEqual([line.strip() for line in extra],
+                         ['and s.dcid in (select dcid from ~[temp.table.current.selection:students])'])
+        self.assertEqual([line for line in selection if line not in extra], dashboard)
 
     def test_historical_school_is_not_used_to_grant_visibility(self):
         self.add_student(current_school=200)
@@ -125,16 +144,15 @@ class EnrollmentQueryTests(unittest.TestCase):
         self.checklist()
         self.assertEqual(self.grid(school=100), [])
         self.assertEqual(self.grid(school=200)[0][9], 100)
-        self.assertEqual(self.summary(school=200)[0], 1)
-        self.assertEqual(self.query('admin/students/json/pei_attTrackGrade.json', school=200), [(11,)])
+        self.assertEqual(self.query('admin/students/pei_attendance_tracking.html', school=200), [(11,)])
 
-    def test_full_year_summary_also_matches_grid(self):
+    def test_full_year_grid_uses_oldest_checklist(self):
         self.add_student(grade=8)
         self.enroll(grade=8)
         self.checklist(termid=3600, referral=2)
         self.checklist(id=11, termid=3600, whencreated='2026-09-02', referral=0)
-        self.assertEqual(self.summary(branch=1, term=3600)[0], len(self.grid(term=3600)))
-        self.assertEqual(self.summary(branch=1, term=3600)[11], 1)
+        self.assertEqual(len(self.grid(term=3600)), 1)
+        self.assertEqual(self.at_step(16, term=3600), 1)
 
 
 class ChecklistSelectionTests(unittest.TestCase):
@@ -143,8 +161,8 @@ class ChecklistSelectionTests(unittest.TestCase):
             'admin/students/json/pei_attTrack.json',
             'teachers/studentpages/json/pei_AttTrack.json',
             'admin/pei_reports/json/attendance_tracking.json',
-            'admin/pei_reports/json/attendance_summary.json',
             'admin/home.peiAttTrack.content.footer.txt',
+            'admin/attendance/functions/attendancestatus.meeting.peiatttrack.content.footer.txt',
         ]
         with sqlite3.connect(':memory:') as db:
             db.executescript('''
@@ -166,11 +184,11 @@ class ChecklistSelectionTests(unittest.TestCase):
                     self.assertNotIn('ORDER BY u.whencreated asc', source)
                     self.assertIn('u.checklist_rn = 1', source)
 
-    def test_summary_tile_placeholders_follow_aggregate_order(self):
-        source = (ROOT / 'WEB_ROOT/admin/pei_reports/json/attendance_summary.json').read_text()
-        for branch, expected in zip(source.split('[else#hs]'), [13, 12]):
-            indexes = [int(value) for value in re.findall(r'"count":\s*~\((\d+)\)', branch)]
-            self.assertEqual(indexes, list(range(1, expected + 1)))
+    def test_attendance_page_button_counts_exactly_like_the_home_notice(self):
+        def block(path):
+            return re.sub(r'\s+', ' ', sql_blocks(path)[0]).strip()
+        self.assertEqual(block('admin/attendance/functions/attendancestatus.meeting.peiatttrack.content.footer.txt'),
+                         block('admin/home.peiAttTrack.content.footer.txt'))
 
 
 if __name__ == '__main__':

@@ -58,6 +58,7 @@ test('catalogue parity, placeholders, references, and standalone JS syntax', () 
     }
     for (const file of [...files('WEB_ROOT'), ...files('pagecataloging')]) {
         if (!/\.(html|js|json|txt)$/.test(file)) continue;
+        if (file.includes('/shoelace-2.0.0/')) continue; // Vendored ES modules, checked separately.
         const source = read(file);
         for (const [, key] of source.matchAll(/~\[text:(psx\.htmlc\.[^\],]+)/g)) assert.ok(en[key] && fr[key], `${file}: ${key}`);
         if (file.endsWith('.js')) {
@@ -72,7 +73,7 @@ for (const locale of ['US_en', 'CA_fr']) {
         const dict = catalog(locale);
         const env = environment('WEB_ROOT/admin/pei_reports/attendance_tracking.html', dict);
         const scope = { $watch() {} };
-        component('WEB_ROOT/scripts/components/attTrack/controllers/controller.js', env, { $scope: scope, state: { spinner: {} } });
+        component('WEB_ROOT/scripts/components/attTrack/controllers/controller.js', env, { $scope: scope, state: { spinner: {} }, dataService: { getData: () => new Promise(() => {}) } });
         const sql = read('WEB_ROOT/admin/pei_reports/json/attendance_tracking.json');
         const statuses = [...sql.matchAll(/then '([^']+)'|else\s+'([^']+)'/g)].map(m => m[1] || m[2]);
         for (const status of statuses) assert.ok(scope.stepMap[status], status);
@@ -86,24 +87,22 @@ for (const locale of ['US_en', 'CA_fr']) {
         row.currentStep = 'Referral closed';
         scope.exportData([row]);
         assert.ok(decodeURIComponent(env.document.download.href).includes(dict[S + 'referral_closed']));
-        const tileSource = read('WEB_ROOT/admin/pei_reports/json/attendance_summary.json');
-        const labels = [...tileSource.matchAll(/"(prefix_name|name)"\s*:\s*"([^"]+)"/g)];
+        const tileSource = read('WEB_ROOT/scripts/components/attTrack/directives/attTiles.js');
+        const labels = [...tileSource.matchAll(/(prefix_name|name): '([^']+)'/g)];
+        assert.ok(labels.length >= 26);
         const messages = env.localization.read();
         for (const [, , value] of labels) assert.ok(messages['tile:' + value], value);
-        const tiles = [{ prefix_name: 'Referral', name: 'Closed', count: 2 }];
         let rendered;
-        const state = { spinner: {} };
-        const service = { getData: () => ({ then(fn) { fn(tiles); } }) };
-        const directive = component('WEB_ROOT/scripts/components/attTrack/directives/attTiles.js', env, { dataService: service, state });
-        // The directive controller resets ctrlData, then fetches asynchronously.
-        let receive;
-        directive.controller.at(-1)({ getData: () => new Promise(resolve => { receive = resolve; }) }, state);
+        const state = { spinner: {}, hs: true };
+        const directive = component('WEB_ROOT/scripts/components/attTrack/directives/attTiles.js', env, { state });
+        directive.controller.at(-1)(state);
         state.ctrlData.pssTilesVidget = { setTiles(value) { rendered = value; } };
-        receive(tiles);
-        await new Promise(resolve => setImmediate(resolve));
-        assert.equal(rendered[0].prefix_name, dict[S + 'referral']);
-        assert.equal(rendered[0].name, dict[A + 'closed']);
-        assert.equal(rendered[0].count, 2);
+        state.setTileRows([{ currentStepIdx: 16 }, { currentStepIdx: 16 }]);
+        const closed = rendered.find(tile => tile.id === 16);
+        assert.equal(closed.prefix_name, dict[S + 'referral']);
+        assert.equal(closed.name, dict[A + 'closed']);
+        assert.equal(closed.count, 2);
+        assert.ok(rendered.every(tile => tile.prefix_name && tile.name));
     });
     test(`${locale}: bulk steps and success count use resolved messages`, async () => {
         const dict = catalog(locale);
@@ -117,6 +116,8 @@ for (const locale of ['US_en', 'CA_fr']) {
         assert.equal(scope.steps[0].label, dict[A + 'student_notification']);
         assert.ok(scope.steps.every(step => step.label));
         scope.validStudents = [{ recid: 1 }, { recid: 2 }];
+        scope.setValues('sn', 'student_notification', 1);
+        Object.assign(scope.sn, { student_notification_staff: 'Staff', student_notification_date: '04/10/2026' });
         scope.save('sn');
         await new Promise(resolve => setImmediate(resolve));
         assert.equal(state.task.success, dict[A + 'bulk_summary'].replace('{saved}', '2').replace('{failed}', '0').replace('{unconfirmed}', '0'));
@@ -126,8 +127,8 @@ for (const locale of ['US_en', 'CA_fr']) {
         for (const page of ['WEB_ROOT/admin/students/pei_attendance_tracking.html', 'WEB_ROOT/teachers/studentpages/pei_attendance_tracking.html']) {
             const env = environment(page, dict);
             const messages = env.localization.read();
-            for (const key of ['grade_load_error', 'email_not_sent', 'section_not_saved']) assert.equal(messages[key], dict[S + key]);
-            assert.equal(env.localization.format(messages.email_not_sent, '{code}', -1), dict[S + 'email_not_sent'].replace('{code}', '-1'));
+            for (const key of ['save_unconfirmed', 'section_not_saved']) assert.equal(messages[key], dict[S + key]);
+            assert.equal(env.localization.format(messages.section_not_saved, '{code}', -1), dict[S + 'section_not_saved'].replace('{code}', '-1'));
             assert.equal(env.localization.format('L’élève "A" — {code}', '{code}', '$&'), 'L’élève "A" — $&');
         }
     });
@@ -150,18 +151,34 @@ test('shared controller uses each portal’s exact endpoint and localized teache
         });
         const requests = [];
         controller({}, { getRecord(url) { requests.push(url); return new Promise(() => {}); } }, () => {});
-        assert.equal(requests[0], `${endpoint}?term=3601`);
+        assert.equal(requests[0], endpoint);
         if (page.includes('/teachers/')) {
             for (const id of ['emailSubject', 'emailBody']) {
-                const value = source.match(new RegExp(`id="${id}"[^>]*?value="([^"]*)"`))[1];
+                const match = source.match(new RegExp(`id="${id}"[^>]*?value="([^"]*)"`)) || source.match(new RegExp(`<textarea id="${id}"[^>]*>([\\s\\S]*?)</textarea>`));
+                const value = match[1];
                 assert.ok(value.includes('~[text:'));
                 assert.ok(!value.includes('has requested') && !value.includes('Contact powerschoolhelp'));
             }
         }
+        // Text inputs strip newlines from their value; the body must be a textarea so its blank line survives.
+        assert.match(source, /<textarea id="emailBody"[^>]*>[^<]*\n\n[^<]*<\/textarea>/);
+        assert.ok(!source.includes('&#13;'));
     }
     const emails = [...Object.values(dict).join('\n').matchAll(/[\w.+-]+@[\w.-]+\.[A-Za-z]+/g)].map(m => m[0]);
     assert.ok(emails.length > 0);
     assert.ok(emails.every(email => email === 'jhdoyle@edu.pe.ca'));
+});
+test('admin referral recipient is always a quoted value with balanced board conditionals', () => {
+    const source = read('WEB_ROOT/admin/students/pei_attendance_tracking.html');
+    const input = source.match(/<input[^>]*id="emailTo"[^>]*>/)[0];
+    const value = input.match(/value="([^"]*)"/)[1];
+    for (const label of ['psb', 'cslf']) {
+        assert.equal((value.match(new RegExp(`~\\[if#${label}\\.`, 'g')) || []).length, 1, label);
+        assert.equal((value.match(new RegExp(`\\[/if#${label}\\]`, 'g')) || []).length, 1, label);
+    }
+    assert.ok(value.includes('~(schoolid)<500') && value.includes('~(schoolid)<601'));
+    const en = catalog('US_en'), fr = catalog('CA_fr');
+    for (const dict of [en, fr]) assert.ok(dict[S + 'you_can_review_their_file_by_l'].includes("'student_number=~(student_number)'"));
 });
 test('student message banks are in the document body and inline scripts compile', () => {
     for (const page of ['WEB_ROOT/admin/students/pei_attendance_tracking.html', 'WEB_ROOT/teachers/studentpages/pei_attendance_tracking.html']) {
@@ -172,5 +189,79 @@ test('student message banks are in the document body and inline scripts compile'
         }
         assert.equal((source.match(/id="attTrackMessages"/g) || []).length, 1);
         assert.ok(source.indexOf('id="attTrackMessages"') > source.indexOf('</head>'));
+    }
+});
+test('referral display and print views label each step with its own fields', () => {
+    const teacher = read('WEB_ROOT/teachers/studentpages/pei_attendance_tracking.html');
+    const admin = read('WEB_ROOT/admin/students/pei_attendance_tracking.html');
+    // Teacher checkboxes are read-only views of 0 = none, 1 = referred, 2 = closed.
+    assert.match(teacher, /ng-checked="record\.referral\.referral > 0" name="referral" id="referral" disabled/);
+    assert.match(teacher, /ng-checked="record\.referral\.referral == 2" name="referral_closed" id="referral_closed" disabled/);
+    for (const source of [teacher, admin]) {
+        const print = source.slice(source.indexOf('id="printarea"'));
+        // Admin print repeats each letter heading as its row label; the teacher print labels rows "flag concern".
+        const perLetter = source === admin ? 2 : 1;
+        for (const n of [1, 2, 3]) assert.equal((print.match(new RegExp(`written_notification_${n}\\]`, 'g')) || []).length, perLetter, `letter ${n}`);
+        assert.ok(print.includes('{{ record.referral.referral_closed_staff }}') && print.includes('{{ record.referral.referral_closed_date }}'));
+        assert.ok(!source.includes('row-span') && !source.includes('``'));
+        assert.match(source, /popupWin\.document\.close\(\);/);
+        assert.match(source, /'<\/body><\/html>'\);/);
+    }
+});
+test('export uses fixed columns, the page date format, and survives rows without an action date', () => {
+    const dict = catalog('CA_fr');
+    const env = environment('WEB_ROOT/admin/pei_reports/attendance_tracking.html', dict);
+    const getElementById = env.document.getElementById;
+    env.document.getElementById = id => id === 'dateFormat' ? { value: 'dd/MM/yyyy' } : getElementById(id);
+    const scope = { $watch() {} };
+    component('WEB_ROOT/scripts/components/attTrack/controllers/controller.js', env,
+        { $scope: scope, state: { spinner: {} }, dataService: { getData: () => new Promise(() => {}) } });
+    const row = { recid: 1, lastName: 'Le\tBlanc', firstName: 'Zoé\nA', currentStep: 'Letter 1 sent', stepDate: new Date(2026, 9, 4), $$hashKey: 'object:7' };
+    const empty = { recid: 2, lastName: 'Gallant', firstName: 'Max', currentStep: 'No steps taken', stepDate: '' };
+    scope.exportData([row, empty]);
+    const lines = decodeURIComponent(env.document.download.href.split(',').slice(1).join(',')).split('\n');
+    const header = lines[0].split('\t');
+    assert.equal(lines.length, 3);
+    assert.equal(header.length, 23);
+    assert.ok(header.every(Boolean));
+    assert.ok(!lines.join('\n').includes('object:7'));
+    const first = lines[1].split('\t'), second = lines[2].split('\t');
+    assert.equal(first.length, 23);
+    assert.equal(first[4], 'Le Blanc');
+    assert.equal(first[5], 'Zoé A');
+    assert.equal(first[13], '04/10/2026');
+    assert.equal(second[13], '');
+    assert.equal(second[11], dict[A + 'no_steps_taken']);
+});
+test('Shoelace radio components load from the plugin, with every module import present', () => {
+    const vendor = 'WEB_ROOT/scripts/peiAttTrack/shoelace-2.0.0';
+    for (const page of ['WEB_ROOT/admin/students/pei_attendance_tracking.html', 'WEB_ROOT/teachers/studentpages/pei_attendance_tracking.html',
+        'WEB_ROOT/admin/pei_reports/attUpdateChecklist.html']) {
+        const source = read(page);
+        assert.ok(!source.includes('cdn.jsdelivr.net'), page);
+        for (const [, url] of source.matchAll(/(?:src|href)="(\/scripts\/peiAttTrack\/shoelace-2\.0\.0\/[^"]+)"/g)) {
+            assert.ok(fs.existsSync(path.join(root, 'WEB_ROOT', url)), url);
+        }
+        assert.ok(source.includes('/components/radio-group/radio-group.js') && source.includes('/components/radio-button/radio-button.js'), page);
+    }
+    for (const file of files(vendor).filter(file => file.endsWith('.js'))) {
+        for (const [, specifier] of read(file).matchAll(/(?:import|export)\s*(?:[^'"]*?from\s*)?["']([^"']+)["']/g)) {
+            assert.ok(specifier.startsWith('.'), `${file}: ${specifier}`);
+            assert.ok(fs.existsSync(path.join(root, path.posix.dirname(file), specifier)), `${file}: ${specifier}`);
+        }
+    }
+    assert.ok(!read('plugin.xml').includes('cdn'));
+    assert.ok(fs.existsSync(path.join(root, vendor, 'LICENSE.md')));
+});
+test('icons are inline SVG; no page depends on the external Foundation icon stylesheet', () => {
+    for (const file of files('WEB_ROOT').filter(file => /\.(html|txt)$/.test(file))) {
+        const source = read(file);
+        assert.ok(!source.includes('foundation-icons') && !/class="fi[- ]/.test(source), file);
+        for (const [svg] of source.matchAll(/<svg class="att-icon[^>]*>/g)) assert.match(svg, /aria-hidden="true"/, file);
+    }
+});
+test('no page or endpoint reads URL parameters (gpv), which PowerSchool substitutes before parsing tags', () => {
+    for (const file of files('WEB_ROOT').filter(file => /\.(html|json|txt)$/.test(file))) {
+        assert.ok(!/~\(gpv\./.test(read(file)), file);
     }
 });

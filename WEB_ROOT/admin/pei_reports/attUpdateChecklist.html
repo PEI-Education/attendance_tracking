@@ -5,17 +5,17 @@ TemplateName:Admin
 <html>
 <head>
     <meta name="Author" content="Luke Walker, PEI Dept of Education">
-    <meta name="Version" content="2023.12">
+    <meta name="Version" content="2026.10.0">
 	<title>~[text:psx.htmlc.admin_attendance.attendance_tracking.mass_update_attendance_checkli]</title>
-	<link rel="stylesheet" type="text/css" href="/admin/pei_reports/css/foundation-icons.css" />
 <!-- required scripts -->
 	~[wc:commonscripts] 
 	<script src="/scripts/psQuery/psQuery.js"></script>
 <!-- Required style sheets: screen.css, and print.css --> 
 	<link href="/images/css/screen.css" rel="stylesheet" media="screen">
 	<link href="/images/css/print.css" rel="stylesheet" media="print">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.0.0/dist/themes/light.css" />
-    <script type="module" src="https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.0.0/dist/shoelace.js"></script>
+    <link rel="stylesheet" href="/scripts/peiAttTrack/shoelace-2.0.0/themes/light.css" />
+    <script type="module" src="/scripts/peiAttTrack/shoelace-2.0.0/components/radio-group/radio-group.js"></script>
+    <script type="module" src="/scripts/peiAttTrack/shoelace-2.0.0/components/radio-button/radio-button.js"></script>
     <link href="/images/css/pei_att_track.css" rel="stylesheet">
 	<style>
 .pei-att-track #wait-spinner-div {
@@ -43,13 +43,16 @@ TemplateName:Admin
     <span data-att-message="parent_call_3">~[text:psx.htmlc.admin_attendance.attendance_tracking.parent_call_3]</span>
     <span data-att-message="referred_to_the_director">~[text:psx.htmlc.admin_attendance.attendance_tracking.referred_to_the_director]</span>
     <span data-att-message="bulk_summary">~[text:psx.htmlc.admin_attendance.attendance_tracking.bulk_summary]</span>
-    <span data-att-message="all_sum_students">~[text:psx.htmlc.admin_attendance.attendance_tracking.all_sum_students]</span>
     <span data-att-message="letter_1_requested">~[text:psx.htmlc.admin_attendance.attendance_tracking.letter_1_requested]</span>
     <span data-att-message="letter_1_sent">~[text:psx.htmlc.admin_attendance.attendance_tracking.letter_1_sent]</span>
     <span data-att-message="letter_2_requested">~[text:psx.htmlc.admin_attendance.attendance_tracking.letter_2_requested]</span>
     <span data-att-message="letter_2_sent">~[text:psx.htmlc.admin_attendance.attendance_tracking.letter_2_sent]</span>
     <span data-att-message="letter_3_requested">~[text:psx.htmlc.admin_attendance.attendance_tracking.letter_3_requested]</span>
     <span data-att-message="letter_3_sent">~[text:psx.htmlc.admin_attendance.attendance_tracking.letter_3_sent]</span>
+    <span data-att-message="bulk_referral_subject">~[text:psx.htmlc.admin_attendance.attendance_tracking.bulk_referral_subject]</span>
+    <span data-att-message="bulk_referral_intro">~[text:psx.htmlc.admin_attendance.attendance_tracking.bulk_referral_intro]</span>
+    <span data-att-message="email_generated">~[text:psx.htmlc.admin_students.attendance_tracking.this_email_was_automatically_g]</span>
+    <span data-att-message="email_contact">~[text:psx.htmlc.admin_students.attendance_tracking.contact_powerschoolhelp]</span>
 </div>
 
 	~[wc:admin_header_css] 
@@ -67,6 +70,12 @@ TemplateName:Admin
             <input type="hidden" id="staffName" value="~[x:username;firstlast]" />
             <input type="hidden" id="localeLang" value="~[locale.lang]" />
             <input type="hidden" id="dateToday" value="~[date]" />
+            <!-- Referral summary email: recipients by board (PSB schools below 500, CSLF 500-600). -->
+            <input type="hidden" id="emailFrom" value="~[x:useremail]" />
+            <input type="hidden" id="emailToPSB" value="~[displaypref:attendancetrackingPSB]" />
+            <input type="hidden" id="emailToCSLF" value="~[displaypref:attendancetrackingCSLF]" />
+            <input type="hidden" id="emailDate" value="~[datefmt:MM/dd/yyyy]" />
+            <input type="hidden" id="emailTime" value="~(f.currenttime)" />
          
           <div class="feedback-error" ng-if="loadError" role="alert">{{loadError}} <button type="button" ng-click="reloadStudents()" ng-disabled="spinner.wait">~[text:psx.htmlc.admin_attendance.attendance_tracking.retry]</button></div>
           <fieldset ng-disabled="batchStarted || spinner.wait || loadError">
@@ -127,14 +136,14 @@ TemplateName:Admin
                             </td>
                             <td class="grid-item">
                                 <label for="student_notification_staff">~[text:psx.htmlc.admin_attendance.attendance_tracking.contacted_by]</label> 
-                                <input size="40" id="student_notification_staff" name="staff" length="40" ng-model="sn.student_notification_staff"  />
+                                <input size="40" id="student_notification_staff" name="staff" length="40" ng-model="sn.student_notification_staff" ng-required="sn.student_notification==1"  />
                             </td>
                             <td class="grid-item">
                                 <label for="student_notification_date">~[text:psx.htmlc.admin_attendance.attendance_tracking.date]</label> 
-                                <input id="student_notification_date" name="date" ng-model="sn.student_notification_date" type="text" pss-date-widget />
+                                <input id="student_notification_date" name="date" ng-model="sn.student_notification_date" ng-required="sn.student_notification==1" type="text" pss-date-widget />
                             </td>
                             <td class="grid-item center">
-                                <button type="submit" id="bulk_sn_save"><i aria-hidden="true" class="fi-checkbox icon"></i> <span>~[text:psx.htmlc.admin_attendance.attendance_tracking.save]</span></button>
+                                <button type="submit" id="bulk_sn_save" ng-disabled="!canSave('sn')"><svg class="att-icon icon" aria-hidden="true" focusable="false" width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-0.125em"><path d="M4 4h16v16H4zM8 12l3 3 5-6"/></svg> <span>~[text:psx.htmlc.admin_attendance.attendance_tracking.save]</span></button>
                             </td>
                         </tr>
                     </table>
@@ -163,14 +172,14 @@ TemplateName:Admin
                                 </td>
                                 <td class="grid-item">
                                     <label for="parent_call_1_staff">~[text:psx.htmlc.admin_attendance.attendance_tracking.contacted_by]</label> 
-                                    <input size="40" id="parent_call_1_staff" name="staff" ng-model="pc1.parent_call_1_staff" />
+                                    <input size="40" id="parent_call_1_staff" name="staff" ng-model="pc1.parent_call_1_staff" ng-required="pc1.parent_call_1>0" />
                                 </td>
                                 <td class="grid-item">
                                     <label for="parent_call_1_date">~[text:psx.htmlc.admin_attendance.attendance_tracking.date]</label> 
-                                    <input id="parent_call_1_date" name="date" ng-model="pc1.parent_call_1_date" type="text" pss-date-widget />
+                                    <input id="parent_call_1_date" name="date" ng-model="pc1.parent_call_1_date" ng-required="pc1.parent_call_1>0" type="text" pss-date-widget />
                                 </td>
                                 <td class="grid-item center" rowspan="2">
-                                    <button type="submit" id="bulk_pc1_save"><i aria-hidden="true" class="fi-checkbox icon no-print"></i> <span>~[text:psx.htmlc.admin_attendance.attendance_tracking.save]</span></button>
+                                    <button type="submit" id="bulk_pc1_save" ng-disabled="!canSave('pc1')"><svg class="att-icon icon no-print" aria-hidden="true" focusable="false" width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-0.125em"><path d="M4 4h16v16H4zM8 12l3 3 5-6"/></svg> <span>~[text:psx.htmlc.admin_attendance.attendance_tracking.save]</span></button>
                                 </td>
                             </tr>
                         <!--
@@ -209,21 +218,14 @@ TemplateName:Admin
                                 </td>
                                 <td class="grid-item">
                                     <label for="parent_call_2_staff">~[text:psx.htmlc.admin_attendance.attendance_tracking.contacted_by]:</label> 
-                                    <input size="40" id="parent_call_2_staff" name="staff" ng-model="pc2.parent_call_2_staff" ng-required="parent_call_2>0" />
+                                    <input size="40" id="parent_call_2_staff" name="staff" ng-model="pc2.parent_call_2_staff" ng-required="pc2.parent_call_2>0" />
                                 </td>
                                 <td class="grid-item">
                                     <label for="parent_call_2_date">~[text:psx.htmlc.admin_attendance.attendance_tracking.date]:</label> 
-                                    <input id="parent_call_2_date" name="date" ng-model="pc2.parent_call_2_date" type="text" pss-date-widget  ng-required="parent_call_2>0" />
+                                    <input id="parent_call_2_date" name="date" ng-model="pc2.parent_call_2_date" ng-required="pc2.parent_call_2>0" type="text" pss-date-widget />
                                 </td>
                                 <td class="grid-item center" rowspan="4">
-                                    <button type="submit" id="bulk_pc2_save"><i aria-hidden="true" class="fi-checkbox icon no-print"></i> <span>~[text:psx.htmlc.admin_attendance.attendance_tracking.save]</span></button>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td colspan="3" class="grid-item">
-                                    <label for="parent_call_notes" class="notes-label">~[text:psx.htmlc.admin_attendance.attendance_tracking.notes]</label>
-                                    <p class="help-text">~[text:psx.htmlc.admin_attendance.attendance_tracking.any_previously_entered_notes_f]</p>
-                                    <textarea class="notes" id="parent_call_notes" name="pc2.parent_call_notes" ng-model="parent_call_notes" maxlength="4000"></textarea>
+                                    <button type="submit" id="bulk_pc2_save" ng-disabled="!canSave('pc2')"><svg class="att-icon icon no-print" aria-hidden="true" focusable="false" width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-0.125em"><path d="M4 4h16v16H4zM8 12l3 3 5-6"/></svg> <span>~[text:psx.htmlc.admin_attendance.attendance_tracking.save]</span></button>
                                 </td>
                             </tr>
                         </tbody>
@@ -253,14 +255,14 @@ TemplateName:Admin
                                 </td>
                                 <td class="grid-item">
                                     <label for="parent_call_3_staff">~[text:psx.htmlc.admin_attendance.attendance_tracking.contacted_by]:</label> 
-                                    <input size="40" id="parent_call_3_staff" name="staff" ng-model="pc3.parent_call_3_staff" ng-required="parent_call_3>0" />
+                                    <input size="40" id="parent_call_3_staff" name="staff" ng-model="pc3.parent_call_3_staff" ng-required="pc3.parent_call_3>0" />
                                 </td>
                                 <td class="grid-item">
                                     <label for="parent_call_3_date">~[text:psx.htmlc.admin_attendance.attendance_tracking.date]:</label> 
-                                    <input id="parent_call_3_date" name="date" ng-model="pc3.parent_call_3_date" type="text" pss-date-widget ng-required="parent_call_3>0" />
+                                    <input id="parent_call_3_date" name="date" ng-model="pc3.parent_call_3_date" ng-required="pc3.parent_call_3>0" type="text" pss-date-widget />
                                 </td>
                                 <td class="grid-item center" rowspan="4">
-                                    <button type="submit" id="bulk_pc3_save"><i aria-hidden="true" class="fi-checkbox icon no-print"></i> <span>~[text:psx.htmlc.admin_attendance.attendance_tracking.save]</span></button>
+                                    <button type="submit" id="bulk_pc3_save" ng-disabled="!canSave('pc3')"><svg class="att-icon icon no-print" aria-hidden="true" focusable="false" width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-0.125em"><path d="M4 4h16v16H4zM8 12l3 3 5-6"/></svg> <span>~[text:psx.htmlc.admin_attendance.attendance_tracking.save]</span></button>
                                 </td>
                             </tr>
                         <!--
@@ -286,7 +288,7 @@ TemplateName:Admin
                         <tbody>
                             <tr>
                                 <td colspan="4"> 
-                                    <h3>~[text:psx.htmlc.admin_attendance.attendance_tracking.written_notification_1] (~[text:psx.htmlc.admin_attendance.attendance_tracking.requested_low]) {{ c2req.concern_2 }}</h3>
+                                    <h3>~[text:psx.htmlc.admin_attendance.attendance_tracking.written_notification_1] (~[text:psx.htmlc.admin_attendance.attendance_tracking.requested_low])</h3>
                                 </td>
                             </tr>
                             <tr>
@@ -297,14 +299,14 @@ TemplateName:Admin
                                 </td>
                                 <td class="grid-item">
                                     <label for="concern_2_req_staff">~[text:psx.htmlc.admin_attendance.attendance_tracking.contacted_by]</label> 
-                                    <input size="40" id="concern_2_req_staff" name="req_staff" length="40" ng-model="c2req.concern_2_req_staff"  />
+                                    <input size="40" id="concern_2_req_staff" name="req_staff" length="40" ng-model="c2req.concern_2_req_staff" ng-required="c2req.concern_2==1"  />
                                 </td>
                                 <td class="grid-item">
                                     <label for="concern_2_req_date">~[text:psx.htmlc.admin_attendance.attendance_tracking.date]</label> 
-                                    <input id="concern_2_req_date" name="req_date" ng-model="c2req.concern_2_req_date" type="text" pss-date-widget/>
+                                    <input id="concern_2_req_date" name="req_date" ng-model="c2req.concern_2_req_date" ng-required="c2req.concern_2==1" type="text" pss-date-widget/>
                                 </td>
                                 <td class="save-notes" rowspan="2">
-                                    <button type="submit" id="bulk_c2req_save"><i aria-hidden="true" class="fi-checkbox icon"></i> <span>~[text:psx.htmlc.admin_attendance.attendance_tracking.save]</span></button>
+                                    <button type="submit" id="bulk_c2req_save" ng-disabled="!canSave('c2req')"><svg class="att-icon icon" aria-hidden="true" focusable="false" width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-0.125em"><path d="M4 4h16v16H4zM8 12l3 3 5-6"/></svg> <span>~[text:psx.htmlc.admin_attendance.attendance_tracking.save]</span></button>
                                 </td>
                             </tr>
                         <!--
@@ -342,14 +344,14 @@ TemplateName:Admin
                                 </td>
                                 <td class="grid-item">
                                     <label for="concern_2_sent_staff">~[text:psx.htmlc.admin_attendance.attendance_tracking.contacted_by]:</label> 
-                                    <input size="40" id="concern_2_sent_staff" name="sent_staff" length="40" ng-model="c2sent.concern_2_sent_staff" />
+                                    <input size="40" id="concern_2_sent_staff" name="sent_staff" length="40" ng-model="c2sent.concern_2_sent_staff" ng-required="c2sent.concern_2==2" />
                                 </td>
                                 <td class="grid-item">
                                     <label for="concern_2_sent_date">~[text:psx.htmlc.admin_attendance.attendance_tracking.date]:</label> 
-                                    <input id="concern_2_sent_date" name="sent_date" ng-model="c2sent.concern_2_sent_date" type="text" pss-date-widget />
+                                    <input id="concern_2_sent_date" name="sent_date" ng-model="c2sent.concern_2_sent_date" ng-required="c2sent.concern_2==2" type="text" pss-date-widget />
                                 </td>
                                 <td class="save-notes" rowspan="2">
-                                    <button type="submit" id="bulk_c2sent_save"><i aria-hidden="true" class="fi-checkbox icon"></i> <span>~[text:psx.htmlc.admin_attendance.attendance_tracking.save]</span></button>
+                                    <button type="submit" id="bulk_c2sent_save" ng-disabled="!canSave('c2sent')"><svg class="att-icon icon" aria-hidden="true" focusable="false" width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-0.125em"><path d="M4 4h16v16H4zM8 12l3 3 5-6"/></svg> <span>~[text:psx.htmlc.admin_attendance.attendance_tracking.save]</span></button>
                                 </td>
                             </tr>
                         <!--
@@ -387,14 +389,14 @@ TemplateName:Admin
                                 </td>
                                 <td class="grid-item">
                                     <label for="concern_3_req_staff">~[text:psx.htmlc.admin_attendance.attendance_tracking.contacted_by]:</label> 
-                                    <input size="40" id="concern_3_req_staff" name="req_staff" length="40" ng-model="c3req.concern_3_req_staff"  />
+                                    <input size="40" id="concern_3_req_staff" name="req_staff" length="40" ng-model="c3req.concern_3_req_staff" ng-required="c3req.concern_3==1"  />
                                 </td>
                                 <td class="grid-item">
                                     <label for="concern_3_req_date">~[text:psx.htmlc.admin_attendance.attendance_tracking.date]:</label> 
-                                    <input id="concern_3_req_date" name="req_date" ng-model="c3req.concern_3_req_date" type="text" pss-date-widget/>
+                                    <input id="concern_3_req_date" name="req_date" ng-model="c3req.concern_3_req_date" ng-required="c3req.concern_3==1" type="text" pss-date-widget/>
                                 </td>
                                 <td class="save-notes" rowspan="2">
-                                    <button type="submit" id="bulk_c3req_save"><i aria-hidden="true" class="fi-checkbox icon"></i> <span>~[text:psx.htmlc.admin_attendance.attendance_tracking.save]</span></button>
+                                    <button type="submit" id="bulk_c3req_save" ng-disabled="!canSave('c3req')"><svg class="att-icon icon" aria-hidden="true" focusable="false" width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-0.125em"><path d="M4 4h16v16H4zM8 12l3 3 5-6"/></svg> <span>~[text:psx.htmlc.admin_attendance.attendance_tracking.save]</span></button>
                                 </td>
                             </tr>
                         <!--
@@ -432,14 +434,14 @@ TemplateName:Admin
                                 </td>
                                 <td class="grid-item">
                                     <label for="concern_3_sent_staff">~[text:psx.htmlc.admin_attendance.attendance_tracking.contacted_by]:</label> 
-                                    <input size="40" id="concern_3_sent_staff" name="sent_staff" length="40" ng-model="c3sent.concern_3_sent_staff" />
+                                    <input size="40" id="concern_3_sent_staff" name="sent_staff" length="40" ng-model="c3sent.concern_3_sent_staff" ng-required="c3sent.concern_3==2" />
                                 </td>
                                 <td class="grid-item">
                                     <label for="concern_3_sent_date">~[text:psx.htmlc.admin_attendance.attendance_tracking.date]:</label> 
-                                    <input id="concern_3_sent_date" name="sent_date" ng-model="c3sent.concern_3_sent_date" type="text" pss-date-widget />
+                                    <input id="concern_3_sent_date" name="sent_date" ng-model="c3sent.concern_3_sent_date" ng-required="c3sent.concern_3==2" type="text" pss-date-widget />
                                 </td>
                                 <td class="save-notes" rowspan="2">
-                                    <button type="submit"  id="bulk_c3sent_save"><i aria-hidden="true" class="fi-checkbox icon"></i> <span>~[text:psx.htmlc.admin_attendance.attendance_tracking.save]</span></button>
+                                    <button type="submit"  id="bulk_c3sent_save" ng-disabled="!canSave('c3sent')"><svg class="att-icon icon" aria-hidden="true" focusable="false" width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-0.125em"><path d="M4 4h16v16H4zM8 12l3 3 5-6"/></svg> <span>~[text:psx.htmlc.admin_attendance.attendance_tracking.save]</span></button>
                                 </td>
                             </tr>
                         <!--
@@ -477,14 +479,14 @@ TemplateName:Admin
                                 </td>
                                 <td class="grid-item">
                                     <label for="concern_4_req_staff">~[text:psx.htmlc.admin_attendance.attendance_tracking.contacted_by]:</label> 
-                                    <input size="40" id="concern_4_req_staff" name="req_staff" length="40" ng-model="c4req.concern_4_req_staff"  />
+                                    <input size="40" id="concern_4_req_staff" name="req_staff" length="40" ng-model="c4req.concern_4_req_staff" ng-required="c4req.concern_4==1"  />
                                 </td>
                                 <td class="grid-item">
                                     <label for="concern_4_req_date">~[text:psx.htmlc.admin_attendance.attendance_tracking.date]:</label> 
-                                    <input id="concern_4_req_date" name="req_date" ng-model="c4req.concern_4_req_date" type="text" pss-date-widget/>
+                                    <input id="concern_4_req_date" name="req_date" ng-model="c4req.concern_4_req_date" ng-required="c4req.concern_4==1" type="text" pss-date-widget/>
                                 </td>
                                 <td class="save-notes" rowspan="2">
-                                    <button type="submit" id="bulk_c4req_save"><i aria-hidden="true" class="fi-checkbox icon"></i> <span>~[text:psx.htmlc.admin_attendance.attendance_tracking.save]</span></button>
+                                    <button type="submit" id="bulk_c4req_save" ng-disabled="!canSave('c4req')"><svg class="att-icon icon" aria-hidden="true" focusable="false" width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-0.125em"><path d="M4 4h16v16H4zM8 12l3 3 5-6"/></svg> <span>~[text:psx.htmlc.admin_attendance.attendance_tracking.save]</span></button>
                                 </td>
                             </tr>
                         <!--
@@ -522,14 +524,14 @@ TemplateName:Admin
                                 </td>
                                 <td class="grid-item">
                                     <label for="concern_4_sent_staff">~[text:psx.htmlc.admin_attendance.attendance_tracking.contacted_by]:</label> 
-                                    <input size="40" id="concern_4_sent_staff" name="sent_staff" length="40" ng-model="c4sent.concern_4_sent_staff" />
+                                    <input size="40" id="concern_4_sent_staff" name="sent_staff" length="40" ng-model="c4sent.concern_4_sent_staff" ng-required="c4sent.concern_4==2" />
                                 </td>
                                 <td class="grid-item">
                                     <label for="concern_4_sent_date">~[text:psx.htmlc.admin_attendance.attendance_tracking.date]:</label> 
-                                    <input id="concern_4_sent_date" name="sent_date" ng-model="c4sent.concern_4_sent_date" type="text" pss-date-widget />
+                                    <input id="concern_4_sent_date" name="sent_date" ng-model="c4sent.concern_4_sent_date" ng-required="c4sent.concern_4==2" type="text" pss-date-widget />
                                 </td>
                                 <td class="save-notes" rowspan="2">
-                                    <button type="submit"  id="bulk_c4sent_save"><i aria-hidden="true" class="fi-checkbox icon"></i> <span>~[text:psx.htmlc.admin_attendance.attendance_tracking.save]</span></button>
+                                    <button type="submit"  id="bulk_c4sent_save" ng-disabled="!canSave('c4sent')"><svg class="att-icon icon" aria-hidden="true" focusable="false" width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-0.125em"><path d="M4 4h16v16H4zM8 12l3 3 5-6"/></svg> <span>~[text:psx.htmlc.admin_attendance.attendance_tracking.save]</span></button>
                                 </td>
                             </tr>
                         <!--
@@ -566,15 +568,14 @@ TemplateName:Admin
                             </td>
                             <td class="grid-item">
                                 <label for="referral_staff">~[text:psx.htmlc.admin_attendance.attendance_tracking.referred_by]</label> 
-                                <input size="40" id="referral_staff" name="staff" length="40" ng-model="referral.referral_staff"  />
+                                <input size="40" id="referral_staff" name="staff" length="40" ng-model="referral.referral_staff" ng-required="referral.referral==1"  />
                             </td>
                             <td class="grid-item">
                                 <label for="referral_date">~[text:psx.htmlc.admin_attendance.attendance_tracking.date]:</label> 
-                                <input id="referral_date" name="date" ng-model="referral.referral_date" type="text" pss-date-widget />
+                                <input id="referral_date" name="date" ng-model="referral.referral_date" ng-required="referral.referral==1" type="text" pss-date-widget />
                             </td>
                             <td class="grid-item center">
-                                <div ng-if="taskComplete"><i class="fi fi-check green"> ~[text:psx.htmlc.admin_attendance.attendance_tracking.saved]</i></div>
-                                <button type="submit" id="bulk_referral_save"><i aria-hidden="true" class="fi-checkbox icon"></i> <span>~[text:psx.htmlc.admin_attendance.attendance_tracking.save]</span></button>
+                                <button type="submit" id="bulk_referral_save" ng-disabled="!canSave('referral')"><svg class="att-icon icon" aria-hidden="true" focusable="false" width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-0.125em"><path d="M4 4h16v16H4zM8 12l3 3 5-6"/></svg> <span>~[text:psx.htmlc.admin_attendance.attendance_tracking.save]</span></button>
                             </td>
                         </tr>
                     </table>
@@ -583,7 +584,6 @@ TemplateName:Admin
             <fieldset ng-if="task.allDone">
                 <legend>3. ~[text:psx.htmlc.admin_attendance.attendance_tracking.next_steps]</legend>
                 <div class="feedback-confirm" role="status" aria-live="polite" ng-show="task.success">{{ task.success }} </div>
-                <div class="feedback-error" ng-show="task.errorMessage">{{ task.errorMessage }}</div>
                 <div ng-if="savedStudents.length">
                     <h3>~[text:psx.htmlc.admin_attendance.attendance_tracking.saved]</h3>
                     <ul><li ng-repeat="row in savedStudents"><a href="/admin/students/home.html?frn=001{{row.student.studentsdcid}}&amp;lsp=pei_attendance_tracking.html" target="_blank" rel="noopener">{{row.student.firstName}} {{row.student.lastName}}</a></li></ul>
@@ -598,6 +598,12 @@ TemplateName:Admin
                 </div>
                 <p ng-if="unconfirmedStudents.length">~[text:psx.htmlc.admin_students.attendance_tracking.save_unconfirmed]</p>
                 <button type="button" ng-if="failedStudents.length" ng-disabled="saveBusy" ng-click="retryFailed()">~[text:psx.htmlc.admin_attendance.attendance_tracking.bulk_retry]</button>
+                <div class="emailed" role="status" aria-live="polite" ng-if="referralEmail.sent && !referralEmail.failed">~[text:psx.htmlc.teachers_studentpages.attendance_tracking.email_sent]</div>
+                <div class="feedback-error" ng-if="referralEmail.failed">
+                    ~[text:psx.htmlc.admin_students.attendance_tracking.saved_notification_failed]
+                    <button type="button" ng-click="retryReferralEmails()" ng-disabled="saveBusy || referralEmail.busy">~[text:psx.htmlc.admin_students.attendance_tracking.retry_notification]</button>
+                </div>
+                <div class="feedback-error" ng-if="referralEmail.unconfirmed">~[text:psx.htmlc.admin_students.attendance_tracking.notification_unconfirmed]</div>
                 <div>
                     <ul>
 

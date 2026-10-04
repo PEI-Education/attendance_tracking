@@ -6,7 +6,7 @@ const vm = require('node:vm');
 const root = path.resolve(__dirname, '..');
 const read = file => fs.readFileSync(path.join(root, file), 'utf8');
 const html = read('WEB_ROOT/admin/pei_reports/attUpdateChecklist.html');
-function load(name, term = '3600', customUpdate, locale = 'en') {
+function load(name, term = '3600', customUpdate, locale = 'en', services = {}) {
     let definition;
     const module = { controller(name, args) { definition = args; } };
     const state = { spinner: {}, task: {} }, writes = [];
@@ -15,13 +15,16 @@ function load(name, term = '3600', customUpdate, locale = 'en') {
         $scope: scope, state, $timeout: fn => fn(), $q: Object.assign(fn => new Promise(fn), { all: promises => Promise.all(promises) }),
         dataService: {
             getData: () => Promise.resolve([{}]),
-            updateRecord: customUpdate || ((id, fields) => { writes.push({ id, fields: { ...fields } }); return Promise.resolve(id); })
+            updateRecord: customUpdate || ((id, fields) => { writes.push({ id, fields: { ...fields } }); return Promise.resolve(id); }),
+            ...services
         }
     };
     vm.runInNewContext(read(`WEB_ROOT/scripts/components/attTrack/controllers/${name}.js`), {
-        document: { getElementById: id => ({ value: { termid: term, staffName: 'Test Staff', dateToday: '10/04/2026', localeLang: locale }[id] }) },
+        document: { getElementById: id => ({ value: { termid: term, staffName: 'Test Staff', dateToday: '10/04/2026', localeLang: locale,
+            emailFrom: 'admin@example.test', emailToPSB: 'psb@example.test', emailToCSLF: 'cslf@example.test', emailDate: '10/04/2026', emailTime: '10:00' }[id] }) },
         define: factory => factory(key => key === 'peiAttTrack/messages'
-            ? { read: () => ({}), format: () => '' } : module)
+            ? { read: () => ({ bulk_referral_subject: 'Referrals: {count}', bulk_referral_intro: 'Intro', email_generated: 'Generated.', email_contact: 'Contact.' }),
+                format: (text, token, value) => String(text).split(token).join(String(value)) } : module)
     });
     definition.at(-1)(...definition.slice(0, -1).map(key => deps[key]));
     return { scope, state, writes };
@@ -38,6 +41,8 @@ function change(scope, id, checked) {
     assert.ok(attrs['ng-change'], `${id} must react after its model changes`);
     vm.runInNewContext(attrs['ng-change'], scope);
 }
+// Bulk saves require the step to be set, with a staff name and date.
+function notify(scope) { scope.setValues('sn', 'student_notification', 1); }
 test('dashboard distinguishes full-year terms from semesters', () => {
     for (const [term, expected] of [['3600', false], ['3601', true], ['3602', true], ['3700', false]]) {
         const { scope, state } = load('controller', term);
@@ -58,6 +63,7 @@ test('student notification excludes younger students from writes, without duplic
     scope.verifySelection();
     assert.equal(JSON.stringify(scope.validStudents.map(s => s.recid)), '[3,4]');
     assert.equal(JSON.stringify(scope.invalidStudents.map(s => s.recid)), '[1,2,5]');
+    notify(scope);
     scope.save('sn');
     assert.deepEqual(writes.map(w => w.id), [3,4]);
 });
@@ -80,9 +86,11 @@ test('bulk referral fields flow into the saved payload and clear when unchecked'
     }
     scope.save('referral');
     assert.deepEqual(writes[0], { id: 42, fields: { referral: 1, referral_staff: 'Chosen Staff', referral_date: '10/03/2026' } });
+    // Unticking clears the fields but cannot be bulk-saved; clearing happens on the student's own checklist.
     const next = load('update'); next.scope.validStudents = [{ recid: 42 }];
     change(next.scope, 'referral', false); next.scope.save('referral');
-    assert.deepEqual(next.writes[0].fields, { referral: 0, referral_staff: null, referral_date: null });
+    assert.deepEqual({ ...next.scope.referral }, { referral: 0, referral_staff: null, referral_date: null });
+    assert.equal(next.writes.length, 0);
 });
 for (const n of [2,3,4]) {
     for (const [phase, active, inactive] of [['req',1,0], ['sent',2,1]]) {
@@ -103,7 +111,8 @@ for (const n of [2,3,4]) {
             assert.deepEqual(Object.keys(writes[0].fields).sort(), [field, `${step}_staff`, `${step}_date`].sort());
             const next = load('update'); next.scope.validStudents = [{ recid: 42 }];
             change(next.scope, step, false); next.scope.save(group);
-            assert.deepEqual(next.writes[0].fields, { [field]: inactive, [`${step}_staff`]: null, [`${step}_date`]: null });
+            assert.deepEqual({ ...next.scope[group] }, { [field]: inactive, [`${step}_staff`]: null, [`${step}_date`]: null });
+            assert.equal(next.writes.length, 0);
         });
     }
 }
@@ -124,6 +133,7 @@ test('mixed bulk results settle, prevent duplicates, and retry only failures wit
         return new Promise((resolve, reject) => pending.push({ resolve, reject }));
     });
     scope.validStudents = [1,2,3].map(recid => ({ recid }));
+    notify(scope);
     scope.sn.student_notification_staff = 'Original';
     const batch = scope.save('sn');
     scope.save('sn'); scope.retryFailed();
@@ -153,6 +163,7 @@ test('mixed bulk results settle, prevent duplicates, and retry only failures wit
 test('synchronous write exceptions become unconfirmed and release busy state', async () => {
     const { scope, state } = load('update', '3600', () => { throw Error('unknown'); });
     scope.validStudents = [{ recid: 1 }];
+    notify(scope);
     await scope.save('sn');
     assert.equal(scope.unconfirmedStudents.length, 1);
     assert.equal(scope.saveBusy, false);
@@ -161,6 +172,7 @@ test('synchronous write exceptions become unconfirmed and release busy state', a
 test('bulk French dates normalize only the outgoing payload', async () => {
     const { scope, writes } = load('update', '3600', undefined, 'fr');
     scope.validStudents = [{ recid: 1 }];
+    notify(scope);
     scope.sn.student_notification_date = '24/10/2026';
     await scope.save('sn');
     assert.equal(writes[0].fields.student_notification_date, '10/24/2026');
@@ -190,6 +202,7 @@ test('French bulk failure retry preserves normalized leap-day payload and draft'
     }, 'fr');
     await new Promise(resolve => setImmediate(resolve));
     e.scope.validStudents = [{ recid: 1 }, { recid: 2 }];
+    notify(e.scope);
     e.scope.sn.student_notification_date = '29/02/2024';
     await e.scope.save('sn');
     assert.equal(e.scope.failedStudents.length, 2);
@@ -204,4 +217,85 @@ test('French bulk failure retry preserves normalized leap-day payload and draft'
     assert.equal(e.scope.sn.student_notification_date, '01/03/2024');
     assert.equal(e.scope.savedStudents.length, 2);
     assert.equal(e.scope.failedStudents.length, 0);
+});
+
+test('call 1 accepts students with no steps taken, including notification-exempt K-9', () => {
+    const { scope } = load('update');
+    scope.gridData = [{ recid: 1, termGrade: 8, currentStepIdx: 1 }, { recid: 2, termGrade: 11, currentStepIdx: 2 },
+        { recid: 3, termGrade: 11, currentStepIdx: 3 }, { recid: 4, termGrade: 11, currentStepIdx: 4 }];
+    scope.stepChoice = { id: 3 }; scope.verifySelection();
+    assert.equal(JSON.stringify(scope.validStudents.map(s => s.recid)), '[1,2,3]');
+    assert.equal(JSON.stringify(scope.invalidStudents.map(s => s.recid)), '[4]');
+});
+test('save stays blocked until the step is set with a staff name and date', () => {
+    const { scope, writes } = load('update');
+    scope.validStudents = [{ recid: 1 }];
+    for (const group of ['sn', 'pc1', 'pc2', 'pc3', 'c2req', 'c2sent', 'c3req', 'c3sent', 'c4req', 'c4sent', 'referral']) {
+        assert.equal(scope.canSave(group), false, group);
+        scope.save(group);
+    }
+    assert.equal(writes.length, 0);
+    scope.setValues('pc2', 'parent_call_2', 0);
+    assert.equal(scope.canSave('pc2'), false);
+    scope.setValues('pc2', 'parent_call_2', 1);
+    assert.equal(scope.canSave('pc2'), true);
+    scope.pc2.parent_call_2_date = ' ';
+    assert.equal(scope.canSave('pc2'), false);
+    for (const [, group] of html.matchAll(/id="bulk_(\w+)_save" ng-disabled="!canSave\('(\w+)'\)"/g)) assert.ok(group);
+    assert.equal([...html.matchAll(/ng-disabled="!canSave\('(\w+)'\)"/g)].length, 11);
+    assert.ok(!html.includes('ng-model="parent_call_notes"'), 'call 2 notes are not saved and must not be offered');
+});
+function referralRows() {
+    return [
+        { recid: 1, currentStepIdx: 14, currentSchool: 120, firstName: 'Ann', lastName: 'Arsenault', studentNumber: 1001, termSchoolName: 'PSB School' },
+        { recid: 2, currentStepIdx: 14, currentSchool: 540, firstName: 'Bea', lastName: 'Blanchard', studentNumber: 1002, termSchoolName: 'CSLF School' },
+        { recid: 3, currentStepIdx: 15, currentSchool: 130, firstName: 'Cal', lastName: 'Campbell', studentNumber: 1003, termSchoolName: 'PSB School' },
+        { recid: 4, currentStepIdx: 14, currentSchool: 150, firstName: 'Dee', lastName: 'Doucette', studentNumber: 1004, termSchoolName: 'PSB School' }
+    ];
+}
+test('bulk referral queues one summary per board for newly referred students only', async () => {
+    const emails = [];
+    const { scope } = load('update', '3600', undefined, 'en', { queueEmail: fields => { emails.push(fields); return Promise.resolve(900 + emails.length); } });
+    scope.validStudents = referralRows();
+    scope.setValues('referral', 'referral', 1);
+    await scope.save('referral');
+    assert.equal(emails.length, 2);
+    const psb = emails.find(email => email.tdata2 === 'psb@example.test');
+    const cslf = emails.find(email => email.tdata2 === 'cslf@example.test');
+    assert.equal(psb.tdata3, 'Referrals: 2');
+    assert.equal(psb.tdata4, 'Intro\n\nArsenault, Ann (student_number=1001) - PSB School\nDoucette, Dee (student_number=1004) - PSB School\n\nGenerated. Contact.');
+    assert.equal(cslf.tdata3, 'Referrals: 1');
+    assert.ok(!emails.some(email => email.tdata4.includes('Campbell')), 'already-referred students are not re-notified');
+    assert.deepEqual({ type: psb.type, tdata1: psb.tdata1, date: psb.date, time: psb.time }, { type: 100, tdata1: 'admin@example.test', date: '10/04/2026', time: '10:00' });
+    assert.equal(scope.referralEmail.sent, true);
+});
+test('referral summary retries only explicit failures; uncertain queue results are not resent', async () => {
+    const attempts = [];
+    let result = { outcome: 'failed' };
+    const { scope } = load('update', '3600', undefined, 'en', { queueEmail: fields => { attempts.push(fields.tdata2); return result ? Promise.reject(result) : Promise.resolve(1); } });
+    scope.validStudents = referralRows().filter(row => row.currentSchool < 500);
+    scope.setValues('referral', 'referral', 1);
+    await scope.save('referral');
+    assert.equal(scope.referralEmail.failed, true);
+    result = null;
+    await scope.retryReferralEmails();
+    assert.deepEqual(attempts, ['psb@example.test', 'psb@example.test']);
+    assert.equal(scope.referralEmail.failed, false);
+    assert.equal(scope.referralEmail.sent, true);
+    assert.equal(scope.retryReferralEmails(), undefined);
+
+    const uncertain = load('update', '3600', undefined, 'en', { queueEmail: () => Promise.reject({ outcome: 'unconfirmed' }) });
+    uncertain.scope.validStudents = referralRows().filter(row => row.currentSchool < 500);
+    uncertain.scope.setValues('referral', 'referral', 1);
+    await uncertain.scope.save('referral');
+    assert.equal(uncertain.scope.referralEmail.unconfirmed, true);
+    assert.equal(uncertain.scope.retryReferralEmails(), undefined);
+});
+test('non-referral steps never queue email', async () => {
+    const emails = [];
+    const { scope } = load('update', '3600', undefined, 'en', { queueEmail: fields => { emails.push(fields); return Promise.resolve(1); } });
+    scope.validStudents = referralRows();
+    scope.setValues('c4sent', 'concern_4', 2); scope.setStaffDate('c4sent', 'concern_4_sent', 'concern_4', 2);
+    await scope.save('c4sent');
+    assert.equal(emails.length, 0);
 });

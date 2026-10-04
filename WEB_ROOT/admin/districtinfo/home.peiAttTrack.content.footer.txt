@@ -7,11 +7,11 @@
       </tr>
       <tr class="~[evenoddrow]">
          <td class="bold">PSB</td>
-         <td><textarea id="emailaddreses" name="[pref]attendancetrackingPSB" value="" rows="3" cols="70"></textarea></td>
+         <td><textarea id="attTrackEmailPSB" name="[pref]attendancetrackingPSB" value="" rows="3" cols="70"></textarea></td>
       </tr>
       <tr class="~[evenoddrow]">
          <td class="bold">CSLF</td>
-         <td><textarea id="emailaddreses" name="[pref]attendancetrackingCSLF" value="" rows="3" cols="70"></textarea></td>
+         <td><textarea id="attTrackEmailCSLF" name="[pref]attendancetrackingCSLF" value="" rows="3" cols="70"></textarea></td>
       </tr>
    </table>
 </div>

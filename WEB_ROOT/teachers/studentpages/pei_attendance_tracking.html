@@ -7,15 +7,15 @@ TemplateName:Teacher Backpack
     <meta name="Author" content="Luke Walker, PEI Dept of Education">
     <meta name="Version" content="2026.10.0">
 	<title>~[text:psx.htmlc.admin_students.attendance_tracking.attendance_concerns_checklist]</title>
-	<link rel="stylesheet" type="text/css" href="/admin/pei_reports/css/foundation-icons.css" />
 <!-- required scripts -->
 	~[wc:commonscripts] 
 <!-- Required style sheets: screen.css, and print.css -->
 	<script src="/scripts/psQuery/psQuery.js"></script>
 	<link href="/images/css/screen.css" rel="stylesheet" media="screen">
 	<link href="/images/css/print.css" rel="stylesheet" media="print">
-	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.0.0/dist/themes/light.css" />
-    <script type="module" src="https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.0.0/dist/shoelace.js"></script>
+	<link rel="stylesheet" href="/scripts/peiAttTrack/shoelace-2.0.0/themes/light.css" />
+    <script type="module" src="/scripts/peiAttTrack/shoelace-2.0.0/components/radio-group/radio-group.js"></script>
+    <script type="module" src="/scripts/peiAttTrack/shoelace-2.0.0/components/radio-button/radio-button.js"></script>
     <link href="/images/css/pei_att_track.css" rel="stylesheet">
     <script type="text/javascript">
     	function formHandler(form){
@@ -26,13 +26,15 @@ TemplateName:Teacher Backpack
     function printDiv() {
         var popupWin = window.open('', '_blank', 'width=1000,height=600');
     
-        popupWin.document.write('<html><head>'+
-                                '<link rel="stylesheet" type="text/css" href="/admin/pei_reports/css/foundation-icons.css" />'+
+        popupWin.document.write('<!DOCTYPE html><html><head>'+
                                 '<link href="/images/css/print.css" rel="stylesheet" media="print">'+
                                 '<link href="/images/css/pei_att_track.css" rel="stylesheet">'+
                                 '<link href="/images/css/pei_att_track_print.css" rel="stylesheet">'+
-                                '</head><body class="pei-att-track">' + document.querySelector('#printarea').innerHTML + '</html>');
-        popupWin.print();  
+                                '</head><body class="pei-att-track">' + document.querySelector('#printarea').innerHTML + '</body></html>');
+        popupWin.document.close();
+        // Print only after the stylesheets have loaded.
+        if (popupWin.document.readyState === 'complete') popupWin.print();
+        else popupWin.onload = function() { popupWin.print(); };
     }
     </script>
 </head>
@@ -40,8 +42,6 @@ TemplateName:Teacher Backpack
 <!-- Resolved by PowerSchool before the standalone JavaScript reads textContent. -->
 <div id="attTrackMessages" hidden ng-non-bindable>
     <span data-att-message="load_error">~[text:psx.htmlc.admin_attendance.attendance_tracking.load_error]</span>
-    <span data-att-message="grade_load_error">~[text:psx.htmlc.admin_students.attendance_tracking.grade_load_error]</span>
-    <span data-att-message="email_not_sent">~[text:psx.htmlc.admin_students.attendance_tracking.email_not_sent]</span>
     <span data-att-message="save_unconfirmed">~[text:psx.htmlc.admin_students.attendance_tracking.save_unconfirmed]</span>
     <span data-att-message="section_not_saved">~[text:psx.htmlc.admin_students.attendance_tracking.section_not_saved]</span>
     <span data-att-message="no_results">~[text:psx.htmlc.admin_attendance.attendance_tracking.no_results]</span>
@@ -59,7 +59,6 @@ TemplateName:Teacher Backpack
     <input type="hidden" id="staffName" value="~[x:username;firstlast]" />
     <input type="hidden" id="studentsdcid" value="~(studentrn)" />
     <input type="hidden" id="dateToday" value="~[date]" />
-    <input type="hidden" id="studentName" value="~(first_name) ~(last_name)" />
     <input type="hidden" id="recordDataFile" value="json/pei_AttTrack.json" />
     <input type="hidden" id="localeLang" value="~[locale.lang]" />
     <!-- Resolve the teacher term once for the selected student, school, and year. -->
@@ -84,6 +83,7 @@ JOIN (
      AND school_year.yearid = ~(curyearid)
      AND school_year.id = school_year.yearid * 100
     WHERE e.yearid = school_year.yearid
+      AND e.studentid = ~(curstudid)
       AND e.entrydate < school_year.lastday
       AND e.exitdate > school_year.firstday
       AND e.entrydate < e.exitdate
@@ -114,7 +114,7 @@ HAVING COUNT(*) = 1
     <div role="status" aria-live="polite" class="att-status"><span ng-if="recordLoading">~[text:psx.htmlc.admin_attendance.attendance_tracking.loading]</span><span ng-if="saveBusy || submitBusy">~[text:psx.htmlc.admin_attendance.attendance_tracking.saving]</span></div>
         <div class="feedback-error" ng-if="recordLoadError" role="alert">~[text:psx.htmlc.admin_attendance.attendance_tracking.load_error] <button type="button" ng-click="retryLoad()" ng-disabled="recordLoading">~[text:psx.htmlc.admin_attendance.attendance_tracking.retry]</button></div>
         <div ng-if="validTerm() && !recordLoading && !recordLoadError">
-      <h2>~[text:psx.htmlc.admin_students.attendance_tracking.checklist_for] <span class="attTrackTermName" ng-bind="termName"></span><span class="right boldtext">~[text:psx.htmlc.admin_students.attendance_tracking.grade_level_this_term] {{gradeInYear}}&nbsp; &nbsp; <button class="btn btn-primary" onclick="printDiv()"><i class="fi-print"></i> ~[text:psx.htmlc.admin_students.attendance_tracking.print_view]</button></span></h2>
+      <h2>~[text:psx.htmlc.admin_students.attendance_tracking.checklist_for] <span class="attTrackTermName" ng-bind="termName"></span><span class="right boldtext">~[text:psx.htmlc.admin_students.attendance_tracking.grade_level_this_term] {{gradeInYear}}&nbsp; &nbsp; <button class="btn btn-primary" onclick="printDiv()"><svg class="att-icon" aria-hidden="true" focusable="false" width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-0.125em"><path d="M7 9V3h10v6M7 18H5a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2M7 14h10v7H7z"/></svg> ~[text:psx.htmlc.admin_students.attendance_tracking.print_view]</button></span></h2>
       <div class="feedback-info no-print">
           <ul>
               <li>~[text:psx.htmlc.admin_students.attendance_tracking.this_checklist_must_be_complet] ~[text:psx.htmlc.admin_students.attendance_tracking.most_steps_must_have_a_date_la] ~[text:psx.htmlc.admin_students.attendance_tracking.in_the_case_of_written_notific] ~[text:psx.htmlc.admin_students.attendance_tracking.the_one_exception_is_the_first]</li>
@@ -152,7 +152,7 @@ HAVING COUNT(*) = 1
                           </td>
                           <td class="grid-item center">
                               <div ng-if="student_save=='saving'" data-pss-wait-spinner="small" role="status" aria-label="~[text:psx.htmlc.admin_attendance.attendance_tracking.loading]"></div>
-                              <button type="submit" id="student_save" ng-disabled="writeUncertain || saveBusy || submitBusy || forms.stu.$invalid || forms.stu.$pristine"><i aria-hidden="true" class="fi-checkbox icon"></i> <span>~[text:psx.htmlc.admin_attendance.attendance_tracking.save]</span></button>
+                              <button type="submit" id="student_save" ng-disabled="writeUncertain || saveBusy || submitBusy || forms.stu.$invalid || forms.stu.$pristine"><svg class="att-icon icon" aria-hidden="true" focusable="false" width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-0.125em"><path d="M4 4h16v16H4zM8 12l3 3 5-6"/></svg> <span>~[text:psx.htmlc.admin_attendance.attendance_tracking.save]</span></button>
                               <div class="saved" ng-if="student_save=='saved' && !forms.stu.$dirty" role="status" aria-live="polite">~[text:psx.htmlc.admin_attendance.attendance_tracking.saved]</div>
                           </td>
                       </tr>
@@ -194,7 +194,7 @@ HAVING COUNT(*) = 1
                           </td>
                           <td class="grid-item center" rowspan="4">
                               <div ng-if="calls_save=='saving'" data-pss-wait-spinner="small" role="status" aria-label="~[text:psx.htmlc.admin_attendance.attendance_tracking.loading]"></div>
-                              <button type="submit" id="calls_save"  ng-disabled="writeUncertain || saveBusy || submitBusy || forms.calls.$invalid || forms.calls.$pristine || forms.stu.$dirty"><i aria-hidden="true" class="fi-checkbox icon"></i> <span>~[text:psx.htmlc.admin_attendance.attendance_tracking.save]</span></button>
+                              <button type="submit" id="calls_save"  ng-disabled="writeUncertain || saveBusy || submitBusy || forms.calls.$invalid || forms.calls.$pristine || forms.stu.$dirty"><svg class="att-icon icon" aria-hidden="true" focusable="false" width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-0.125em"><path d="M4 4h16v16H4zM8 12l3 3 5-6"/></svg> <span>~[text:psx.htmlc.admin_attendance.attendance_tracking.save]</span></button>
                               <div class="saved" ng-if="calls_save=='saved' && !forms.calls.$dirty" role="status" aria-live="polite">~[text:psx.htmlc.admin_attendance.attendance_tracking.saved]</div>
                           </td>
                       </tr>
@@ -248,7 +248,9 @@ HAVING COUNT(*) = 1
           <input type="text" id="emailFrom" value="~[x:useremail]" size=75 >
           <input type="text" value="~[displaypref:attendancetracking-S~(curschoolid)]" id="emailTo" size=75 >
           <input type="text" id="emailSubject" value="~[text:psx.htmlc.admin_students.attendance_tracking.attendance_letter_request_for]" size=35>
-          <input id="emailBody" rows=12 cols=100 value="~[text:psx.htmlc.admin_students.attendance_tracking.user_has_requested_letter] ~[text:psx.htmlc.admin_students.attendance_tracking.letter_email_body] &#13;&#13; ~[text:psx.htmlc.admin_students.attendance_tracking.this_email_was_automatically_g] ~[text:psx.htmlc.admin_students.attendance_tracking.contact_powerschoolhelp]"/>
+          <textarea id="emailBody" rows="12" cols="100">~[text:psx.htmlc.admin_students.attendance_tracking.user_has_requested_letter] ~[text:psx.htmlc.admin_students.attendance_tracking.letter_email_body]
+
+~[text:psx.htmlc.admin_students.attendance_tracking.this_email_was_automatically_g] ~[text:psx.htmlc.admin_students.attendance_tracking.contact_powerschoolhelp]</textarea>
           <input type="text" id="emailDate" name="date" value="~[datefmt:MM/dd/yyyy]" >
           <input type="text" id="emailTime" name="time" value="~(f.currenttime)" >
       </div>
@@ -293,7 +295,7 @@ HAVING COUNT(*) = 1
                       </td>
                       <td class="save-notes" rowspan="3">
                           <div ng-if="concern_2_save=='saving'" data-pss-wait-spinner="small" role="status" aria-label="~[text:psx.htmlc.admin_attendance.attendance_tracking.loading]"></div>
-                          <button type="button" ng-click="submitSection($event,'concern_2',true)" id="concern_2_save" ng-disabled="writeUncertain || saveBusy || submitBusy || forms.concern_2.$invalid || forms.concern_2.$pristine || forms.calls.$dirty"><i aria-hidden="true" class="fi-checkbox icon"></i> <span>~[text:psx.htmlc.admin_attendance.attendance_tracking.save]</span></button>
+                          <button type="button" ng-click="submitSection($event,'concern_2',true)" id="concern_2_save" ng-disabled="writeUncertain || saveBusy || submitBusy || forms.concern_2.$invalid || forms.concern_2.$pristine || forms.calls.$dirty"><svg class="att-icon icon" aria-hidden="true" focusable="false" width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-0.125em"><path d="M4 4h16v16H4zM8 12l3 3 5-6"/></svg> <span>~[text:psx.htmlc.admin_attendance.attendance_tracking.save]</span></button>
                           <div class="saved" ng-if="concern_2_save=='saved' && !forms.concern_2.$dirty" role="status" aria-live="polite">~[text:psx.htmlc.admin_attendance.attendance_tracking.saved]</div>
                           <div class="emailed" ng-if="concern_2_emailed==1 && !forms.concern_2.$dirty" role="status" aria-live="polite">~[text:psx.htmlc.teachers_studentpages.attendance_tracking.email_sent]</div>
                                 <div class="feedback-error" ng-if="notificationFailed.concern_2">
@@ -358,7 +360,7 @@ HAVING COUNT(*) = 1
                       </td>
                       <td class="save-notes" rowspan="3">
                           <div ng-if="concern_3_save=='saving'" data-pss-wait-spinner="small" role="status" aria-label="~[text:psx.htmlc.admin_attendance.attendance_tracking.loading]"></div>
-                          <button type="button" ng-click="submitSection($event,'concern_3',true)" id="concern_3_save"  ng-disabled="writeUncertain || saveBusy || submitBusy || forms.concern_3.$invalid || forms.concern_3.$pristine"><i aria-hidden="true" class="fi-checkbox icon"></i> <span>~[text:psx.htmlc.admin_attendance.attendance_tracking.save]</span></button>
+                          <button type="button" ng-click="submitSection($event,'concern_3',true)" id="concern_3_save"  ng-disabled="writeUncertain || saveBusy || submitBusy || forms.concern_3.$invalid || forms.concern_3.$pristine"><svg class="att-icon icon" aria-hidden="true" focusable="false" width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-0.125em"><path d="M4 4h16v16H4zM8 12l3 3 5-6"/></svg> <span>~[text:psx.htmlc.admin_attendance.attendance_tracking.save]</span></button>
                           <div class="saved" ng-if="concern_3_save=='saved' && !forms.concern_3.$dirty" role="status" aria-live="polite">~[text:psx.htmlc.admin_attendance.attendance_tracking.saved]</div>
                           <div class="emailed" ng-if="concern_3_emailed==1 && !forms.concern_3.$dirty" role="status" aria-live="polite">~[text:psx.htmlc.teachers_studentpages.attendance_tracking.email_sent]</div>
                                 <div class="feedback-error" ng-if="notificationFailed.concern_3">
@@ -424,7 +426,7 @@ HAVING COUNT(*) = 1
                       </td>
                       <td class="save-notes" rowspan="3">
                           <div ng-if="concern_4_save=='saving'" data-pss-wait-spinner="small" role="status" aria-label="~[text:psx.htmlc.admin_attendance.attendance_tracking.loading]"></div>
-                          <button type="button" ng-click="submitSection($event,'concern_4',true)" id="concern_4_save"  ng-disabled="writeUncertain || saveBusy || submitBusy || forms.concern_4.$invalid || forms.concern_4.$pristine"><i aria-hidden="true" class="fi-checkbox icon"></i> <span>~[text:psx.htmlc.admin_attendance.attendance_tracking.save]</span></button>
+                          <button type="button" ng-click="submitSection($event,'concern_4',true)" id="concern_4_save"  ng-disabled="writeUncertain || saveBusy || submitBusy || forms.concern_4.$invalid || forms.concern_4.$pristine"><svg class="att-icon icon" aria-hidden="true" focusable="false" width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-0.125em"><path d="M4 4h16v16H4zM8 12l3 3 5-6"/></svg> <span>~[text:psx.htmlc.admin_attendance.attendance_tracking.save]</span></button>
                           <div class="saved" ng-if="concern_4_save=='saved' && !forms.concern_4.$dirty" role="status" aria-live="polite">~[text:psx.htmlc.admin_attendance.attendance_tracking.saved]</div>
                           <div class="emailed" ng-if="concern_4_emailed==1 && !forms.concern_4.$dirty" role="status" aria-live="polite">~[text:psx.htmlc.teachers_studentpages.attendance_tracking.email_sent]</div>
                                 <div class="feedback-error" ng-if="notificationFailed.concern_4">
@@ -446,14 +448,14 @@ HAVING COUNT(*) = 1
                       </td>
                       <td class="grid-item">
                           <label for="concern_4_sent_date">~[text:psx.htmlc.admin_attendance.attendance_tracking.date]</label> 
-                          <input id="concern_4_sent_date" name="sent_date" ng-model="record.concern_4.concern_4_sent_date" type="text" pss-date-widget data-minDate="{{ record.concern_4s.concern_4_req_date }}" ng-disabled="true" ng-required="concerns.concern_4_sent===true" />
+                          <input id="concern_4_sent_date" name="sent_date" ng-model="record.concern_4.concern_4_sent_date" type="text" pss-date-widget data-minDate="{{ record.concern_4.concern_4_req_date }}" ng-disabled="true" ng-required="concerns.concern_4_sent===true" />
                       </td>
                   </tr>
                   <tr>
                       <td colspan="3" class="grid-item">
                           <label class="notes-label" for="concern_4_notes">~[text:psx.htmlc.admin_attendance.attendance_tracking.notes] (~[text:psx.htmlc.admin_students.attendance_tracking.required])</label>
                           <p class="help-text">~[text:psx.htmlc.admin_students.attendance_tracking.note_any_concerns_dates3] ~[text:psx.htmlc.admin_students.attendance_tracking.note_any_supports_or_intervent] ~[text:psx.htmlc.admin_students.attendance_tracking.for_example_referral_to_schoo]</p>
-                          <textarea class="notes" id="concern_4_notes" aria-describedby="concern_4_notes_errors" name="notes" ng-model="record.concern_4.concern_4_notes" ng-disabled="!concerns.concern_4_req || record.referral.referral===1" ng-required="concerns.concern_4_req===true" ng-minlength="20" maxlength="4000"></textarea>
+                          <textarea class="notes" id="concern_4_notes" aria-describedby="concern_4_notes_errors" name="notes" ng-model="record.concern_4.concern_4_notes" ng-disabled="!concerns.concern_4_req || record.referral.referral>0" ng-required="concerns.concern_4_req===true" ng-minlength="20" maxlength="4000"></textarea>
                       </td>
                   </tr>
               </tbody>
@@ -473,9 +475,8 @@ HAVING COUNT(*) = 1
                       <tr>
                           <td class="grid-item stretchCell">
                               <label class="form-control" for="referral">
-                              <input type="checkbox" ng-model="record.referral.referral" ng-click="toggle($event, 'referral', 'referral')" name="referral" id="referral" ng-true-value="1" ng-false-value="0" ng-disabled="true"> ~[text:psx.htmlc.admin_students.attendance_tracking.notification_to_the_director]
+                              <input type="checkbox" ng-checked="record.referral.referral > 0" name="referral" id="referral" disabled> ~[text:psx.htmlc.admin_students.attendance_tracking.notification_to_the_director]
                               </label>
-                              <input type="hidden" ng-model="record.referral.referral" name="referral" id="referral_value">
                           </td>
                           <td class="grid-item">
                               <label for="referral_staff">~[text:psx.htmlc.admin_students.attendance_tracking.contacted_by]</label> 
@@ -485,16 +486,16 @@ HAVING COUNT(*) = 1
                               <label for="referral_date">~[text:psx.htmlc.admin_attendance.attendance_tracking.date]</label> 
                               <input id="referral_date" name="date" data-minDate="{{ record.concern_4.concern_4_sent_date }}" ng-model="record.referral.referral_date" type="text" pss-date-widget  ng-disabled="true" />
                           </td>
-                          <td row-span="3" class="save-notes">
+                          <td rowspan="3" class="save-notes">
                               <div ng-if="referral_save=='saving'" data-pss-wait-spinner="small" role="status" aria-label="~[text:psx.htmlc.admin_attendance.attendance_tracking.loading]"></div>
-                              <button type="submit" id="referral_save" ng-disabled="writeUncertain || saveBusy || submitBusy || true"><i aria-hidden="true" class="fi-checkbox icon"></i> <span>~[text:psx.htmlc.admin_attendance.attendance_tracking.save]</span></button>
+                              <button type="submit" id="referral_save" ng-disabled="writeUncertain || saveBusy || submitBusy || true"><svg class="att-icon icon" aria-hidden="true" focusable="false" width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-0.125em"><path d="M4 4h16v16H4zM8 12l3 3 5-6"/></svg> <span>~[text:psx.htmlc.admin_attendance.attendance_tracking.save]</span></button>
                               <div class="saved" ng-if="referral_save=='saved' && !forms.ref.$dirty" role="status" aria-live="polite">~[text:psx.htmlc.admin_attendance.attendance_tracking.saved]</div>
                           </td>
                       </tr>
                       <tr>
                         <td class="grid-item stretchCell">
                             <label class="form-control" for="referral_closed">
-                            <input type="checkbox" ng-model="record.referral.referral" ng-click="toggle($event, 'referral', 'referral')" name="referral_closed" id="referral_closed" ng-true-value="1" ng-false-value="0" ng-disabled="true"> ~[text:psx.htmlc.admin_students.attendance_tracking.referral_closed]
+                            <input type="checkbox" ng-checked="record.referral.referral == 2" name="referral_closed" id="referral_closed" disabled> ~[text:psx.htmlc.admin_students.attendance_tracking.referral_closed]
                             </label>
                         </td>
                         <td class="grid-item">
@@ -533,7 +534,7 @@ HAVING COUNT(*) = 1
               <tbody>
                   <tr>
                       <td class="grid-item stretchCell">
-                          <span ng-if="record.student.student_notification==1"><i class="fi-check"></i></span><span ng-if="record.student.student_notification != 1"><i class="fi-x"></i></span> &nbsp; ~[text:psx.htmlc.admin_attendance.attendance_tracking.discussion_of_concern]
+                          <span ng-if="record.student.student_notification==1"><svg class="att-icon" aria-hidden="true" focusable="false" width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-0.125em"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></span><span ng-if="record.student.student_notification != 1"><svg class="att-icon" aria-hidden="true" focusable="false" width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-0.125em"><path d="M6 6l12 12M18 6L6 18"/></svg></span> &nbsp; ~[text:psx.htmlc.admin_attendance.attendance_tracking.discussion_of_concern]
                       </td>
                       <td class="grid-item">
                           <strong>~[text:psx.htmlc.admin_students.attendance_tracking.contacted_by]:</strong> {{ record.student.student_notification_staff }}
@@ -611,7 +612,7 @@ HAVING COUNT(*) = 1
                   </tr>
                   <tr>
                       <td class="grid-item stretchCell">
-                          <span ng-if="concerns.concern_2_req==true"><i class="fi-check"></i></span><span ng-if="concerns.concern_2_req != true"><i class="fi-x"></i></span>&nbsp; <strong>~[text:psx.htmlc.admin_students.attendance_tracking.flag_concern_to_admin]</strong>
+                          <span ng-if="concerns.concern_2_req==true"><svg class="att-icon" aria-hidden="true" focusable="false" width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-0.125em"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></span><span ng-if="concerns.concern_2_req != true"><svg class="att-icon" aria-hidden="true" focusable="false" width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-0.125em"><path d="M6 6l12 12M18 6L6 18"/></svg></span>&nbsp; <strong>~[text:psx.htmlc.admin_students.attendance_tracking.flag_concern_to_admin]</strong>
                       </td>
                       <td class="grid-item">
                           <strong>~[text:psx.htmlc.admin_students.attendance_tracking.contacted_by]:</strong> {{record.concern_2.concern_2_req_staff }}
@@ -622,7 +623,7 @@ HAVING COUNT(*) = 1
                   </tr>
                   <tr>
                       <td class="grid-item stretchCell">
-                          <span ng-if="concerns.concern_2_sent==true"><i class="fi-check"></i></span><span ng-if="concerns.concern_2_sent != true"><i class="fi-x"></i></span>&nbsp; <strong>~[text:psx.htmlc.admin_students.attendance_tracking.notification_sent]</strong>
+                          <span ng-if="concerns.concern_2_sent==true"><svg class="att-icon" aria-hidden="true" focusable="false" width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-0.125em"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></span><span ng-if="concerns.concern_2_sent != true"><svg class="att-icon" aria-hidden="true" focusable="false" width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-0.125em"><path d="M6 6l12 12M18 6L6 18"/></svg></span>&nbsp; <strong>~[text:psx.htmlc.admin_students.attendance_tracking.notification_sent]</strong>
                       </td>
                       <td class="grid-item">
                           <strong>~[text:psx.htmlc.admin_students.attendance_tracking.contacted_by]:</strong> {{record.concern_2.concern_2_sent_staff }}
@@ -646,7 +647,7 @@ HAVING COUNT(*) = 1
                   </tr>
                   <tr>
                       <td class="grid-item stretchCell">
-                          <span ng-if="concerns.concern_3_req==true"><i class="fi-check"></i></span><span ng-if="concerns.concern_3_req != true"><i class="fi-x"></i></span>&nbsp; <strong>~[text:psx.htmlc.admin_students.attendance_tracking.flag_concern_to_admin]</strong>
+                          <span ng-if="concerns.concern_3_req==true"><svg class="att-icon" aria-hidden="true" focusable="false" width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-0.125em"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></span><span ng-if="concerns.concern_3_req != true"><svg class="att-icon" aria-hidden="true" focusable="false" width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-0.125em"><path d="M6 6l12 12M18 6L6 18"/></svg></span>&nbsp; <strong>~[text:psx.htmlc.admin_students.attendance_tracking.flag_concern_to_admin]</strong>
                       </td>
                       <td class="grid-item">
                           <strong>~[text:psx.htmlc.admin_students.attendance_tracking.contacted_by]:</strong> {{record.concern_3.concern_3_req_staff }}
@@ -657,7 +658,7 @@ HAVING COUNT(*) = 1
                   </tr>
                   <tr>
                       <td class="grid-item stretchCell">
-                          <span ng-if="concerns.concern_3_sent==true"><i class="fi-check"></i></span><span ng-if="concerns.concern_3_sent != true"><i class="fi-x"></i></span>&nbsp; <strong>~[text:psx.htmlc.admin_students.attendance_tracking.notification_sent]</strong>
+                          <span ng-if="concerns.concern_3_sent==true"><svg class="att-icon" aria-hidden="true" focusable="false" width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-0.125em"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></span><span ng-if="concerns.concern_3_sent != true"><svg class="att-icon" aria-hidden="true" focusable="false" width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-0.125em"><path d="M6 6l12 12M18 6L6 18"/></svg></span>&nbsp; <strong>~[text:psx.htmlc.admin_students.attendance_tracking.notification_sent]</strong>
                       </td>
                       <td class="grid-item">
                           <strong>~[text:psx.htmlc.admin_students.attendance_tracking.contacted_by]:</strong> {{record.concern_3.concern_3_sent_staff }}
@@ -676,12 +677,12 @@ HAVING COUNT(*) = 1
               <tbody>
                   <tr>
                       <td colspan="4">
-                          <h3 class="concern-head">~[text:psx.htmlc.admin_students.attendance_tracking.written_notification_2]</h3>
+                          <h3 class="concern-head">~[text:psx.htmlc.admin_students.attendance_tracking.written_notification_3]</h3>
                       </td>
                   </tr>
                   <tr>
                       <td class="grid-item stretchCell">
-                          <span ng-if="concerns.concern_4_req==true"><i class="fi-check"></i></span><span ng-if="concerns.concern_4_req != true"><i class="fi-x"></i></span>&nbsp; <strong>~[text:psx.htmlc.admin_students.attendance_tracking.flag_concern_to_admin]</strong>
+                          <span ng-if="concerns.concern_4_req==true"><svg class="att-icon" aria-hidden="true" focusable="false" width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-0.125em"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></span><span ng-if="concerns.concern_4_req != true"><svg class="att-icon" aria-hidden="true" focusable="false" width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-0.125em"><path d="M6 6l12 12M18 6L6 18"/></svg></span>&nbsp; <strong>~[text:psx.htmlc.admin_students.attendance_tracking.flag_concern_to_admin]</strong>
                       </td>
                       <td class="grid-item">
                           <strong>~[text:psx.htmlc.admin_students.attendance_tracking.contacted_by]:</strong> {{record.concern_4.concern_4_req_staff }}
@@ -692,7 +693,7 @@ HAVING COUNT(*) = 1
                   </tr>
                   <tr>
                       <td class="grid-item stretchCell">
-                          <span ng-if="concerns.concern_4_sent==true"><i class="fi-check"></i></span><span ng-if="concerns.concern_4_sent != true"><i class="fi-x"></i></span>&nbsp; <strong>~[text:psx.htmlc.admin_students.attendance_tracking.notification_sent]</strong>
+                          <span ng-if="concerns.concern_4_sent==true"><svg class="att-icon" aria-hidden="true" focusable="false" width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-0.125em"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></span><span ng-if="concerns.concern_4_sent != true"><svg class="att-icon" aria-hidden="true" focusable="false" width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-0.125em"><path d="M6 6l12 12M18 6L6 18"/></svg></span>&nbsp; <strong>~[text:psx.htmlc.admin_students.attendance_tracking.notification_sent]</strong>
                       </td>
                       <td class="grid-item">
                           <strong>~[text:psx.htmlc.admin_students.attendance_tracking.contacted_by]:</strong> {{record.concern_4.concern_4_sent_staff }}
@@ -720,7 +721,7 @@ HAVING COUNT(*) = 1
               <tbody>
                   <tr>
                       <td class="grid-item stretchCell">
-                            <span ng-if="record.referral.referral==1"><i class="fi-check"></i></span><span ng-if="record.referral.referral != 1"><i class="fi-x"></i></span> &nbsp; ~[text:psx.htmlc.admin_students.attendance_tracking.notification_to_the_director]
+                            <span ng-if="record.referral.referral>0"><svg class="att-icon" aria-hidden="true" focusable="false" width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-0.125em"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></span><span ng-if="!(record.referral.referral>0)"><svg class="att-icon" aria-hidden="true" focusable="false" width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-0.125em"><path d="M6 6l12 12M18 6L6 18"/></svg></span> &nbsp; ~[text:psx.htmlc.admin_students.attendance_tracking.notification_to_the_director]
                       </td>
                       <td class="grid-item">
                           <strong>~[text:psx.htmlc.admin_students.attendance_tracking.contacted_by]:</strong> {{ record.referral.referral_staff }}
@@ -731,13 +732,13 @@ HAVING COUNT(*) = 1
                   </tr>
                   <tr>
                     <td class="grid-item stretchCell">
-                        <span ng-if="record.referral.referral==2"><i class="fi-check"></i></span><span ng-if="record.referral.referral<2"><i class="fi-x"></i></span> &nbsp; ~[text:psx.htmlc.admin_students.attendance_tracking.notification_to_the_director]
+                        <span ng-if="record.referral.referral==2"><svg class="att-icon" aria-hidden="true" focusable="false" width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-0.125em"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></span><span ng-if="record.referral.referral<2"><svg class="att-icon" aria-hidden="true" focusable="false" width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-0.125em"><path d="M6 6l12 12M18 6L6 18"/></svg></span> &nbsp; ~[text:psx.htmlc.admin_students.attendance_tracking.referral_closed]
                     </td>
                     <td class="grid-item">
-                        <strong>~[text:psx.htmlc.admin_students.attendance_tracking.contacted_by]:</strong> {{ record.referral.referral_staff }}
+                        <strong>~[text:psx.htmlc.admin_students.attendance_tracking.contacted_by]:</strong> {{ record.referral.referral_closed_staff }}
                     </td>
                     <td class="grid-item">
-                        <strong>~[text:psx.htmlc.admin_attendance.attendance_tracking.date]:</strong> {{ record.referral.referral_date }}
+                        <strong>~[text:psx.htmlc.admin_attendance.attendance_tracking.date]:</strong> {{ record.referral.referral_closed_date }}
                     </td>
                   </tr>
                   <tr>

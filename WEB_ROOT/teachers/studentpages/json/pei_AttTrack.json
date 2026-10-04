@@ -5,37 +5,37 @@
             u.studentsdcid,
             u.termid,
             u.parent_call_1_staff,
-            u.parent_call_1,
+            nvl(u.parent_call_1,0) parent_call_1,
             to_char(u.parent_call_1_date,'~[dateformat]') parent_call_1_date,
             u.parent_call_2_staff,
-            u.parent_call_2,
+            nvl(u.parent_call_2,0) parent_call_2,
             to_char(u.parent_call_2_date,'~[dateformat]') parent_call_2_date,
             u.parent_call_3_staff,
-            u.parent_call_3,
+            nvl(u.parent_call_3,0) parent_call_3,
             to_char(u.parent_call_3_date,'~[dateformat]') parent_call_3_date,
             u.parent_call_notes,
             nvl(u.student_notification,0) student_notification,
             to_char(u.student_notification_date,'~[dateformat]') student_notification_date,
             u.student_notification_staff,
-            u.concern_2,
+            nvl(u.concern_2,0) concern_2,
             u.concern_2_req_staff,
             to_char(u.concern_2_req_date,'~[dateformat]') concern_2_req_date,
             u.concern_2_sent_staff,
             to_char(u.concern_2_sent_date, '~[dateformat]') concern_2_sent_date,
             u.concern_2_notes,
-            u.concern_3,
+            nvl(u.concern_3,0) concern_3,
             u.concern_3_req_staff,
             to_char(u.concern_3_req_date,'~[dateformat]') concern_3_req_date,
             u.concern_3_sent_staff,
             to_char(u.concern_3_sent_date, '~[dateformat]') concern_3_sent_date,
             u.concern_3_notes,           
-            u.concern_4,
+            nvl(u.concern_4,0) concern_4,
             u.concern_4_req_staff,
             to_char(u.concern_4_req_date,'~[dateformat]') concern_4_req_date,
             u.concern_4_sent_staff,
             to_char(u.concern_4_sent_date, '~[dateformat]') concern_4_sent_date,
             u.concern_4_notes,
-             u.referral,
+             nvl(u.referral,0) referral,
           u.referral_staff,
           to_char(u.referral_date,'~[dateformat]') referral_date,
           u.referral_closed_staff,
@@ -46,7 +46,48 @@
     	JOIN students s 
     	  ON u.studentsdcid = s.dcid
         WHERE
-    	    u.termid = ~(gpv.term)
+            u.termid = (
+SELECT MIN(t.id)
+FROM terms t
+JOIN students s ON s.id = ~(curstudid)
+JOIN (
+    SELECT e.studentid, e.grade_level, e.schoolid, e.schoolname,
+           e.entrydate, e.exitdate,
+           ROW_NUMBER() OVER (
+               PARTITION BY e.studentid
+               ORDER BY e.entrydate DESC, e.exitdate DESC,
+                        e.schoolid ASC, e.grade_level DESC NULLS LAST,
+                        e.schoolname ASC NULLS LAST
+           ) AS enrollment_rn
+    FROM ps_schoolenrollment e
+    JOIN terms school_year
+      ON school_year.schoolid = e.schoolid
+     AND school_year.yearid = ~(curyearid)
+     AND school_year.id = school_year.yearid * 100
+    WHERE e.yearid = school_year.yearid
+      AND e.studentid = ~(curstudid)
+      AND e.entrydate < school_year.lastday
+      AND e.exitdate > school_year.firstday
+      AND e.entrydate < e.exitdate
+) e ON e.studentid = s.id AND e.enrollment_rn = 1
+WHERE t.schoolid = ~(curschoolid)
+  AND s.schoolid = ~(curschoolid)
+  AND t.yearid = ~(curyearid)
+  AND (
+    (
+      e.grade_level BETWEEN 0 AND 9
+      AND t.id = t.yearid * 100
+    )
+    OR
+    (
+      e.grade_level BETWEEN 10 AND 12
+      AND t.id IN (t.yearid * 100 + 1, t.yearid * 100 + 2)
+      AND TO_DATE('~[date]', '~[dateformat]')
+          BETWEEN t.firstday AND t.lastday
+    )
+  )
+HAVING COUNT(*) = 1
+            )
     	    and s.id = ~(curstudid)
             AND s.schoolid = ~(curschoolid)
     ) WHERE rn = 1;nonemessage=-1]

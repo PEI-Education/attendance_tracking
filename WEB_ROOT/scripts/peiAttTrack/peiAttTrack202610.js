@@ -72,9 +72,12 @@ define(['angular', 'components/shared/index', 'peiAttTrack/messages'], function(
           if ($scope.recordLoading) return;
           $scope.recordLoading = true;
           $scope.recordLoadError = false;
-          return dbConnect.getRecord(`${datafile}?term=${$scope.termid}`).then(function(retData) {
+          // The endpoint resolves the term server-side; never pass it in the URL.
+          return dbConnect.getRecord(datafile).then(function(retData) {
               if (retData && typeof retData === 'object') {
-                  if (!Number.isSafeInteger(Number(retData.id)) || Number(retData.id) <= 0 ||
+                  // A record for another term (e.g. term switched in another tab) must not be edited here.
+                  if (String(retData.termid) !== String($scope.termid) ||
+                      !Number.isSafeInteger(Number(retData.id)) || Number(retData.id) <= 0 ||
                       ['student', 'calls', 'concern_2', 'concern_3', 'concern_4', 'referral'].some(function(key) {
                           return !retData[key] || typeof retData[key] !== 'object';
                       })) throw new Error('Invalid checklist response');
@@ -144,22 +147,6 @@ define(['angular', 'components/shared/index', 'peiAttTrack/messages'], function(
           });
       };
       $scope.retryLoad = function() { return $scope.getRecord(recordDataFile); };
-      
-      // Adds the student's grade_level in the context of the termid, and sets the student_notification property to 'na' if that level is less than Grade 10
-      $scope.getGrade = function(datafile) {
-          return dbConnect.getRecord(datafile).then(function(retData) {
-              if (typeof(retData) === 'number') {
-                  $scope.gradeInYear = retData;
-                  if ($scope.gradeInYear < 10) {
-                      $scope.record.student.student_notification = '-1';
-                  }
-              } else {
-                  alert(messages.grade_load_error);
-              }
-          }).catch(function() {
-              alert(messages.grade_load_error);
-          });
-      };
       
       // Checks if the termid is valid for the student's grade_level in the context of the termid
       $scope.validTerm = function() {
@@ -296,23 +283,6 @@ define(['angular', 'components/shared/index', 'peiAttTrack/messages'], function(
         form.$setDirty();
       }
       
-      // Logic for disabling the referral section -> not used on teacher portal.
-      $scope.disableReferral = function() {
-          let concerns = ['concern_2', 'concern_3', 'concern_4']
-          for (const concern of concerns) {
-              if (!$scope.record[concern]) {
-                  return true;
-              }
-              if ($scope.record[concern][concern] != 2) {
-                  return true;
-              }
-              if (!$scope.record[concern][`${concern}_notes`] || $scope.record[concern][`${concern}_notes`].length < 20) {
-                  return true;
-              }
-          }
-          return false;
-      }
-      
       function emailPayload() {
           return {
               type: 100,
@@ -439,6 +409,8 @@ define(['angular', 'components/shared/index', 'peiAttTrack/messages'], function(
           const payload = emailPayload();
           return $scope.save(e, phase).then(function(result) {
               if (!result || !result.notify) return result;
+              // No recipients are configured for this school; the page already says so.
+              if (!String(payload.tdata2 || '').trim()) return result;
               $scope.notificationUnknown[phase] = false;
               pendingEmails[phase] = payload;
               $scope[`${phase}_emailed`] = 0;

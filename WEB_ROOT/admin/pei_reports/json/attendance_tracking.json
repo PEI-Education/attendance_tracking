@@ -52,15 +52,15 @@ select recid, termid, studentsdcid, student_number, last_name, first_name, curre
         1
      end as current_step_idx,
      coalesce(case when u.referral = 2 then u.referral_closed_date end, u.referral_date, u.concern_4_sent_date, u.concern_4_req_date, u.concern_3_sent_date, u.concern_3_req_date, u.concern_2_sent_date, u.concern_2_req_date, u.parent_call_3_date, u.parent_call_2_date, u.parent_call_1_date, u.student_notification_date) action_date,
-     u.student_notification,
-     u.parent_call_1,
-     u.parent_call_2,
-     u.parent_call_3,
-     u.concern_2,
-     u.concern_3,
-     u.concern_4,
-     u.referral,
-     (u.parent_call_1 + u.parent_call_2 + u.parent_call_3) call_points
+     nvl(u.student_notification,0) student_notification,
+     nvl(u.parent_call_1,0) parent_call_1,
+     nvl(u.parent_call_2,0) parent_call_2,
+     nvl(u.parent_call_3,0) parent_call_3,
+     nvl(u.concern_2,0) concern_2,
+     nvl(u.concern_3,0) concern_3,
+     nvl(u.concern_4,0) concern_4,
+     nvl(u.referral,0) referral,
+     (nvl(u.parent_call_1,0) + nvl(u.parent_call_2,0) + nvl(u.parent_call_3,0)) call_points
   from (
     SELECT u.*,
            ROW_NUMBER() OVER (
@@ -87,6 +87,12 @@ select recid, termid, studentsdcid, student_number, last_name, first_name, curre
      AND school_year.yearid = ~(curyearid)
      AND school_year.id = school_year.yearid * 100
     WHERE e.yearid = school_year.yearid
+      AND e.studentid IN (
+          SELECT cs.id
+          FROM students cs
+          JOIN u_pei_att_track c ON c.studentsdcid = cs.dcid
+          WHERE c.termid = ~(curtermid)
+      )
       AND e.entrydate < school_year.lastday
       AND e.exitdate > school_year.firstday
       AND e.entrydate < e.exitdate
@@ -94,11 +100,7 @@ select recid, termid, studentsdcid, student_number, last_name, first_name, curre
      on pss.studentid = s.id and pss.enrollment_rn = 1
   where
       u.checklist_rn = 1
-      ~[if.~(gpv.update)=1]and s.dcid in (select dcid from ~[temp.table.current.selection:students])[/if]
        ~[if.is.a.school]and s.schoolid = ~(curschoolid)[/if])
-  where 1 = 1
-  ~[if.~(gpv.step)>0]and ~(gpv.step) <= current_step_idx[/if]
-  ~[if.~(gpv.exact)=true]and ~(gpv.step) = current_step_idx[/if]
   order by term_grade, last_name]
   {
       "recid": ~(1),

@@ -6,7 +6,6 @@ define(function(require) {
          ctrlData: {},
          stuSelection: undefined,
          selectedStep: undefined,
-         selectedExactStep: undefined,
          hs: undefined,
          spinner: { wait: true },
          task: {

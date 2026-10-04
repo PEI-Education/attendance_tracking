@@ -8,9 +8,4 @@
    <publisher name="PEI Dept of Education - Luke Walker">
       <contact email="lawalker@gov.pe.ca"/>
    </publisher>
-   <access_request>
-      <cdn_request>
-         <cdn name="https://cdn.jsdelivr.net" />
-      </cdn_request>
-   </access_request>
 </plugin>

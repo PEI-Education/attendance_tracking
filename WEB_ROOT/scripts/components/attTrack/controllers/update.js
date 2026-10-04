@@ -80,7 +80,7 @@ define(function(require) {
             state.task.allDone = false;
             state.spinner.wait = true;
             $scope.loadError = '';
-            return dataService.getData('json/attendance_tracking.json?update=1')
+            return dataService.getData('json/attendance_tracking_selection.json')
                 .then(function(retData) {
                     if (!Array.isArray(retData)) throw new Error('Invalid student response');
                     const rows = retData.slice();
@@ -128,6 +128,9 @@ define(function(require) {
             let step = $scope.stepChoice.id;
             if (step === 7 || step === 10 || step === 13) {
                 validSteps = [step, step-1, step-2]
+            } else if (step === 3) {
+                // Call 1 does not require student notification (K-9 students are exempt).
+                validSteps = [3, 2, 1];
             } else {
                 validSteps = [step, step-1]
             }
@@ -171,7 +174,92 @@ define(function(require) {
             $scope[group][step] = value;
             $scope.setStaffDate(group,step);
         }
+
+        // Bulk saves only set a step; clearing a step is done on the student's own checklist.
+        const BULK_STEPS = {
+            sn: { field: 'student_notification', step: 'student_notification', active: 1 },
+            pc1: { field: 'parent_call_1', step: 'parent_call_1' },
+            pc2: { field: 'parent_call_2', step: 'parent_call_2' },
+            pc3: { field: 'parent_call_3', step: 'parent_call_3' },
+            c2req: { field: 'concern_2', step: 'concern_2_req', active: 1 },
+            c2sent: { field: 'concern_2', step: 'concern_2_sent', active: 2 },
+            c3req: { field: 'concern_3', step: 'concern_3_req', active: 1 },
+            c3sent: { field: 'concern_3', step: 'concern_3_sent', active: 2 },
+            c4req: { field: 'concern_4', step: 'concern_4_req', active: 1 },
+            c4sent: { field: 'concern_4', step: 'concern_4_sent', active: 2 },
+            referral: { field: 'referral', step: 'referral', active: 1 }
+        };
+        $scope.canSave = function(group) {
+            const definition = BULK_STEPS[group], fields = $scope[group];
+            if (!definition || !fields || $scope.saveBusy || $scope.batchStarted) return false;
+            const value = Number(fields[definition.field]);
+            const active = definition.active === undefined ? value > 0 : value === definition.active;
+            return active && !!String(fields[`${definition.step}_staff`] || '').trim() &&
+                !!String(fields[`${definition.step}_date`] || '').trim();
+        };
         
+        // Newly referred students are summarized in one email per board after each referral batch.
+        var pendingEmails = [];
+        $scope.referralEmail = {};
+        function board(row) {
+            var school = Number(row.student.currentSchool);
+            return school < 500 ? 'PSB' : school < 601 ? 'CSLF' : null;
+        }
+        function value(id) {
+            var element = document.getElementById(id);
+            return element ? String(element.value || '').trim() : '';
+        }
+        function referralPayloads(rows) {
+            var groups = {};
+            rows.forEach(function(row) {
+                // Only students moving from Letter 3 sent to referred; re-saving a referral does not notify again.
+                if (row.outcome !== 'saved' || row.referralNotified || row.student.currentStepIdx !== 14) return;
+                var name = board(row), recipient = name && value('emailTo' + name);
+                if (!recipient) return;
+                row.referralNotified = true;
+                (groups[name] = groups[name] || { to: recipient, rows: [] }).rows.push(row);
+            });
+            return Object.keys(groups).map(function(name) {
+                var group = groups[name];
+                var lines = group.rows.map(function(row) {
+                    return row.student.lastName + ', ' + row.student.firstName + ' (student_number=' + row.student.studentNumber + ') - ' + row.student.termSchoolName;
+                });
+                return {
+                    type: 100,
+                    tdata1: value('emailFrom'),
+                    tdata2: group.to,
+                    tdata3: localization.format(messages.bulk_referral_subject, '{count}', group.rows.length),
+                    tdata4: [messages.bulk_referral_intro, ''].concat(lines, ['', messages.email_generated + ' ' + messages.email_contact]).join('\n'),
+                    date: value('emailDate'),
+                    time: value('emailTime')
+                };
+            });
+        }
+        function sendReferralEmails() {
+            $scope.referralEmail.busy = true;
+            $scope.referralEmail.failed = false;
+            return $q.all(pendingEmails.slice().map(function(payload) {
+                // Wrap synchronous errors too; an exception does not prove no email was queued.
+                return $q(function(resolve) { resolve(dataService.queueEmail(payload)); }).then(function() {
+                    pendingEmails.splice(pendingEmails.indexOf(payload), 1);
+                    $scope.referralEmail.sent = true;
+                }, function(error) {
+                    if (error && error.outcome === 'failed') {
+                        $scope.referralEmail.failed = true;
+                    } else {
+                        pendingEmails.splice(pendingEmails.indexOf(payload), 1);
+                        $scope.referralEmail.unconfirmed = true;
+                    }
+                });
+            })).finally(function() {
+                $scope.referralEmail.busy = false;
+            });
+        }
+        $scope.retryReferralEmails = function() {
+            if ($scope.saveBusy || $scope.referralEmail.busy || !pendingEmails.length) return;
+            return sendReferralEmails();
+        };
+
         var batchFields;
         $scope.batchStarted = false;
         $scope.saveBusy = false;
@@ -204,17 +292,20 @@ define(function(require) {
                 state.task.success = localization.format(state.task.success, '{failed}', $scope.failedStudents.length);
                 state.task.success = localization.format(state.task.success, '{unconfirmed}', $scope.unconfirmedStudents.length);
                 state.task.allDone = true;
+                if (batchFields.referral !== 1) return;
+                pendingEmails = pendingEmails.concat(referralPayloads(rows));
+                if (pendingEmails.length) return sendReferralEmails();
             }).finally(function() {
                 $scope.saveBusy = false;
                 state.spinner.wait = false;
             });
         }
         $scope.save = function(step) {
-            if ($scope.saveBusy || $scope.batchStarted || !$scope[step] || !$scope.validStudents || !$scope.validStudents.length) return;
+            if (!$scope.canSave(step) || !$scope.validStudents || !$scope.validStudents.length) return;
             batchFields = copyFields($scope[step]);
             // Only the outgoing copy uses psQuery's required MM/DD/YYYY format.
             var locale = document.getElementById('localeLang');
-            if (locale && locale.value === 'fr') {
+            if (locale && String(locale.value).trim().toLowerCase() === 'fr') {
                 Object.keys(batchFields).forEach(function(key) {
                     if (/_date$/.test(key) && batchFields[key]) {
                         var parts = batchFields[key].split('/');

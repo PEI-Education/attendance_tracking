@@ -25,15 +25,15 @@ class ReferralQueryTests(unittest.TestCase):
     def test_closed_referral_takes_precedence_and_matches_tile_filter(self):
         result = self.evaluate(referral=2, concern_4=2, referral_date='2026-09-23', referral_closed_date='2026-10-04')
         self.assertEqual(result, ('Referral closed', 16, '2026-10-04'))
-        self.assertIn('and ~(gpv.step) <= current_step_idx', SQL)
-        self.assertTrue(16 <= result[1])
-        summary = (ROOT / 'WEB_ROOT/admin/pei_reports/json/attendance_summary.json').read_text()
-        self.assertEqual(len(re.findall(r'"id":16,\s*"prefix_name":"Referral",\s*"name": "Closed"', summary)), 2)
+        # The grid takes no URL parameters into SQL; the "Referral Closed" tile filters on this index.
+        self.assertNotIn('gpv.step', SQL)
+        tiles = (ROOT / 'WEB_ROOT/scripts/components/attTrack/directives/attTiles.js').read_text()
+        self.assertIn("{ id: 16, prefix_name: 'Referral', name: 'Closed' }", tiles)
 
     def test_open_or_reopened_referral_ignores_old_closure_date(self):
         result = self.evaluate(referral=1, concern_4=2, referral_date='2026-10-04', referral_closed_date='2026-09-23')
         self.assertEqual(result, ('Referred to Director', 15, '2026-10-04'))
-        self.assertFalse(16 <= result[1])
+        self.assertNotEqual(result[1], 16)
 
     def test_missing_closure_date_falls_back_and_earlier_steps_still_work(self):
         self.assertEqual(self.evaluate(referral=2, referral_date='2026-09-23'), ('Referral closed', 16, '2026-09-23'))

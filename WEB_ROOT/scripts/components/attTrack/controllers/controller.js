@@ -40,35 +40,46 @@ define(function(require) {
             });
         };
 
+        // Export columns, in order; explicit so Angular's $$hashKey never becomes a column.
+        const EXPORT_FIELDS = ['recid', 'termid', 'studentsdcid', 'studentNumber', 'lastName', 'firstName', 'currentGrade',
+            'termGrade', 'currentSchool', 'termSchool', 'termSchoolName', 'currentStep', 'currentStepIdx', 'stepDate',
+            'studentNotification', 'parentCall1', 'parentCall2', 'parentCall3', 'concern2', 'concern3', 'concern4',
+            'referral', 'callPoints'];
+
+        // Formats with the page's ~[dateformat] (e.g. dd/MM/yyyy in French); rows with no action have no date.
         function dateToText(date) {
-            return `${date.getMonth()+1}/${date.getDate()}/${date.getFullYear()}`;
+            if (!date || typeof date.getTime !== 'function' || isNaN(date.getTime())) return '';
+            const input = document.getElementById('dateFormat');
+            const format = input && input.value ? input.value : 'MM/dd/yyyy';
+            const pad = function(value) { return String(value).padStart(2, '0'); };
+            return format.replace('yyyy', date.getFullYear()).replace('MM', pad(date.getMonth() + 1)).replace('dd', pad(date.getDate()));
         }
-        
+
         $scope.exportData = function(rowObjects) {
-             
+
             if (!rowObjects || !rowObjects.length) return;
-            
-            // Get the keys of the first object in the array
-            var keys = Object.keys(rowObjects[0]);
-        
+
             // Convert the data to a tab-delimited string
             let lines = [];
-            lines.push(keys.map(function(key) { return messages['export:' + key]; }).join('\t'));
+            lines.push(EXPORT_FIELDS.map(function(key) { return messages['export:' + key]; }).join('\t'));
             angular.forEach(rowObjects, function(obj) {
               let values = [];
-              angular.forEach(keys, function(key) {
+              angular.forEach(EXPORT_FIELDS, function(key) {
+                let value;
                 if (key === 'stepDate') {
-                    values.push(dateToText(obj.stepDate));
+                    value = dateToText(obj.stepDate);
                 } else if (key === 'currentStep') {
-                    values.push($scope.stepMap[obj[key]]);
+                    value = $scope.stepMap[obj[key]];
                 } else {
-                    values.push(obj[key]);
+                    value = obj[key];
                 }
+                // Tabs or line breaks inside a value would shift columns or rows.
+                values.push(value === undefined || value === null ? '' : String(value).replace(/[\t\r\n]+/g, ' '));
               });
               lines.push(values.join('\t'));
             });
             let tabDelimitedString = lines.join('\n');
-        
+
             // Create a link to the file
             let link = document.createElement('a');
             link.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(tabDelimitedString));
@@ -78,6 +89,14 @@ define(function(require) {
             link.click();
         };
         
+        // All checklists for the term load once; tiles filter in the browser to students currently at that step.
+        let allRows = [];
+        function applyFilter() {
+            const step = state.selectedStep;
+            $scope.showActions = false;
+            $scope.gridData = !step || step === 1 ? allRows : allRows.filter(function(row) { return row.currentStepIdx === step; });
+        }
+
         let requestVersion = 0;
         $scope.loadGrid = function() {
             const version = ++requestVersion;
@@ -85,7 +104,7 @@ define(function(require) {
             $scope.loadError = '';
             $scope.showActions = false;
             $scope.gridData = [];
-            return dataService.getData('json/attendance_tracking.json?step=' + (state.selectedStep || ''))
+            return dataService.getData('json/attendance_tracking.json')
                 .then(function(retData) {
                     if (version !== requestVersion) return;
                     if (!Array.isArray(retData)) throw new Error('Invalid grid response');
@@ -94,14 +113,17 @@ define(function(require) {
                     rows.forEach(function(data) {
                         if (data.stepDate) data.stepDate = new Date(data.stepDate);
                     });
-                    $scope.gridData = rows;
+                    allRows = rows;
+                    state.tileRows = rows;
+                    if (state.setTileRows) state.setTileRows(rows);
+                    applyFilter();
                 }).catch(function() {
                     if (version === requestVersion) $scope.loadError = messages.load_error;
                 }).finally(function() {
                     if (version === requestVersion) state.spinner.wait = false;
                 });
         };
-        $scope.reloadTiles = function() { return state.reloadTiles(); };
-        $scope.$watch(function() { return state.selectedStep; }, $scope.loadGrid);
+        $scope.$watch(function() { return state.selectedStep; }, applyFilter);
+        $scope.loadGrid();
       }]);
 });

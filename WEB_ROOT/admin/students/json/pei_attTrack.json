@@ -5,37 +5,37 @@
           u.studentsdcid,
           u.termid,
           u.parent_call_1_staff,
-          u.parent_call_1,
+          nvl(u.parent_call_1,0) parent_call_1,
           to_char(u.parent_call_1_date,'~[dateformat]') parent_call_1_date,
           u.parent_call_2_staff,
-          u.parent_call_2,
+          nvl(u.parent_call_2,0) parent_call_2,
           to_char(u.parent_call_2_date,'~[dateformat]') parent_call_2_date,
           u.parent_call_3_staff,
-          u.parent_call_3,
+          nvl(u.parent_call_3,0) parent_call_3,
           to_char(u.parent_call_3_date,'~[dateformat]') parent_call_3_date,
           u.parent_call_notes,
           nvl(u.student_notification,0) student_notification,
           to_char(u.student_notification_date,'~[dateformat]') student_notification_date,
           u.student_notification_staff,
-          u.concern_2,
+          nvl(u.concern_2,0) concern_2,
           u.concern_2_req_staff,
           to_char(u.concern_2_req_date,'~[dateformat]') concern_2_req_date,
           u.concern_2_sent_staff,
           to_char(u.concern_2_sent_date, '~[dateformat]') concern_2_sent_date,
           u.concern_2_notes,
-          u.concern_3,
+          nvl(u.concern_3,0) concern_3,
           u.concern_3_req_staff,
           to_char(u.concern_3_req_date,'~[dateformat]') concern_3_req_date,
           u.concern_3_sent_staff,
           to_char(u.concern_3_sent_date, '~[dateformat]') concern_3_sent_date,
           u.concern_3_notes,           
-          u.concern_4,
+          nvl(u.concern_4,0) concern_4,
           u.concern_4_req_staff,
           to_char(u.concern_4_req_date,'~[dateformat]') concern_4_req_date,
           u.concern_4_sent_staff,
           to_char(u.concern_4_sent_date, '~[dateformat]') concern_4_sent_date,
           u.concern_4_notes,
-          u.referral,
+          nvl(u.referral,0) referral,
           u.referral_staff,
           to_char(u.referral_date,'~[dateformat]') referral_date,
           u.referral_closed_staff,
@@ -49,7 +49,7 @@
     	JOIN students s 
     	  ON u.studentsdcid = s.dcid
         WHERE
-    	    u.termid = ~(gpv.term) AND
+            u.termid = ~(curtermid) AND
     	        s.id = ~(curstudid)
             ~[if#school.is.a.school]AND s.schoolid = ~(curschoolid)[/if#school]
     ) WHERE rn = 1;nonemessage=-1]

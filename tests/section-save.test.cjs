@@ -148,7 +148,7 @@ test('teacher resolved year/semester controls the lookup and new-record save', a
         const e = await ready({ fresh: true, teacher: true, term, grade });
         assert.equal(e.scope.validTerm(), true);
         assert.equal(e.scope.termName, 'Resolved term name');
-        assert.deepEqual(e.readUrls, ['json/pei_AttTrack.json?term=' + term]);
+        assert.deepEqual(e.readUrls, ['json/pei_AttTrack.json']);
         assert.equal(e.scope.record.termid, term);
         const job = e.scope.submitSection(null, 'calls', false);
         assert.equal(e.saves[0].fields.termid, term);
@@ -204,6 +204,24 @@ test('failed and malformed checklist reads never become new records; retry recov
         assert.equal(e.saves[0].operation, 'insert');
         e.saves[0].callback(42); await edited;
     }
+});
+test('a school with no configured recipients saves without queuing an email', async () => {
+    const e = await ready();
+    e.inputs.emailTo = '  ';
+    e.scope.record.concern_2.concern_2 = 1;
+    const job = e.scope.submitSection(null, 'concern_2', true);
+    e.saves[0].callback(42); await job;
+    assert.equal(e.emails.length, 0);
+    assert.equal(e.scope.notificationFailed.concern_2, undefined);
+});
+test('a checklist for a different term is rejected, never edited or saved', async () => {
+    const other = { id: '77', termid: '3602', studentsdcid: '123', calls: { parent_call_1: 0 }, student: {}, referral: { referral: 0 },
+        concern_2: { concern_2: 0 }, concern_3: { concern_3: 0 }, concern_4: { concern_4: 0 } };
+    const e = await ready({ readResults: [other] });
+    assert.equal(e.scope.recordLoadError, true);
+    assert.equal(e.scope.record.id, undefined);
+    await e.scope.submitSection(null, 'calls', false);
+    assert.equal(e.saves.length, 0);
 });
 test('pending checklist load blocks both writes and duplicate reload requests', async () => {
     let resolve;

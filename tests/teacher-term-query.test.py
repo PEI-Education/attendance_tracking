@@ -74,5 +74,14 @@ class TeacherTermQueryTests(unittest.TestCase):
         self.assertEqual(self.lookup(11, '2026-10-04'), [])
 
 
+class TeacherEndpointTermTests(unittest.TestCase):
+    def test_endpoint_resolves_the_same_term_without_url_input(self):
+        endpoint = (ROOT / 'WEB_ROOT/teachers/studentpages/json/pei_AttTrack.json').read_text()
+        self.assertNotIn('gpv', endpoint)
+        lookup = re.search(r'~\[tlist_sql;(.*?);nonemessage=\]', HTML, re.S)[1]
+        rules = lambda sql: re.search(r'FROM terms t.*?HAVING COUNT\(\*\) = 1', sql, re.S)[0]
+        self.assertEqual(rules(endpoint), rules(lookup))
+
+
 if __name__ == '__main__':
     unittest.main()

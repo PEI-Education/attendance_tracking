@@ -13,15 +13,15 @@ Interface for tracking concerns and interventions relating to student attendance
 ## Dependencies
 
 - psQuery by Jim Parsons (<https://support.powerschool.com/exchange/view.action?download.id=846&fromSearchResults=true>)
-- Shoelace 2.0 (<https://shoelace.style/>)
-- Foundations Icon Fonts 3 (<https://zurb.com/playground/foundation-icon-fonts-3>)
+- Shoelace 2.0.0 (<https://shoelace.style/>), radio components only, bundled in `WEB_ROOT/scripts/peiAttTrack/shoelace-2.0.0` (no CDN)
 
-Optional: Shoelace, you can do without with some minor mods to the HTML and CSS of the section for the 3 parent calls. Foundations Icons were the cleanest set I could find for the various little graphics we needed (better than Bootstrap in this case), but you could swap in anything else that had a few key icon (X, check, save, file).
+Optional: Shoelace, you can do without with some minor mods to the HTML and CSS of the section for the 3 parent calls. Icons (check, X, save, print, flag, group) are inline SVGs, so no icon font or stylesheet is needed.
 
 Required: psQuery is integral to the functioning of the plugin. Without it, you would need to either replicate its functionakity with a hidden form or find some way to include the right ID for a DirectTable.Select on U_PEI_ATT_TRACK. psQuery really shines with the bulk updates - a single call lets you iterate through an array of students and their related updates, so fast that I actually added a slight delay so that you actually see the loading timer.
 
 ## Version History
 
+- 2026.10.0 - Security: the plugin reads no URL parameters (terms resolved server-side; dashboard filters in the browser; bulk update uses its own selection endpoint). Dashboard tiles count students currently at each step. Restored the student number in referral emails and fixed CSLF referral recipients. Bulk update: Call 1 accepts students with no steps, saves require a set step with staff and date, and referrals send one summary email per board. Teacher referral display and print view fixes. The attendance page's action button counts the current term, like the home page notice. Shoelace bundled locally; icons are inline SVGs.
 - 2026.9.0 - Fixed issue with French date processing introduced with switch to jj/mm/aaaa format in FR locale. Also added remainder of message keys for translation.
 - 2024.3.2 - Added message keys and French translations to student checklist interfaces (admin and teacher portals)
 
