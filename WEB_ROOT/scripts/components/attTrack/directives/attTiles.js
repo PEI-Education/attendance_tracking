@@ -1,6 +1,7 @@
 'use strict';
 define(function(require) {
     var module = require('components/attTrack/module');
+    var localization = require('peiAttTrack/messages');
     module.directive("attTiles", ["dataService", "state", function (dataService, state) {
         return {
             priority: 100,
@@ -17,6 +18,11 @@ define(function(require) {
                   dataService
                      .getData("json/attendance_summary.json?hs=" + state.hs)
                      .then(function (retData) {
+                        var messages = localization.read();
+                        retData.forEach(function(tile) {
+                            tile.prefix_name = messages['tile:' + tile.prefix_name];
+                            tile.name = messages['tile:' + tile.name];
+                        });
                         state.ctrlData.pssTilesVidget.setTiles(retData);
                      });
                      

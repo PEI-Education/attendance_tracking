@@ -52,26 +52,68 @@ TemplateName:Admin
 	<script>
 	    var hs = ~(curtermid) % 100 === 0 ? false : true;
 	</script>
-	<script>
-	    window.attTrackStepLabels = {
-	        'Student notified': '~[text:psx.htmlc.admin_attendance.attendance_tracking.student_notified]',
-	        'Call 1 - no answer': '~[text:psx.htmlc.admin_attendance.attendance_tracking.call_1_no_answer]',
-	        'Call 1 - reached parent': '~[text:psx.htmlc.admin_attendance.attendance_tracking.call_1_reached_parent]',
-	        'Call 2 - no answer': '~[text:psx.htmlc.admin_attendance.attendance_tracking.call_2_no_answer]',
-	        'Call 2 - reached parent': '~[text:psx.htmlc.admin_attendance.attendance_tracking.call_2_reached_parent]',
-	        'Call 3 - no answer': '~[text:psx.htmlc.admin_attendance.attendance_tracking.call_3_no_answer]',
-	        'Call 3 - reached parent': '~[text:psx.htmlc.admin_attendance.attendance_tracking.call_3_reached_parent]',
-	        'Letter 1 requested': '~[text:psx.htmlc.admin_attendance.attendance_tracking.letter_1_requested]',
-	        'Letter 1 sent': '~[text:psx.htmlc.admin_attendance.attendance_tracking.letter_1_sent]',
-	        'Letter 2 requested': '~[text:psx.htmlc.admin_attendance.attendance_tracking.letter_2_requested]',
-	        'Letter 2 sent': '~[text:psx.htmlc.admin_attendance.attendance_tracking.letter_2_sent]',
-	        'Letter 3 requested': '~[text:psx.htmlc.admin_attendance.attendance_tracking.letter_3_requested]',
-	        'Letter 3 sent': '~[text:psx.htmlc.admin_attendance.attendance_tracking.letter_3_sent]',
-	        'Referral to the Director': '~[text:psx.htmlc.admin_attendance.attendance_tracking.referral_to_the_director]'
-	    };
-	</script>
 </head> 
 <body>
+<!-- Resolved by PowerSchool before the standalone JavaScript reads textContent. -->
+<div id="attTrackMessages" hidden ng-non-bindable>
+    <span data-att-message="step:Student notified">~[text:psx.htmlc.admin_attendance.attendance_tracking.student_notified]</span>
+    <span data-att-message="step:No steps taken">~[text:psx.htmlc.admin_attendance.attendance_tracking.no_steps_taken]</span>
+    <span data-att-message="step:Referred to Director">~[text:psx.htmlc.admin_attendance.attendance_tracking.referred_to_the_director]</span>
+    <span data-att-message="step:Call 1 - no contact">~[text:psx.htmlc.admin_attendance.attendance_tracking.call_1_no_answer]</span>
+    <span data-att-message="step:Call 1 - reached parent">~[text:psx.htmlc.admin_attendance.attendance_tracking.call_1_reached_parent]</span>
+    <span data-att-message="step:Letter 1 requested">~[text:psx.htmlc.admin_attendance.attendance_tracking.letter_1_requested]</span>
+    <span data-att-message="step:Letter 1 sent">~[text:psx.htmlc.admin_attendance.attendance_tracking.letter_1_sent]</span>
+    <span data-att-message="step:Call 2 - no contact">~[text:psx.htmlc.admin_attendance.attendance_tracking.call_2_no_answer]</span>
+    <span data-att-message="step:Call 2 - reached parent">~[text:psx.htmlc.admin_attendance.attendance_tracking.call_2_reached_parent]</span>
+    <span data-att-message="step:Letter 2 requested">~[text:psx.htmlc.admin_attendance.attendance_tracking.letter_2_requested]</span>
+    <span data-att-message="step:Letter 2 sent">~[text:psx.htmlc.admin_attendance.attendance_tracking.letter_2_sent]</span>
+    <span data-att-message="step:Call 3 - no contact">~[text:psx.htmlc.admin_attendance.attendance_tracking.call_3_no_answer]</span>
+    <span data-att-message="step:Call 3 - reached parent">~[text:psx.htmlc.admin_attendance.attendance_tracking.call_3_reached_parent]</span>
+    <span data-att-message="step:Letter 3 requested">~[text:psx.htmlc.admin_attendance.attendance_tracking.letter_3_requested]</span>
+    <span data-att-message="step:Letter 3 sent">~[text:psx.htmlc.admin_attendance.attendance_tracking.letter_3_sent]</span>
+    <span data-att-message="selection_error">~[text:psx.htmlc.admin_attendance.attendance_tracking.selection_error]</span>
+    <span data-att-message="export:recid">~[text:psx.htmlc.admin_attendance.attendance_tracking.record_id]</span>
+    <span data-att-message="export:termid">~[text:psx.htmlc.admin_attendance.attendance_tracking.term_id]</span>
+    <span data-att-message="export:studentsdcid">~[text:psx.htmlc.admin_attendance.attendance_tracking.student_dcid]</span>
+    <span data-att-message="export:studentNumber">~[text:psx.htmlc.admin_attendance.attendance_tracking.student_number]</span>
+    <span data-att-message="export:lastName">~[text:psx.htmlc.admin_attendance.attendance_tracking.last_name]</span>
+    <span data-att-message="export:firstName">~[text:psx.htmlc.admin_attendance.attendance_tracking.first_name]</span>
+    <span data-att-message="export:currentGrade">~[text:psx.htmlc.admin_attendance.attendance_tracking.current_grade]</span>
+    <span data-att-message="export:termGrade">~[text:psx.htmlc.admin_students.attendance_tracking.grade_level_this_term]</span>
+    <span data-att-message="export:currentSchool">~[text:psx.htmlc.admin_attendance.attendance_tracking.current_school]</span>
+    <span data-att-message="export:termSchool">~[text:psx.htmlc.admin_attendance.attendance_tracking.term_school]</span>
+    <span data-att-message="export:termSchoolName">~[text:psx.htmlc.admin_attendance.attendance_tracking.school]</span>
+    <span data-att-message="export:currentStep">~[text:psx.htmlc.admin_attendance.attendance_tracking.current_step]</span>
+    <span data-att-message="export:currentStepIdx">~[text:psx.htmlc.admin_attendance.attendance_tracking.current_step_index]</span>
+    <span data-att-message="export:stepDate">~[text:psx.htmlc.admin_attendance.attendance_tracking.last_action_date]</span>
+    <span data-att-message="export:studentNotification">~[text:psx.htmlc.admin_attendance.attendance_tracking.student_notification]</span>
+    <span data-att-message="export:parentCall1">~[text:psx.htmlc.admin_attendance.attendance_tracking.parent_call_1]</span>
+    <span data-att-message="export:parentCall2">~[text:psx.htmlc.admin_attendance.attendance_tracking.parent_call_2]</span>
+    <span data-att-message="export:parentCall3">~[text:psx.htmlc.admin_attendance.attendance_tracking.parent_call_3]</span>
+    <span data-att-message="export:concern2">~[text:psx.htmlc.admin_attendance.attendance_tracking.written_notification_1]</span>
+    <span data-att-message="export:concern3">~[text:psx.htmlc.admin_attendance.attendance_tracking.written_notification_2]</span>
+    <span data-att-message="export:concern4">~[text:psx.htmlc.admin_attendance.attendance_tracking.written_notification_3]</span>
+    <span data-att-message="export:referral">~[text:psx.htmlc.admin_attendance.attendance_tracking.referral_to_the_director]</span>
+    <span data-att-message="export:callPoints">~[text:psx.htmlc.admin_attendance.attendance_tracking.call_points]</span>
+    <span data-att-message="tile:Checklists">~[text:psx.htmlc.admin_attendance.attendance_tracking.checklists]</span>
+    <span data-att-message="tile:Created">~[text:psx.htmlc.admin_attendance.attendance_tracking.created]</span>
+    <span data-att-message="tile:Student">~[text:psx.htmlc.admin_attendance.attendance_tracking.student]</span>
+    <span data-att-message="tile:Notified">~[text:psx.htmlc.admin_attendance.attendance_tracking.notified]</span>
+    <span data-att-message="tile:Complete">~[text:psx.htmlc.admin_attendance.attendance_tracking.complete]</span>
+    <span data-att-message="tile:Requested">~[text:psx.htmlc.admin_attendance.attendance_tracking.requested]</span>
+    <span data-att-message="tile:Sent">~[text:psx.htmlc.admin_attendance.attendance_tracking.sent]</span>
+    <span data-att-message="tile:Referred to">~[text:psx.htmlc.admin_attendance.attendance_tracking.referred_to]</span>
+    <span data-att-message="tile:Director">~[text:psx.htmlc.admin_attendance.attendance_tracking.director]</span>
+    <span data-att-message="tile:Referral">~[text:psx.htmlc.admin_students.attendance_tracking.referral]</span>
+    <span data-att-message="tile:Closed">~[text:psx.htmlc.admin_attendance.attendance_tracking.closed]</span>
+    <span data-att-message="tile:Call 1">~[text:psx.htmlc.admin_attendance.attendance_tracking.call_1]</span>
+    <span data-att-message="tile:Letter 1">~[text:psx.htmlc.admin_attendance.attendance_tracking.letter_1]</span>
+    <span data-att-message="tile:Call 2">~[text:psx.htmlc.admin_attendance.attendance_tracking.call_2]</span>
+    <span data-att-message="tile:Letter 2">~[text:psx.htmlc.admin_attendance.attendance_tracking.letter_2]</span>
+    <span data-att-message="tile:Call 3">~[text:psx.htmlc.admin_attendance.attendance_tracking.call_3]</span>
+    <span data-att-message="tile:Letter 3">~[text:psx.htmlc.admin_attendance.attendance_tracking.letter_3]</span>
+</div>
+
 	~[wc:admin_header_css] 
     <!-- breadcrumb start --><a href="/admin/home.html" target="_top">~[text:psx.html.admin_students.previousgrades.start_page]</a> &gt; <a href="/admin/reports/home.html">~[text:psx.html.admin_reports.runreports.reports]</a> &gt; ~[text:psx.htmlc.admin_attendance.attendance_tracking.attendance_concerns_tracking]<!-- breadcrumb end --> 
 <!-- start of main menu and content --> 
@@ -132,7 +174,7 @@ TemplateName:Admin
                  data-filtered-data="gridDataFiltered"
                  data-filter-constraint="advanced-only"
     	         data-persist-rows-per-page="true"
-    	         data-item-type-text="Students">
+                 data-item-type-text="~[text:psx.htmlc.admin_attendance.attendance_tracking.students]">
                 <table class="grid">
                     <thead>
                     <tr>
@@ -154,7 +196,7 @@ TemplateName:Admin
                         <td>{{student.lastName}}</td>
                         <td>{{student.firstName}}</td>
                         <td class="center">{{student.termGrade}}</td>
-                        <td>{{student.currentStep}}</td>
+                        <td>{{stepMap[student.currentStep]}}</td>
                         <td class="center">{{student.stepDate | date:'MM/dd/yyyy'}}</td>
                     </tr>
                     </tbody>

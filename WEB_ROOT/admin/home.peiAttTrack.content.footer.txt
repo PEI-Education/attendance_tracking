@@ -1,3 +1,9 @@
+<div hidden id="attNoticeMessages">
+    <span id="attNoticeOne">~[text:psx.htmlc.admin_attendance.attendance_tracking.staff_have_requested_1_written]</span>
+    <span id="attNoticeMany">~[text:psx.htmlc.admin_attendance.attendance_tracking.staff_have_requested_multiple_written]</span>
+    <span id="attNoticeLink">~[text:psx.htmlc.admin_attendance.attendance_tracking.see_the_list_of_students_on_the]</span>
+    <span id="attNoticeHeading">~[text:psx.html.admin.home.start_page]</span>
+</div>
 <script>
 ~[if#sch.is.a.school]
   ~[if#sec.~(studentscreenaccess;attendance.html)=1]
@@ -22,10 +28,13 @@
             }
             
             let sum = Object.values(requests).reduce((a, b) => a + b, 0);
-            if (sum === 1) {
-                $j('h1:contains(~[text:psx.html.admin.home.start_page])').after(`<div id="attAlert" class="feedback-alert">~[text:psx.htmlc.admin_attendance.attendance_tracking.staff_have_requested_1_written] ~[text:psx.htmlc.admin_attendance.attendance_tracking.see_the_list_of_students_on_the]</div>`);
-            } else if (sum > 1) {     
-                $j('h1:contains(~[text:psx.html.admin.home.start_page])').after(`<div id="attAlert" class="feedback-alert">~[text:psx.htmlc.admin_attendance.attendance_tracking.staff_have_requested_multiple_written] ~[text:psx.htmlc.admin_attendance.attendance_tracking.see_the_list_of_students_on_the]</div>`);
+            if (sum > 0) {
+                const message = document.getElementById(sum === 1 ? 'attNoticeOne' : 'attNoticeMany')
+                    .textContent.split('${sum}').join(String(sum));
+                const notice = $j('<div>', { id: 'attAlert', class: 'feedback-alert' }).text(message + ' ');
+                notice.append($j('#attNoticeLink').contents().clone());
+                const heading = document.getElementById('attNoticeHeading').textContent;
+                $j('h1').filter(function() { return $j(this).text().indexOf(heading) !== -1; }).after(notice);
             }
         });
   [/if#sec]

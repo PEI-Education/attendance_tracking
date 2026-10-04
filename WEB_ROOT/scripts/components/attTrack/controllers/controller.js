@@ -1,26 +1,17 @@
 'use strict';
 define(function(require) {
     var module = require('components/attTrack/module');
+    var localization = require('peiAttTrack/messages');
     module.controller('attGridCtrl', ['$scope', 'dataService', 'state', '$timeout', function($scope, dataService, state, $timeout) {
          $scope.gridData = [];
          $scope.spinner = state.spinner;
-         // Labels are set from message keys via window.attTrackStepLabels (see attendance_tracking.html); fallback covers non-PS test contexts.
-         $scope.stepMap = window.attTrackStepLabels || {
-            'Student notified': 'Student notified',
-            'Call 1 - no answer':'Call 1 - no answer',
-            'Call 1 - reached parent':'Call 1 - reached parent',
-            'Call 2 - no answer':'Call 2 - no answer',
-            'Call 2 - reached parent':'Call 2 - reached parent',
-            'Call 3 - no answer':'Call 3 - no answer',
-            'Call 3 - reached parent':'Call 3 - reached parent',
-            'Letter 1 requested':'Letter 1 requested',
-            'Letter 1 sent':'Letter 1 sent',
-            'Letter 2 requested':'Letter 2 requested',
-            'Letter 2 sent': 'Letter 2 sent',                
-            'Letter 3 requested':'Letter 3 requested',
-            'Letter 3 sent':'Letter 3 sent',
-            'Referral to the Director': 'Referral to the Director'
-         };
+         var messages = localization.read();
+         $scope.stepMap = {};
+         Object.keys(messages).forEach(function(key) {
+             if (key.indexOf('step:') === 0) {
+                 $scope.stepMap[key.slice(5)] = messages[key];
+             }
+         });
 
         $scope.setHS = function() {
             let termid = parseInt(document.getElementById('termid'));
@@ -41,7 +32,7 @@ define(function(require) {
             dataService.postData(url, payload).then(function(result){
                 state.spinner.wait = false;
                 if (result.status === 'error') {
-                    alert(result.status);
+                    alert(messages.selection_error);
                 } else {
                     state.stuSelection = $scope.gridData;
                     $scope.showActions = true;
@@ -63,12 +54,14 @@ define(function(require) {
         
             // Convert the data to a tab-delimited string
             let lines = [];
-            lines.push(keys.join('\t'));
+            lines.push(keys.map(function(key) { return messages['export:' + key]; }).join('\t'));
             angular.forEach(rowObjects, function(obj) {
               let values = [];
               angular.forEach(keys, function(key) {
                 if (key === 'stepDate') {
                     values.push(dateToText(obj.stepDate));
+                } else if (key === 'currentStep') {
+                    values.push($scope.stepMap[obj[key]]);
                 } else {
                     values.push(obj[key]);
                 }

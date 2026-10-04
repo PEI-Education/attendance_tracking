@@ -10,8 +10,8 @@ select  count(recid),
         count(case when concern_3 = 2 then 1 end) concern3sent,
         count(case when concern_4 >= 1 then 1 end) concern4req,
         count(case when concern_4 = 2 then 1 end) concern4sent,
-        count(case when referral = 1 then 1 end) referred,
-        count(case when referral = 2 then 1 end) referredClosed
+       count(case when referral = 1 then 1 end) referred,
+       count(case when referral = 2 then 1 end) referredClosed
 from (select 
   u.id recid,
   nvl(u.termid,0) termid,

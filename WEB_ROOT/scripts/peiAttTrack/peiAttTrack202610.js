@@ -1,4 +1,10 @@
-define(['angular', 'components/shared/index'], function(angular) {
+/*  PEI Attendance Concerns Tracking Controller
+    Version 2026.10.0
+
+    Controller for both admin and teacher portals.
+    Questions? Contact lawalker@gov.pe.ca
+ */
+define(['angular', 'components/shared/index', 'peiAttTrack/messages'], function(angular, shared, localization) {
 
   // Reads the locale set server-side via the localeLang hidden input (~[locale.lang] is not substituted in this static JS file).
   function getLocaleLang() {
@@ -10,13 +16,16 @@ define(['angular', 'components/shared/index'], function(angular) {
 
   attTrackApp.controller('attTrackCtrl', ['$scope', 'dbConnect', '$timeout', function($scope, dbConnect, $timeout) {
       
+      var messages = localization.read();
+      var recordDataFile = document.getElementById('recordDataFile').value;
+
       let init = function() {
           $scope.termid = document.getElementById('termid').value;
           $scope.record = {};
           $scope.gradeInYear = document.getElementById('gradeInYear').value;
           $scope.validTerm();
           $scope.forms = {};
-          $scope.getRecord('json/pei_attTrack.json');
+          $scope.getRecord(recordDataFile);
           $scope.concerns = {};
           $scope.referral = {};
           $scope.queue = {};
@@ -25,7 +34,7 @@ define(['angular', 'components/shared/index'], function(angular) {
       $scope.getRecord = function(datafile) {
           dbConnect.getRecord(`${datafile}?term=${$scope.termid}`).then(function(retData) {
               if (typeof retData === "object") {
-                  $scope.record = retData;
+                  $scope.record = retData;                  
                   // set the value of flag concern and letter sent indicators based on value of concern_2, concern_3 and concern_4
                   for (var i=2; i < 5; i++) {
                       if ($scope.record[`concern_${i}`][`concern_${i}`] == 1) {
@@ -92,7 +101,7 @@ define(['angular', 'components/shared/index'], function(angular) {
                       $scope.record.student.student_notification = '-1';
                   }
               } else {
-                  alert('bad response to getGrade');
+                  alert(messages.grade_load_error);
               }
           });
       };
@@ -252,13 +261,6 @@ define(['angular', 'components/shared/index'], function(angular) {
               "date": document.getElementById('emailDate').value,
               "time": document.getElementById('emailTime').value
           };
-           if (getLocaleLang() === "fr") {
-                const frDate = $scope.queue.date;
-                if (frDate) {
-                    const [day, month, year] = frDate.split('/');
-                    $scope.queue.date = `${month}/${day}/${year}`
-                }
-            }
           dbConnect.triggerEmail($scope.queue, function(retID) {
               if (retID == -1 || retID === $scope.record.id) {
                   $timeout(function() {
@@ -267,7 +269,7 @@ define(['angular', 'components/shared/index'], function(angular) {
                      closeLoading();
                   }, 1000);
               } else {
-                  alert(`Email not sent (returned: ${retID})`);
+                  alert(localization.format(messages.email_not_sent, '{code}', retID));
                   closeLoading();
               }
           })
@@ -291,18 +293,18 @@ define(['angular', 'components/shared/index'], function(angular) {
                         }
                     }
                 }
-            };
+            }
           if (!$scope.record.id) {
               list.termid = $scope.record.termid;
               dbConnect.insertRecord($scope.record.studentsdcid, list, function(retID) {
                   if (retID === 0) {
-                      alert(`${phase} not saved (returned ${retID})`);
+                      alert(localization.format(messages.section_not_saved, '{code}', retID));
                       $scope[`${phase}_save`] = UNSAVED;
                       closeLoading();
                   } else {
                       $timeout(function() {
                          $scope[`${phase}_save`] = SAVED;
-                         $scope.getRecord('json/pei_attTrack.json');
+                         $scope.getRecord(recordDataFile);
                          closeLoading();
                       }, 1000);   
                   }
@@ -312,11 +314,11 @@ define(['angular', 'components/shared/index'], function(angular) {
                   if (retID == -1 || retID === $scope.record.id) {
                       $timeout(function() {
                          $scope[`${phase}_save`] = SAVED;
-                         $scope.getRecord('json/pei_attTrack.json'); 
+                         $scope.getRecord(recordDataFile); 
                          closeLoading();
                       }, 1000);
                   } else {
-                      alert(`${phase} not saved (returned: ${retID})`);
+                      alert(localization.format(messages.section_not_saved, '{code}', retID));
                       $scope[`${phase}_save`] = UNSAVED;
                       closeLoading();                   
                   }

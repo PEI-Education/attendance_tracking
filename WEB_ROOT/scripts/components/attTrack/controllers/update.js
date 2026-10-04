@@ -1,23 +1,24 @@
 'use strict';
 define(function(require) {
     var module = require('components/attTrack/module');
+    var localization = require('peiAttTrack/messages');
     module.controller('attUpdateCtrl', ['$scope', 'dataService', 'state', '$q', '$timeout', function($scope, dataService, state, $q, $timeout) {
          $scope.gridData = [];
          $scope.spinner = state.spinner;
          $scope.task = state.task;
-         // Labels are set from message keys via window.attTrackStepChoices (see attUpdateChecklist.html); fallback covers non-PS test contexts.
-         $scope.steps = window.attTrackStepChoices || [
-            { id: 2, label: "Student Notification" },
-            { id: 3, label: "Parent Call 1" },
-            { id: 4, label: "Parent Call 2" },
-            { id: 5, label: "Parent Call 3" },
-            { id: 7, label: "Letter 1 requested" },
-            { id: 8, label: "Letter 1 sent" },
-            { id: 10, label: "Letter 2 requested" },
-            { id: 11, label: "Letter 2 sent" },
-            { id: 13, label: "Letter 3 requested" },
-            { id: 14, label: "Letter 3 sent" },
-            { id: 15, label: "Referral to the Director" }
+         var messages = localization.read();
+         $scope.steps = [
+            { id: 2, label: messages.student_notification },
+            { id: 3, label: messages.parent_call_1 },
+            { id: 4, label: messages.parent_call_2 },
+            { id: 5, label: messages.parent_call_3 },
+            { id: 7, label: messages.letter_1_requested },
+            { id: 8, label: messages.letter_1_sent },
+            { id: 10, label: messages.letter_2_requested },
+            { id: 11, label: messages.letter_2_sent },
+            { id: 13, label: messages.letter_3_requested },
+            { id: 14, label: messages.letter_3_sent },
+            { id: 15, label: messages.referred_to_the_director }
         ];
         $scope.sn = {
             student_notification: 0,
@@ -172,7 +173,7 @@ define(function(require) {
                 if (result.length === $scope.validStudents.length) {
 
                     $timeout(function() {
-                        state.task.success = `All ${result.length} students' checklists were updated.`
+                        state.task.success = localization.format(messages.all_sum_students, '${result.length}', result.length);
                         state.task.allDone = true;
                         state.spinner.wait = false;
                     },1500);
