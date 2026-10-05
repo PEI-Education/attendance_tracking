@@ -9,9 +9,18 @@
     <link href="/images/css/screen.css" rel="stylesheet" media="screen">
     <link href="/images/css/print.css" rel="stylesheet" media="print">
     <link rel="stylesheet" href="/scripts/peiAttTrack/shoelace-2.0.0/themes/light.css" />
-    <script type="module" src="/scripts/peiAttTrack/shoelace-2.0.0/components/radio-group/radio-group.js"></script>
-    <script type="module" src="/scripts/peiAttTrack/shoelace-2.0.0/components/radio-button/radio-button.js"></script>
     <link href="/images/css/pei_att_track.css" rel="stylesheet">
+    <script>
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', function() {
+          import('/scripts/peiAttTrack/shoelace-2.0.0/components/radio-group/radio-group.js');
+          import('/scripts/peiAttTrack/shoelace-2.0.0/components/radio-button/radio-button.js');
+        });
+      } else {
+        import('/scripts/peiAttTrack/shoelace-2.0.0/components/radio-group/radio-group.js');
+        import('/scripts/peiAttTrack/shoelace-2.0.0/components/radio-button/radio-button.js');
+      }
+    </script>
     <script>
         function printDiv() {
             var popupWin = window.open('', '_blank', 'width=1000,height=600');

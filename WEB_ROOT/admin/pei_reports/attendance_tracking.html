@@ -124,6 +124,7 @@ TemplateName:Admin
     <div ng-controller="attGridCtrl">
         <input type="hidden" value="~(curtermid)" id="termid">
         <input type="hidden" value="~[dateformat]" id="dateFormat">
+        <input type="hidden" id="recordDataFile" value="json/attendance_tracking_selection.json" />
         ~[if#sch.is.a.school]
             ~[if#pref.prefschool.attendancetracking=]<div class="feedback-error">~[text:psx.htmlc.admin_attendance.attendance_tracking.concern_notification_email_rec_none]</div>
             [else#pref]
