@@ -55,11 +55,20 @@
 .pei-att-track sl-radio-button {
  display: inline-block;
 }
+/* Shoelace only gives enabled checked buttons white text, and fades disabled ones.
+   Keep the recorded answer legible when a call is locked; unselected options stay faded. */
 .pei-att-track .call-co::part(button--checked), .pei-att-track .call-nc::part(button--checked) {
  background-color: #0066a5;
+ border-color: #0066a5;
+ color: #ffffff;
 }
 .pei-att-track .call-na::part(button--checked) {
  background-color: #5A5A5A;
+ border-color: #5A5A5A;
+ color: #ffffff;
+}
+.pei-att-track sl-radio-button[disabled]::part(button--checked) {
+ opacity: 1;
 }
 .pei-att-track sl-radio-button::part(base) {
  background-color: #ffffff;
@@ -91,6 +100,10 @@
  display: flex;
  flex-direction: row;
  align-items: center;
+ /* As a flex box this cell treats .grid-item's 40px height as fixed, so a taller radio group
+    (label above buttons) would overflow onto the next row. Grow to fit instead. */
+ height: auto;
+ min-height: 40px;
 }
 .pei-att-track .stretch {
  padding-right: 10px;
@@ -184,6 +197,14 @@ color: red
   outline-offset: 2px;
 }
 .pei-att-track button { min-height: 32px; }
+/* Link-styled buttons (a.button) sit beside real buttons in the action rows; match their height. */
+.pei-att-track a.button {
+  display: inline-flex;
+  align-items: center;
+  box-sizing: border-box;
+  min-height: 32px;
+  vertical-align: middle;
+}
 .pei-att-track button:disabled { cursor: not-allowed; }
 .pei-att-track .att-status { min-height: 1.5em; }
 .pei-att-track textarea { resize: vertical; }
