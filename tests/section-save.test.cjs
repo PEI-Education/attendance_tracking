@@ -104,9 +104,16 @@ test('unconfirmed lookup results are not treated as success or automatically ret
     const job=e.scope.submitSection(null,'concern_2',true);e.saves[0].callback(-1);await job;
     assert.equal(e.scope.writeUncertain,true);assert.equal(e.emails.length,0);
     await e.scope.submitSection(null,'concern_2',true);assert.equal(e.saves.length,1);
-    const f=await ready();f.scope.record.concern_2.concern_2=1;
-    const send=f.scope.submitSection(null,'concern_2',true);f.saves[0].callback(42);await tick();f.emails[0].callback(-1);await send;
-    assert.equal(f.scope.notificationUnknown.concern_2,true);await f.scope.retryEmail('concern_2');assert.equal(f.emails.length,1);
+});
+test('psQuery -1 confirms email insertion without allowing a duplicate retry', async () => {
+    for (const result of [-1, '-1']) {
+        const f=await ready();f.scope.record.concern_2.concern_2=1;
+        const send=f.scope.submitSection(null,'concern_2',true);f.saves[0].callback(42);await tick();f.emails[0].callback(result);await send;
+        assert.equal(f.scope.notificationUnknown.concern_2,false);
+        assert.equal(f.scope.notificationFailed.concern_2,false);
+        assert.equal(f.scope.concern_2_emailed,1);
+        await f.scope.retryEmail('concern_2');assert.equal(f.emails.length,1);
+    }
 });
 test('invalid forms and pristine forms cannot submit; Enter ignores textarea newlines', async () => {
     const e=await ready();e.scope.forms.calls.$invalid=true;await e.scope.submitSection(null,'calls',false);assert.equal(e.saves.length,0);

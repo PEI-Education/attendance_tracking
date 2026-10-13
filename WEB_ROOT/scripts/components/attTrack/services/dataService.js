@@ -27,7 +27,7 @@ define(function(require) {
         queueEmail: function(fields) {
               return $q(function(resolve, reject) {
                 $psq('queue').insert(fields, function(retID) {
-                  if (/^[1-9]\d*$/.test(String(retID)) && Number(retID) <= 9007199254740991) {
+                  if (retID === -1 || retID === '-1' || (/^[1-9]\d*$/.test(String(retID)) && Number(retID) <= 9007199254740991)) {
                     resolve(retID);
                   } else {
                     reject({ outcome: retID === 0 || retID === '0' ? 'failed' : 'unconfirmed' });

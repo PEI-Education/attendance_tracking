@@ -10,10 +10,11 @@ function deferred() {
     const promise = new Promise((yes, no) => { resolve = yes; reject = no; });
     return { promise, resolve, reject };
 }
-function load(file, dependencies) {
+function load(file, dependencies, globals = {}) {
     let definition;
     const capture = (name, args) => { definition = args; };
     vm.runInNewContext(fs.readFileSync(path.join(root, 'WEB_ROOT/scripts/components/attTrack', file), 'utf8'), {
+        ...globals,
         document: { getElementById: () => ({ value: '3601' }) },
         define: factory => factory(name => name === 'peiAttTrack/messages'
             ? { read: () => ({ load_error: 'Load failed', selection_error: 'Selection failed' }) }
@@ -28,6 +29,19 @@ function grid(service) {
     load('controllers/controller.js', { $scope: scope, state, dataService });
     return { scope, state };
 }
+test('queue service accepts psQuery insert success and rejects zero', async () => {
+    let result;
+    const service = load('services/dataService.js', { $q: executor => new Promise(executor) }, {
+        $psq: table => {
+            assert.equal(table, 'queue');
+            return { insert(fields, callback) { callback(result); } };
+        }
+    });
+    for (result of [-1, '-1', 902, '902']) assert.equal(await service.queueEmail({type:100}), result);
+    for (result of [0, '0']) await assert.rejects(service.queueEmail({type:100}), error => error.outcome === 'failed');
+    result = undefined;
+    await assert.rejects(service.queueEmail({type:100}), error => error.outcome === 'unconfirmed');
+});
 test('HTTP service preserves success responses and rejected failures without legacy extensions', async () => {
     const failure = { status: 500, data: 'error' }, success = { status: 200, data: 'ok' };
     const requests = [];

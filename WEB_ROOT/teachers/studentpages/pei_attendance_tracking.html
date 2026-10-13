@@ -5,7 +5,7 @@ TemplateName:Teacher Backpack
 <html>
 <head>
     <meta name="Author" content="Luke Walker, PEI Dept of Education">
-    <meta name="Version" content="2026.10.0">
+    <meta name="Version" content="2026.10.3">
 	<title>~[text:psx.htmlc.admin_students.attendance_tracking.attendance_concerns_checklist]</title>
 <!-- required scripts -->
 	~[wc:commonscripts] 
@@ -37,6 +37,11 @@ TemplateName:Teacher Backpack
         else popupWin.onload = function() { popupWin.print(); };
     }
     </script>
+    <style>
+        #attTrackTermName {
+            display: inline;
+        }
+    </style>
 </head>
 <body>
 <!-- Resolved by PowerSchool before the standalone JavaScript reads textContent. -->
@@ -54,7 +59,7 @@ TemplateName:Teacher Backpack
  <h1>~[text:psx.htmlc.admin_students.attendance_tracking.attendance_concerns_checklist]<span class="nav-teacher"><select name="page" size=1 onChange="javascript:formHandler()"><option value="">~[text:psx.htmlc.teachers_studentpages.attendance_tracking.select_screens]</option><option value="">--------------------</option>~[x:teacherpages]</select></span>~[studentalert]</h1>
 <p>~(studentname) &nbsp; ~(grade_level) &nbsp; ~(student_number) &nbsp; &nbsp; ~(track) &nbsp; &nbsp; ~(studschoolabbr) &nbsp; &nbsp; ~[enrollmentstatus]</p></form>
 
-<div class="pei-att-track" data-require-path="peiAttTrack/peiAttTrack202610" data-module-name="attTrackMod">
+<div class="pei-att-track" data-require-path="peiAttTrack/peiAttTrack2026103" data-module-name="attTrackMod">
   <div class="box-round" ng-controller="attTrackCtrl" ng-cloak>
     <input type="hidden" id="staffName" value="~[x:username;firstlast]" />
     <input type="hidden" id="studentsdcid" value="~(studentrn)" />
@@ -114,7 +119,11 @@ HAVING COUNT(*) = 1
     <div role="status" aria-live="polite" class="att-status"><span ng-if="recordLoading">~[text:psx.htmlc.admin_attendance.attendance_tracking.loading]</span><span ng-if="saveBusy || submitBusy">~[text:psx.htmlc.admin_attendance.attendance_tracking.saving]</span></div>
         <div class="feedback-error" ng-if="recordLoadError" role="alert">~[text:psx.htmlc.admin_attendance.attendance_tracking.load_error] <button type="button" ng-click="retryLoad()" ng-disabled="recordLoading">~[text:psx.htmlc.admin_attendance.attendance_tracking.retry]</button></div>
         <div ng-if="validTerm() && !recordLoading && !recordLoadError">
-      <h2>~[text:psx.htmlc.admin_students.attendance_tracking.checklist_for] <span class="attTrackTermName" ng-bind="termName"></span><span class="right boldtext">~[text:psx.htmlc.admin_students.attendance_tracking.grade_level_this_term] {{gradeInYear}}&nbsp; &nbsp; <button class="btn btn-primary" onclick="printDiv()"><svg class="att-icon" aria-hidden="true" focusable="false" width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-0.125em"><path d="M7 9V3h10v6M7 18H5a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2M7 14h10v7H7z"/></svg> ~[text:psx.htmlc.admin_students.attendance_tracking.print_view]</button></span></h2>
+      <h2>~[text:psx.htmlc.admin_students.attendance_tracking.checklist_for] <div id="attTrackTermName" ng-bind="termName"></div>
+      
+         <span class="right boldtext">~[text:psx.htmlc.admin_students.attendance_tracking.grade_level_this_term] {{gradeInYear}}&nbsp; &nbsp; <button class="btn btn-primary" onclick="printDiv()"><svg class="att-icon" aria-hidden="true" focusable="false" width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-0.125em"><path d="M7 9V3h10v6M7 18H5a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2M7 14h10v7H7z"/></svg> ~[text:psx.htmlc.admin_students.attendance_tracking.print_view]</button>
+        </span>
+      </h2>
       <div class="feedback-info no-print">
           <ul>
               <li>~[text:psx.htmlc.admin_students.attendance_tracking.this_checklist_must_be_complet] ~[text:psx.htmlc.admin_students.attendance_tracking.most_steps_must_have_a_date_la] ~[text:psx.htmlc.admin_students.attendance_tracking.in_the_case_of_written_notific] ~[text:psx.htmlc.admin_students.attendance_tracking.the_one_exception_is_the_first]</li>

@@ -295,12 +295,12 @@ define(['angular', 'components/shared/index', 'peiAttTrack/messages'], function(
           };
       }
 
-      // psQuery 0.8 documents a positive record ID on success; 0 or an error on failure.
-      function writeRecord(operation) {
+      // Queue inserts may return -1 on success without a retained record ID.
+      function writeRecord(operation, queueInsert) {
           return $q(function(resolve, reject) {
               operation(function(retID) {
                   const id = Number(retID);
-                  if (Number.isSafeInteger(id) && id > 0) resolve(id);
+                  if ((queueInsert && id === -1) || (Number.isSafeInteger(id) && id > 0)) resolve(id);
                   else reject(retID);
               });
           });
@@ -312,13 +312,14 @@ define(['angular', 'components/shared/index', 'peiAttTrack/messages'], function(
           $scope.emailBusy[phase] = true;
           return writeRecord(function(done) {
               dbConnect.triggerEmail({ ...payload }, done);
-          }).then(function() {
+          }, true).then(function() {
               delete pendingEmails[phase];
               $scope.notificationFailed[phase] = false;
+              $scope.notificationUnknown[phase] = false;
               $scope[`${phase}_emailed`] = 1;
               return true;
           }, function(error) {
-              if (Number(error) === -1) {
+              if (Number(error) !== 0) {
                   delete pendingEmails[phase];
                   $scope.notificationFailed[phase] = false;
                   $scope.notificationUnknown[phase] = true;
