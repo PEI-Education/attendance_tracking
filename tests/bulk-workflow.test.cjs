@@ -23,7 +23,7 @@ function load(name, term = '3600', customUpdate, locale = 'en', services = {}) {
         document: { getElementById: id => ({ value: { termid: term, staffName: 'Test Staff', dateToday: '10/04/2026', localeLang: locale,
             emailFrom: 'admin@example.test', emailToPSB: 'psb@example.test', emailToCSLF: 'cslf@example.test', emailDate: '10/04/2026', emailTime: '10:00' }[id] }) },
         define: factory => factory(key => key === 'peiAttTrack/messages'
-            ? { read: () => ({ bulk_referral_subject: 'Referrals: {count}', bulk_referral_intro: 'Intro', email_generated: 'Generated.', email_contact: 'Contact.' }),
+            ? { read: () => ({ bulk_referral_subject: 'Referrals: {count}', bulk_referral_intro: 'Intro', bulk_referral_student: '{name} ({label}: {number}; student_number={number}) - {school}', student_number: 'Student Number', email_generated: 'Generated.', email_contact: 'Contact.' }),
                 format: (text, token, value) => String(text).split(token).join(String(value)) } : module)
     });
     definition.at(-1)(...definition.slice(0, -1).map(key => deps[key]));
@@ -263,7 +263,7 @@ test('bulk referral queues one summary per board for newly referred students onl
     const psb = emails.find(email => email.tdata2 === 'psb@example.test');
     const cslf = emails.find(email => email.tdata2 === 'cslf@example.test');
     assert.equal(psb.tdata3, 'Referrals: 2');
-    assert.equal(psb.tdata4, 'Intro\n\nArsenault, Ann (student_number=1001) - PSB School\nDoucette, Dee (student_number=1004) - PSB School\n\nGenerated. Contact.');
+    assert.equal(psb.tdata4, 'Intro\n\nArsenault, Ann (Student Number: 1001; student_number=1001) - PSB School\nDoucette, Dee (Student Number: 1004; student_number=1004) - PSB School\n\nGenerated. Contact.');
     assert.equal(cslf.tdata3, 'Referrals: 1');
     assert.ok(!emails.some(email => email.tdata4.includes('Campbell')), 'already-referred students are not re-notified');
     assert.deepEqual({ type: psb.type, tdata1: psb.tdata1, date: psb.date, time: psb.time }, { type: 100, tdata1: 'admin@example.test', date: '10/04/2026', time: '10:00' });

@@ -18,7 +18,7 @@ function setup({ fresh = false, requested = 0, term = '3601', grade = '11', teac
     vm.runInNewContext(source, {
         document: { getElementById: id => id === 'termid' && term === null ? null : ({ value: inputs[id] || '', textContent: id === 'resolvedTermName' ? 'Resolved term name' : '' }) }, closeLoading() {}, alert: text => alerts.push(text),
         define: (deps, factory) => factory({ module: () => ({ controller(name, args) { controller = args.at(-1); }, factory() {} }) }, {}, {
-            read: () => ({ section_not_saved: 'Save failed: {code}', save_unconfirmed: 'Save unconfirmed' }),
+            read: () => ({ section_not_saved: 'Save failed: {code}', save_unconfirmed: 'Save unconfirmed', unexpected_error: 'Erreur inattendue' }),
             format: (text, token, value) => text.replace(token, value)
         })
     });
@@ -80,6 +80,7 @@ test('failed saves and thrown errors never enqueue email and release locks', asy
         const job=e.scope.submitSection(null,'concern_2',true);if(!throws)e.saves[0].callback(0);await job;
         assert.equal(e.emails.length,0);assert.equal(e.scope.saveBusy,false);assert.equal(e.scope.submitBusy,false);
         assert.equal(e.scope.forms.concern_2.$dirty,true);assert.equal(e.alerts.length,1);
+        assert.equal(e.alerts[0], throws ? 'Save failed: Erreur inattendue' : 'Save failed: 0');
     }
 });
 test('failed email retries only its captured notification, not the checklist', async () => {

@@ -222,7 +222,10 @@ define(function(require) {
             return Object.keys(groups).map(function(name) {
                 var group = groups[name];
                 var lines = group.rows.map(function(row) {
-                    return row.student.lastName + ', ' + row.student.firstName + ' (student_number=' + row.student.studentNumber + ') - ' + row.student.termSchoolName;
+                    var line = localization.format(messages.bulk_referral_student, '{name}', row.student.lastName + ', ' + row.student.firstName);
+                    line = localization.format(line, '{label}', messages.student_number);
+                    line = localization.format(line, '{number}', row.student.studentNumber);
+                    return localization.format(line, '{school}', row.student.termSchoolName);
                 });
                 return {
                     type: 100,

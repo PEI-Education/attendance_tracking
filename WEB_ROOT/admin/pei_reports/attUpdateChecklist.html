@@ -50,6 +50,8 @@ TemplateName:Admin
     <span data-att-message="letter_3_requested">~[text:psx.htmlc.admin_attendance.attendance_tracking.letter_3_requested]</span>
     <span data-att-message="letter_3_sent">~[text:psx.htmlc.admin_attendance.attendance_tracking.letter_3_sent]</span>
     <span data-att-message="bulk_referral_subject">~[text:psx.htmlc.admin_attendance.attendance_tracking.bulk_referral_subject]</span>
+    <span data-att-message="bulk_referral_student">~[text:psx.htmlc.admin_attendance.attendance_tracking.bulk_referral_student]</span>
+    <span data-att-message="student_number">~[text:psx.htmlc.admin_attendance.attendance_tracking.student_number]</span>
     <span data-att-message="bulk_referral_intro">~[text:psx.htmlc.admin_attendance.attendance_tracking.bulk_referral_intro]</span>
     <span data-att-message="email_generated">~[text:psx.htmlc.admin_students.attendance_tracking.this_email_was_automatically_g]</span>
     <span data-att-message="email_contact">~[text:psx.htmlc.admin_students.attendance_tracking.contact_powerschoolhelp]</span>
@@ -186,7 +188,6 @@ TemplateName:Admin
                             <tr>
                                 <td colspan="3" class="grid-item">
                                     <label for="parent_call_notes" class="notes-label">~[text:psx.htmlc.admin_attendance.attendance_tracking.notes]</label>
-                                    <p class="help-text">~[text:psx.htmlc.admin_attendance.attendance_tracking.any_previously_entered_notes_f]</p>
                                     <textarea class="notes" id="parent_call_notes" name="parent_call_notes" ng-model="pc1.parent_call_notes" maxlength="4000"></textarea>
                                 </td>
                             </tr>
@@ -269,7 +270,6 @@ TemplateName:Admin
                             <tr>
                                 <td colspan="3" class="grid-item">
                                     <label for="parent_call_notes" class="notes-label">~[text:psx.htmlc.admin_attendance.attendance_tracking.notes]</label>
-                                    <p class="help-text">~[text:psx.htmlc.admin_attendance.attendance_tracking.any_previously_entered_notes_f]</p>
                                     <textarea class="notes" id="parent_call_notes" name="pc3.parent_call_notes" ng-model="$parent.parent_call_notes"  maxlength="4000"></textarea>
                                 </td>
                             </tr>
@@ -313,7 +313,6 @@ TemplateName:Admin
                             <tr>
                                 <td colspan="3" class="grid-item">
                                     <label class="notes-label" for="concern_2_notes">~[text:psx.htmlc.admin_attendance.attendance_tracking.notes]</label>
-                                    <p class="help-text">~[text:psx.htmlc.admin_attendance.attendance_tracking.any_previously_entered_notes_f]</p>
                                     <textarea class="notes" id="concern_2_notes" name="notes" ng-model="c2req.concern_2_notes" maxlength="4000"></textarea>
                                     
                                 </td>
@@ -358,7 +357,6 @@ TemplateName:Admin
                             <tr>
                                 <td colspan="3" class="grid-item">
                                     <label class="notes-label" for="concern_2_notes">~[text:psx.htmlc.admin_attendance.attendance_tracking.notes]</label>
-                                    <p class="help-text">~[text:psx.htmlc.admin_attendance.attendance_tracking.any_previously_entered_notes_f]</p>
                                     <textarea class="notes" id="concern_2_notes" name="notes" ng-model="c2sent.concern_2_notes" maxlength="4000"></textarea>
                                     
                                 </td>
@@ -403,7 +401,6 @@ TemplateName:Admin
                             <tr>
                                 <td colspan="3" class="grid-item">
                                     <label class="notes-label" for="concern_3_notes">~[text:psx.htmlc.admin_attendance.attendance_tracking.notes]</label>
-                                    <p class="help-text">~[text:psx.htmlc.admin_attendance.attendance_tracking.any_previously_entered_notes_f]</p>
                                     <textarea class="notes" id="concern_3_notes" name="notes" ng-model="c3req.concern_3_notes" maxlength="4000"></textarea>
                                     
                                 </td>
@@ -448,7 +445,6 @@ TemplateName:Admin
                             <tr>
                                 <td colspan="3" class="grid-item">
                                     <label class="notes-label" for="concern_3_notes">~[text:psx.htmlc.admin_attendance.attendance_tracking.notes] (~[text:psx.htmlc.admin_students.attendance_tracking.required])</label>
-                                    <p class="help-text">~[text:psx.htmlc.admin_attendance.attendance_tracking.any_previously_entered_notes_f]</p>
                                     <textarea class="notes" id="concern_3_notes" name="notes" ng-model="c3sent.concern_3_notes" maxlength="4000"></textarea>
                                     
                                 </td>
@@ -493,7 +489,6 @@ TemplateName:Admin
                             <tr>
                                 <td colspan="3" class="grid-item">
                                     <label class="notes-label" for="concern_4_notes">~[text:psx.htmlc.admin_attendance.attendance_tracking.notes]</label>
-                                    <p class="help-text">~[text:psx.htmlc.admin_attendance.attendance_tracking.any_previously_entered_notes_f]</p>
                                     <textarea class="notes" id="concern_4_notes" name="notes" ng-model="$parent.concern_4_notes" maxlength="4000"></textarea>
                                     
                                 </td>
@@ -538,7 +533,6 @@ TemplateName:Admin
                             <tr>
                                 <td colspan="3" class="grid-item">
                                     <label class="notes-label" for="concern_4_notes">~[text:psx.htmlc.admin_attendance.attendance_tracking.notes] (~[text:psx.htmlc.admin_students.attendance_tracking.required])</label>
-                                    <p class="help-text">~[text:psx.htmlc.admin_attendance.attendance_tracking.any_previously_entered_notes_f]</p>
                                     <textarea class="notes" id="concern_4_notes" name="notes" ng-model="c4sent.concern_4_notes" maxlength="4000"></textarea>
                                     
                                 </td>

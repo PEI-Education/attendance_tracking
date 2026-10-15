@@ -30,3 +30,15 @@ Existing SQL behavior, field mappings, date persistence, and unrelated working-t
 ## Re-review after saved edits
 
 Restored overwritten teacher-page and dashboard-controller localization using existing keys. Preserved the teacher page’s current term value, date-format SQL, email-date value, and other functional edits. Corrected message-bank placement in both student pages and added an inline-script syntax regression check. All nine local checks pass; live PowerSchool verification remains outstanding.
+
+## Full source and catalogue audit — October 13, 2026
+
+Reviewed all 43 HTML, JSON and JavaScript files, including bundled Shoelace modules, plus PowerSchool injection fragments. Both custom catalogues now contain the same 227 keys. Every custom reference resolves in both locales, and every catalogue key has a reference in shipped source outside HTML comments. Removed seven unused keys, including one referenced only by disabled bulk-notes forms. Added six keys per locale for the export filename, referral email row format, unexpected-error detail, board abbreviations and example email addresses.
+
+French wording consistently uses « élève », « courriel », « enregistrer », « assiduité » and the existing « référence » terminology. Corrected the letter-request subject, requested-notification label, five-school-day instructions, paper dimensions, malformed closing markup, and references to CSLF that were absent from the corresponding English labels. French support contacts remain jhdoyle@edu.pe.ca; localized example addresses use example.com.
+
+SQL/JSON status strings and tile identifiers are internal lookup values, localized at the display/export boundary; they are not translated in the endpoints. PowerSchool-owned psx.html.* keys remain delegated to the host catalogue, which is not included in this repository; their existence and translations require live verification. The vendored radio components contain no hardcoded natural-language labels; browser-native validation messages are supplied by the browser. Dates, user-entered notes, student/school names and report names remain data supplied by PowerSchool or its users.
+
+The teacher page's numeric JavaScript suffix is intentional deployment cache busting and is preserved. Static JavaScript continues to use HTML message banks rather than server tags. Unexpected nonnumeric write errors now display localized feedback; numeric return codes remain visible. Referral emails retain the student_number search expression alongside a localized label.
+
+Validation: 86 Node checks and 22 Python checks pass, including both language catalogues, all placeholders, status/tile/export mappings, email formatting, save feedback, JavaScript syntax, accessibility and SQL fixtures. A separate HTML-parser scan found no hardcoded natural-language text nodes or label/title/placeholder/alt/aria-label attributes after excluding server templates, SQL, scripts and styles. git diff --check passes. These are local checks; deployed template expansion and bilingual screen/print layout remain unverified.

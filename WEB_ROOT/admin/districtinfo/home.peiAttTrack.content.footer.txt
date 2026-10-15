@@ -6,11 +6,11 @@
          <td>~[text:psx.htmlc.admin_attendance.attendance_tracking.email_addresses_that_should] ~[text:psx.htmlc.admin_attendance.attendance_tracking.multiple_emails_comma_separated]</td>
       </tr>
       <tr class="~[evenoddrow]">
-         <td class="bold">PSB</td>
+         <td class="bold">~[text:psx.htmlc.admin_attendance.attendance_tracking.board_psb]</td>
          <td><textarea id="attTrackEmailPSB" name="[pref]attendancetrackingPSB" value="" rows="3" cols="70"></textarea></td>
       </tr>
       <tr class="~[evenoddrow]">
-         <td class="bold">CSLF</td>
+         <td class="bold">~[text:psx.htmlc.admin_attendance.attendance_tracking.board_cslf]</td>
          <td><textarea id="attTrackEmailCSLF" name="[pref]attendancetrackingCSLF" value="" rows="3" cols="70"></textarea></td>
       </tr>
    </table>

@@ -32,18 +32,17 @@ define(['angular', 'components/shared/index', 'peiAttTrack/messages'], function(
   }
 
   var attTrackApp = angular.module('attTrackMod', ['powerSchoolModule']);
-
+s
   attTrackApp.controller('attTrackCtrl', ['$scope', 'dbConnect', '$timeout', '$q', function($scope, dbConnect, $timeout, $q) {
       
       var messages = localization.read();
       var recordDataFile = document.getElementById('recordDataFile').value;
       const persistedStates = {};
       const pendingEmails = {};
-      const formNames = { student: 'stu', referral: 'ref' };
+      const formNames = { student: 'stu', referral: 'ref' };    
       $scope.saveBusy = false;
       $scope.submitBusy = false;
-      $scope.emailBusy = {};
-      $scope.notificationFailed = {};
+ee      $scope.notificationFailed = {};
       $scope.notificationUnknown = {};
       $scope.writeUncertain = false;
       $scope.recordLoading = false;
@@ -299,7 +298,7 @@ define(['angular', 'components/shared/index', 'peiAttTrack/messages'], function(
       function writeRecord(operation, queueInsert) {
           return $q(function(resolve, reject) {
               operation(function(retID) {
-                  const id = Number(retID);
+                  const id = Number(retIDSSS`````````1`2```````     w);
                   if ((queueInsert && id === -1) || (Number.isSafeInteger(id) && id > 0)) resolve(id);
                   else reject(retID);
               });
@@ -427,7 +426,7 @@ define(['angular', 'components/shared/index', 'peiAttTrack/messages'], function(
           return $q(function(resolve) {
               resolve(notify ? $scope.saveAndEmail(e, phase) : $scope.save(e, phase));
           }).catch(function(error) {
-                  alert($scope.writeUncertain ? messages.save_unconfirmed : localization.format(messages.section_not_saved, '{code}', error && error.message || error));
+                  alert($scope.writeUncertain ? messages.save_unconfirmed : localization.format(messages.section_not_saved, '{code}', typeof error === 'number' || /^-?\d+$/.test(String(error)) ? error : messages.unexpected_error));
                   return false;
               }).finally(function() {
                   $scope.submitBusy = false;

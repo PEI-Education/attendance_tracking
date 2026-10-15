@@ -52,7 +52,7 @@ test('catalogue parity, placeholders, references, and standalone JS syntax', () 
     const en = catalog('US_en'), fr = catalog('CA_fr');
     assert.deepEqual(Object.keys(en).sort(), Object.keys(fr).sort());
     for (const key of Object.keys(en)) {
-        const tokens = value => (value.match(/\$\{[^}]+\}|\{\{.*?\}\}|\{code\}|~\[[^\]]+\]|~\([^)]*\)/g) || []).sort();
+        const tokens = value => (value.match(/\$\{[^}]+\}|\{\{.*?\}\}|\{[a-zA-Z_][\w]*\}|~\[[^\]]+\]|~\([^)]*\)/g) || []).sort();
         assert.deepEqual(tokens(en[key]), tokens(fr[key]), key);
         assert.ok(fr[key].trim());
     }
@@ -67,6 +67,17 @@ test('catalogue parity, placeholders, references, and standalone JS syntax', () 
         }
     }
     for (const page of JSON.parse(read('pagecataloging/attendance_tracking.json')).pages) assert.ok(en[page.title] && fr[page.title]);
+});
+test('every custom catalogue key is referenced by a shipped page, fragment or module', () => {
+    const references = new Set();
+    for (const file of [...files('WEB_ROOT'), ...files('pagecataloging')]) {
+        if (!/\.(html|js|json|txt)$/.test(file)) continue;
+        const source = read(file).replace(/<!--[^]*?-->/g, '');
+        for (const [key] of source.matchAll(/psx\.htmlc\.[\w.-]+/g)) references.add(key);
+    }
+    for (const locale of ['US_en', 'CA_fr']) {
+        assert.deepEqual([...references].sort(), Object.keys(catalog(locale)).sort(), locale);
+    }
 });
 for (const locale of ['US_en', 'CA_fr']) {
     test(`${locale}: dashboard covers every SQL status, export field, and tile label`, async () => {
@@ -83,6 +94,7 @@ for (const locale of ['US_en', 'CA_fr']) {
         const exported = decodeURIComponent(env.document.download.href.split(',')[1]).split('\n');
         assert.ok(!exported[0].split('\t').includes(''), 'untranslated export header');
         assert.ok(exported[1].includes(dict[A + 'no_steps_taken']));
+        assert.equal(env.document.download.download, dict[A + 'export_filename']);
         assert.equal(scope.stepMap['Referral closed'], dict[S + 'referral_closed']);
         row.currentStep = 'Referral closed';
         scope.exportData([row]);
@@ -137,7 +149,8 @@ test('shared controller uses each portal’s exact endpoint and localized teache
     const dict = catalog('CA_fr');
     for (const page of ['WEB_ROOT/admin/students/pei_attendance_tracking.html', 'WEB_ROOT/teachers/studentpages/pei_attendance_tracking.html']) {
         const source = read(page);
-        assert.ok(source.includes('data-require-path="peiAttTrack/peiAttTrack202610"'));
+        // Numeric suffixes are intentional deployment cache busting; the canonical source is audited below.
+        assert.match(source, /data-require-path="peiAttTrack\/peiAttTrack202610\d*"/);
         const endpoint = source.match(/id="recordDataFile" value="([^"]+)"/)[1];
         const directory = path.posix.dirname(page);
         assert.ok(files(`${directory}/json`).includes(`${directory}/${endpoint}`), 'exact filename case');
@@ -164,7 +177,8 @@ test('shared controller uses each portal’s exact endpoint and localized teache
         assert.match(source, /<textarea id="emailBody"[^>]*>[^<]*\n\n[^<]*<\/textarea>/);
         assert.ok(!source.includes('&#13;'));
     }
-    const emails = [...Object.values(dict).join('\n').matchAll(/[\w.+-]+@[\w.-]+\.[A-Za-z]+/g)].map(m => m[0]);
+    const supportValues = Object.entries(dict).filter(([key]) => key !== A + 'email_address_example').map(([, value]) => value);
+    const emails = [...supportValues.join('\n').matchAll(/[\w.+-]+@[\w.-]+\.[A-Za-z]+/g)].map(m => m[0]);
     assert.ok(emails.length > 0);
     assert.ok(emails.every(email => email === 'jhdoyle@edu.pe.ca'));
 });

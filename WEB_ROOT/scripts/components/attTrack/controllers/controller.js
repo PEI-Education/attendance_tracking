@@ -83,7 +83,7 @@ define(function(require) {
             // Create a link to the file
             let link = document.createElement('a');
             link.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(tabDelimitedString));
-            link.setAttribute('download', 'attendanceData.txt');
+            link.setAttribute('download', messages.export_filename);
         
             // Click the link to download the file
             link.click();
