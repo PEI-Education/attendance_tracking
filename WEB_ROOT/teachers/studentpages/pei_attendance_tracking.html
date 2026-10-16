@@ -60,7 +60,7 @@ TemplateName:Teacher Backpack
  <h1>~[text:psx.htmlc.admin_students.attendance_tracking.attendance_concerns_checklist]<span class="nav-teacher"><select name="page" size=1 onChange="javascript:formHandler()"><option value="">~[text:psx.htmlc.teachers_studentpages.attendance_tracking.select_screens]</option><option value="">--------------------</option>~[x:teacherpages]</select></span>~[studentalert]</h1>
 <p>~(studentname) &nbsp; ~(grade_level) &nbsp; ~(student_number) &nbsp; &nbsp; ~(track) &nbsp; &nbsp; ~(studschoolabbr) &nbsp; &nbsp; ~[enrollmentstatus]</p></form>
 
-<div class="pei-att-track" data-require-path="peiAttTrack/peiAttTrack2026103" data-module-name="attTrackMod">
+<div class="pei-att-track" data-require-path="peiAttTrack/peiAttTrack" data-module-name="attTrackMod">
   <div class="box-round" ng-controller="attTrackCtrl" ng-cloak>
     <input type="hidden" id="staffName" value="~[x:username;firstlast]" />
     <input type="hidden" id="studentsdcid" value="~(studentrn)" />

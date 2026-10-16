@@ -1,6 +1,6 @@
 <div hidden id="attNoticeMessages">
     <span id="attNoticeOne">~[text:psx.htmlc.admin_attendance.attendance_tracking.staff_have_requested_1_written]</span>
-    <span id="attNoticeMany">~[text:psx.htmlc.admin_attendance.attendance_tracking.staff_have_requested_multiple_written]</span>
+    <span id="attNoticeMany">~[text:psx.htmlc.admin.home.staff_have_requested_sum_written_attendance_notification]</span>
     <span id="attNoticeLink">~[text:psx.htmlc.admin_attendance.attendance_tracking.see_the_list_of_students_on_the]</span>
     <span id="attNoticeHeading">~[text:psx.html.admin.home.start_page]</span>
 </div>

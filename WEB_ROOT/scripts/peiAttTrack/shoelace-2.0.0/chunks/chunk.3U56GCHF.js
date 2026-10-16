@@ -112,12 +112,23 @@ var SlRadioGroup = class extends ShoelaceElement {
       radioToFocus.focus();
     }
   }
-  handleSlotChange() {
+  async handleSlotChange() {
     var _a;
     const radios = this.getAllRadios();
+    // Local fix: slotchange can run before independently loaded children upgrade
+    // or finish their first render. Never read their shadow DOM before then.
+    await Promise.all(radios.map(async (radio) => {
+      await customElements.whenDefined(radio.localName);
+      await radio.updateComplete;
+    }));
+    // A newer slotchange owns initialization if Angular replaced the children.
+    const currentRadios = this.getAllRadios();
+    if (!this.isConnected || radios.length !== currentRadios.length || radios.some((radio, index) => radio !== currentRadios[index])) {
+      return;
+    }
     radios.forEach((radio) => radio.checked = radio.value === this.value);
     this.hasButtonGroup = radios.some((radio) => radio.tagName.toLowerCase() === "sl-radio-button");
-    if (!radios.some((radio) => radio.checked)) {
+    if (radios.length > 0 && !radios.some((radio) => radio.checked)) {
       if (this.hasButtonGroup) {
         const buttonRadio = radios[0].shadowRoot.querySelector("button");
         buttonRadio.tabIndex = 0;

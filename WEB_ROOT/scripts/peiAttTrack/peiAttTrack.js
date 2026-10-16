@@ -32,7 +32,7 @@ define(['angular', 'components/shared/index', 'peiAttTrack/messages'], function(
   }
 
   var attTrackApp = angular.module('attTrackMod', ['powerSchoolModule']);
-s
+
   attTrackApp.controller('attTrackCtrl', ['$scope', 'dbConnect', '$timeout', '$q', function($scope, dbConnect, $timeout, $q) {
       
       var messages = localization.read();
@@ -42,7 +42,7 @@ s
       const formNames = { student: 'stu', referral: 'ref' };    
       $scope.saveBusy = false;
       $scope.submitBusy = false;
-ee      $scope.notificationFailed = {};
+      $scope.notificationFailed = {};
       $scope.notificationUnknown = {};
       $scope.writeUncertain = false;
       $scope.recordLoading = false;
@@ -298,7 +298,7 @@ ee      $scope.notificationFailed = {};
       function writeRecord(operation, queueInsert) {
           return $q(function(resolve, reject) {
               operation(function(retID) {
-                  const id = Number(retIDSSS`````````1`2```````     w);
+                  const id = Number(retID);
                   if ((queueInsert && id === -1) || (Number.isSafeInteger(id) && id > 0)) resolve(id);
                   else reject(retID);
               });
